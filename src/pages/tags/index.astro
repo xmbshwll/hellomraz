@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL || '/';
+
+// Get all unique tags from blog posts
+const allPosts = await getCollection('blog');
+const tags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
+
+// Count posts for each tag
+const tagObjects = tags.map(tag => {
+  const count = allPosts.filter(post => post.data.tags?.includes(tag)).length;
+  return { name: tag, count };
+}).sort((a, b) => b.count - a.count);
+---
+
+<BaseLayout title="Explore Tags">
+  <div class="w-full max-w-3xl mx-auto py-10 sm:py-16">
+    <!-- Header -->
+    <div class="relative mb-12 text-center">
+      <div class="absolute -top-20 -left-20 w-48 h-48 bg-zinc-100 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob"></div>
+      <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-zinc-200 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      
+      <h1 class="relative text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
+        Explore Topics
+      </h1>
+      <p class="relative text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
+        Discover content organized by your interests
+      </p>
+    </div>
+    
+    {tags.length === 0 ? (
+      <div class="text-center py-12">
+        <p class="text-xl text-zinc-600 dark:text-zinc-400">No tags found yet.</p>
+        <p class="mt-2 text-sm text-zinc-500">Check back later for categorized content.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {tagObjects.map((tag) => (
+          <a 
+            href={`${base}tags/${tag.name}`}
+            class="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition-all duration-300"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-base font-medium text-zinc-900 dark:text-zinc-100">#{tag.name}</span>
+              <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-full">
+                {tag.count}
+              </span>
+            </div>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+              {tag.count} {tag.count === 1 ? 'article' : 'articles'}
+            </p>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(20px, -20px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  }
+  
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+</style>

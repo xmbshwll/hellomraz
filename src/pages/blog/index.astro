@@ -1,0 +1,130 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL || '/';
+const allPosts = await getCollection('blog') || [];
+const sortedPosts = allPosts
+  .filter(post => !post.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Group posts by year for timeline effect
+const postsByYear = sortedPosts.reduce((acc, post) => {
+  const year = new Date(post.data.pubDate).getFullYear();
+  if (!acc[year]) acc[year] = [];
+  acc[year].push(post);
+  return acc;
+}, {});
+
+const years = Object.keys(postsByYear).sort((a, b) => b - a);
+---
+
+<BaseLayout title="Blog">
+  <div class="w-full max-w-3xl mx-auto py-10 sm:py-16">
+    <!-- Header -->
+    <div class="relative mb-12 sm:mb-20">
+      <div class="absolute -top-10 -left-10 w-48 h-48 bg-zinc-100 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob"></div>
+      <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-zinc-200 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      
+      <div class="relative text-center">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
+          Journal
+        </h1>
+        
+        <p class="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
+          Thoughts, ideas, and explorations on design and technology.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Posts grouped by year -->
+    <div>
+      {years.map((year) => (
+        <div id={`year-${year}`} class="mb-12 scroll-mt-20">
+          <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6 border-b border-zinc-200 dark:border-zinc-800 pb-3">
+            {year}
+          </h2>
+          
+          <div class="space-y-8">
+            {postsByYear[year].map((post) => (
+              <article class="group relative">
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                  <div class="flex-shrink-0 text-sm text-zinc-500 dark:text-zinc-400 w-20">
+                    {post.data.pubDate.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                  
+                  <div class="flex-1">
+                    <h3 class="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                      <a href={`${base}blog/${post.slug}`}>
+                        {post.data.title}
+                      </a>
+                    </h3>
+                    
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
+                      {post.data.description}
+                    </p>
+                    
+                    <div class="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span>{post.data.readingTime || `${Math.ceil(post.body.length / 2000)} min read`}</span>
+                      
+                      {post.data.tags && post.data.tags.length > 0 && (
+                        <>
+                          <span>·</span>
+                          <div class="flex gap-2">
+                            {post.data.tags.slice(0, 3).map(tag => (
+                              <a 
+                                href={`${base}tags/${tag}`}
+                                class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                              >
+                                #{tag}
+                              </a>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(5%, 5%) scale(1.05);
+    }
+    50% {
+      transform: translate(0, 10%) scale(1);
+    }
+    75% {
+      transform: translate(-5%, 5%) scale(0.95);
+    }
+  }
+  
+  .animate-blob {
+    animation: blob 8s infinite ease;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
