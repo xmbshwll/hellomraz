@@ -1,98 +1,195 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
 
-const base = import.meta.env.BASE_URL || '/';
+const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 ---
 
-<BaseLayout title="About Me" description="Learn more about my background, skills, and experience">
-  <div class="max-w-3xl mx-auto py-8 sm:py-12 md:py-16">
-    <!-- Hero Section -->
-    <div class="relative mb-12 sm:mb-16">
-      <div class="absolute -top-10 -left-10 w-48 h-48 bg-zinc-100 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob theme-transition-bg"></div>
-      <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-zinc-200 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000 theme-transition-bg"></div>
-      
-      <div class="relative text-center">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6">
-          Hello, I'm <span class="text-zinc-600 dark:text-zinc-400">a Developer</span>
+<Layout title="About" description="О блоге Опусти Оружие, Мразь">
+  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+    <PageHeader />
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <!-- Header -->
+      <div
+        class="mb-8 border-b pb-4"
+        style="border-color: var(--theme-border);"
+      >
+        <h1
+          class="text-2xl font-bold"
+          style="color: var(--theme-text-primary);"
+        >
+          $ whoami
         </h1>
-        
-        <p class="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-8 leading-relaxed">
-          I build things for the web and write about my experiences.
+        <p class="text-sm mt-2" style="color: var(--theme-text-muted);">
+          music · reviews · underground
         </p>
       </div>
-    </div>
-    
-    <!-- About Section -->
-    <div class="mb-16 max-w-2xl mx-auto">
-      <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">About Me</h2>
-      
-      <div class="prose prose-zinc dark:prose-invert max-w-none">
-        <p class="text-base sm:text-lg leading-relaxed mb-4">
-          Welcome to my blog! I'm a developer passionate about building things for the web. 
-          This blog serves as both a personal journal and a resource for others who might find my experiences useful.
-        </p>
-        
-        <p class="text-base sm:text-lg leading-relaxed mb-4">
-          You can expect content on web development, JavaScript/TypeScript, tools & workflows, 
-          and my journey as a developer.
-        </p>
-        
-        <h3 class="text-xl font-bold mt-8 mb-4">Built With</h3>
-        <p class="text-base sm:text-lg leading-relaxed mb-4">
-          This blog is built with <a href="https://astro.build" class="text-blue-600 dark:text-blue-400">Astro</a>, 
-          a fast static site generator that ships zero JavaScript by default. 
-          It's hosted on GitHub Pages for free and easy deployment.
-        </p>
-        
-        <h3 class="text-xl font-bold mt-8 mb-4">Get in Touch</h3>
-        <ul class="space-y-2">
-          <li>GitHub: <a href="https://github.com/hellomraz" class="text-blue-600 dark:text-blue-400">@hellomraz</a></li>
-          <li>Email: your.email@example.com</li>
+
+      <!-- About Section -->
+      <div class="mb-8">
+        <h2
+          id="about-heading"
+          class="text-lg font-bold mb-4"
+          style="color: var(--theme-text-primary);"
+        >
+          ~ about
+        </h2>
+
+        <div
+          id="about-text"
+          class="space-y-3 text-sm"
+          style="color: var(--theme-text-secondary);"
+        >
+          <p>
+            Опусти Оружие, Мразь — самое лучшее во вселенной
+            музыкально-критическое СМИ (возможно, после The Quietus).
+          </p>
+          <p>
+            Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются,
+            восхищение музыкальным вкусом - напротив.
+          </p>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="border-t pt-6" style="border-color: var(--theme-border);">
+        <h2
+          id="links-heading"
+          class="text-lg font-bold mb-4"
+          style="color: var(--theme-text-primary);"
+        >
+          ~ links
+        </h2>
+        <ul
+          class="space-y-1 text-sm"
+          style="color: var(--theme-text-secondary);"
+        >
+          <li class="py-2">
+            → telegram: <a
+              href="https://t.me/hellomraz"
+              class="inline-flex items-center"
+              style="color: var(--theme-accent); min-height: 44px;"
+              >@hellomraz</a
+            >
+          </li>
+          <li class="py-2">
+            → BlueSky: <a
+              href="https://bsky.app/profile/xmbshwll.bsky.social"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center"
+              style="color: var(--theme-accent); min-height: 44px;">@xmbshwll</a
+            >
+          </li>
         </ul>
       </div>
-    </div>
-    
-    <!-- Contact Section -->
-    <div class="text-center">
-      <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Get in Touch</h2>
-      <p class="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-6">
-        I'm always open to new opportunities and collaborations.
-      </p>
-      
-      <a 
-        href="mailto:your.email@example.com" 
-        class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors text-base font-medium"
+
+      <!-- Support -->
+      <div
+        class="border-t pt-6 mt-2"
+        style="border-color: var(--theme-border);"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-        Say Hello
-      </a>
+        <h2
+          id="support-heading"
+          class="text-lg font-bold mb-4"
+          style="color: var(--theme-text-primary);"
+        >
+          ~ support
+        </h2>
+        <a
+          href="https://buymeacoffee.com/hellomraz"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="bmc-card"
+        >
+          <span class="bmc-icon">☕</span>
+          <div>
+            <div class="bmc-title">Buy Me a Coffee</div>
+            <div class="bmc-url">buymeacoffee.com/hellomraz</div>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
-</BaseLayout>
+</Layout>
 
 <style>
-  @keyframes blob {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    25% {
-      transform: translate(5%, 5%) scale(1.05);
-    }
-    50% {
-      transform: translate(0, 10%) scale(1);
-    }
-    75% {
-      transform: translate(-5%, 5%) scale(0.95);
-    }
+  .bmc-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-height: 44px;
+    text-decoration: none;
+    background: color-mix(in srgb, var(--theme-accent) 5%, transparent);
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
   }
-  
-  .animate-blob {
-    animation: blob 8s infinite ease;
+  .bmc-card:hover {
+    border-color: var(--theme-accent);
+    background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
   }
-  
-  .animation-delay-2000 {
-    animation-delay: 2s;
+  .bmc-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .bmc-title {
+    color: var(--theme-text-primary);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .bmc-url {
+    color: var(--theme-text-muted);
+    font-size: 11px;
+    margin-top: 2px;
   }
 </style>
+
+<script>
+  const translations: Record<
+    string,
+    { about: string; text: string; links: string; support: string }
+  > = {
+    ru: {
+      about: "~ about",
+      text: "<p>Опусти Оружие, Мразь — самое лучшее во вселенной музыкально-критическое СМИ (возможно, после The Quietus).</p><p>Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются, восхищение музыкальным вкусом - напротив.</p><p>С любовью ПО ЕБАЛУ, из Берлина</p>",
+      links: "~ links",
+      support: "~ support",
+    },
+    en: {
+      about: "~ about",
+      text: "<p>Опусти Оружие, Мразь <i>(Drop Your Weapon, Scum)</i> — the best music criticism outlet in the universe (possibly after The Quietus).</p><p>A fast DIY freestyle blog. Complaints are not accepted; admiration for the musical taste, on the other hand, is welcome.</p><p>With love ПО ЕБАЛУ <i>(PUNCH IN THE FACE)</i>, from Berlin</p>",
+      links: "~ links",
+      support: "~ support",
+    },
+    de: {
+      about: "~ about",
+      text: "<p>Опусти Оружие, Мразь <i>(Leg die Waffe nieder, Mistkerl)</i> — das beste Musikkritik-Medium im Universum (möglicherweise nach The Quietus).</p><p>Ein schneller DIY-Freestyle-Blog. Beschwerden werden nicht angenommen; Bewunderung für den Musikgeschmack hingegen schon.</p><p>Mit Liebe ПО ЕБАЛУ <i>(INS GESICHT PUNCHEN)</i>, aus Berlin</p>",
+      links: "~ links",
+      support: "~ support",
+    },
+  };
+
+  function updateAboutPage() {
+    const lang = localStorage.getItem("site-lang") || "ru";
+    const t = translations[lang] || translations.ru;
+
+    const heading = document.getElementById("about-heading");
+    const text = document.getElementById("about-text");
+    const linksHeading = document.getElementById("links-heading");
+    const supportHeading = document.getElementById("support-heading");
+
+    if (heading) heading.textContent = t.about;
+    if (text) text.innerHTML = t.text;
+    if (linksHeading) linksHeading.textContent = t.links;
+    if (supportHeading) supportHeading.textContent = t.support;
+  }
+
+  document.addEventListener("astro:page-load", updateAboutPage);
+  window.addEventListener("lang-changed", updateAboutPage);
+  updateAboutPage();
+</script>

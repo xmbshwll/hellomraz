@@ -1,0 +1,103 @@
+---
+/**
+ * "Listen On" service link grid — direct links to streaming platforms.
+ * Complements the embedded player by offering quick access to user's preferred service.
+ */
+import type { StreamingLink } from '../lib/streaming';
+
+interface Props {
+  links: StreamingLink[];
+  bandcampUrl?: string;
+}
+
+const { links, bandcampUrl } = Astro.props;
+
+// Build display list
+interface ServiceEntry {
+  service: string;
+  url: string;
+  icon: string;
+  color: string;
+}
+
+const serviceColors: Record<string, string> = {
+  Bandcamp: 'var(--theme-accent)',
+  Spotify: '#1db954',
+  'Apple Music': '#fc3c44',
+  Tidal: '#00ffff',
+  Deezer: '#a238ff',
+  YouTube: '#ff0000',
+  'YouTube Music': '#ff0000',
+  SoundCloud: '#ff5500',
+  'Yandex Music': '#ffcc00',
+};
+
+const entries: ServiceEntry[] = links.map((link) => ({
+  service: link.service,
+  url: link.url,
+  icon: link.icon,
+  color: serviceColors[link.service] ?? 'var(--theme-text-primary)',
+}));
+
+if (entries.length === 0) return;
+---
+
+<div class="listen-on">
+  <h3 class="section-heading">Listen on</h3>
+
+  <div class="service-list">
+    {entries.map((entry) => (
+      <a
+        href={entry.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="service-btn"
+        style={`--service-color: ${entry.color};`}
+      >
+        <span class="service-icon">{entry.icon}</span>
+        {entry.service}
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .listen-on {
+    border-top: 1px solid color-mix(in srgb, var(--theme-text-muted) 20%, transparent);
+    padding-top: 20px;
+    margin-top: 24px;
+  }
+  .section-heading {
+    color: var(--theme-accent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .service-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .service-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--theme-bg-hover);
+    padding: 10px 14px;
+    min-height: 44px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    color: var(--service-color);
+    transition: background-color 0.2s, transform 0.15s;
+  }
+  .service-btn:hover {
+    background-color: var(--theme-bg-elevated);
+    transform: translateY(-1px);
+  }
+  .service-icon {
+    font-size: 15px;
+  }
+</style>

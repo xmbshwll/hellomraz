@@ -1,0 +1,156 @@
+---
+/**
+ * Album metadata card — shows structured info below the review text.
+ * Data comes from albums.json (artist, album, bcTags, bandcampUrl).
+ */
+interface Props {
+  artist?: string;
+  album?: string;
+  tags?: string[];
+  date: Date;
+  releaseDate?: string;
+  bandcampUrl?: string;
+  /** Tags that have their own page (2+ posts) */
+  linkedTags?: Set<string>;
+}
+
+const { artist, album, tags = [], date, releaseDate, bandcampUrl, linkedTags } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+
+function hasPage(tag: string): boolean {
+  return linkedTags ? linkedTags.has(tag) : true;
+}
+
+// Use album release date if available, otherwise fall back to post date
+const displayDate = releaseDate ? new Date(releaseDate + 'T00:00:00') : date;
+const formattedDate = displayDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+// Nothing to show if no metadata at all
+const hasContent = artist || album || tags.length > 0;
+if (!hasContent) return;
+---
+
+<div class="album-meta">
+  <h3 class="section-heading">Album Info</h3>
+
+  <dl class="meta-grid">
+    {artist && (
+      <>
+        <dt>Artist</dt>
+        <dd>{artist}</dd>
+      </>
+    )}
+    {album && (
+      <>
+        <dt>Album</dt>
+        <dd>{album}</dd>
+      </>
+    )}
+    <dt>Released</dt>
+    <dd>{formattedDate}</dd>
+  </dl>
+
+  {tags.length > 0 && (
+    <div class="tag-list">
+      {tags.map((tag) =>
+        hasPage(tag) ? (
+          <a href={`${base}tags/${tag}`} class="tag-chip tag-chip-link">
+            {tag}
+          </a>
+        ) : (
+          <span class="tag-chip">
+            {tag}
+          </span>
+        )
+      )}
+    </div>
+  )}
+
+  {bandcampUrl && (
+    <a
+      href={bandcampUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="bc-link"
+    >
+      ⬡ Buy on Bandcamp →
+    </a>
+  )}
+</div>
+
+<style>
+  .album-meta {
+    border-top: 1px solid color-mix(in srgb, var(--theme-text-muted) 20%, transparent);
+    padding-top: 20px;
+    margin-top: 24px;
+  }
+  .section-heading {
+    color: var(--theme-accent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    font-size: 13px;
+    margin: 0;
+  }
+  .meta-grid dt {
+    color: var(--theme-text-muted);
+    margin: 0;
+  }
+  .meta-grid dd {
+    color: var(--theme-text-primary);
+    margin: 0;
+  }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .tag-chip {
+    background-color: var(--theme-bg-hover);
+    color: var(--theme-text-muted);
+    padding: 8px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .tag-chip-link {
+    color: var(--theme-accent);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .tag-chip-link:hover {
+    background-color: var(--theme-bg-elevated);
+  }
+  .bc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    color: var(--theme-accent);
+    font-size: 13px;
+    text-decoration: none;
+    border: 1px solid var(--theme-border);
+    padding: 10px 14px;
+    min-height: 44px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+  }
+  .bc-link:hover {
+    background-color: var(--theme-bg-hover);
+  }
+</style>

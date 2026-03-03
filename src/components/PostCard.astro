@@ -1,0 +1,118 @@
+---
+// PostCard — flat vertical card for "More reviews" grid
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { getPostColor } from "../lib/colors";
+import { getBandcampData } from "../lib/bandcamp";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  index?: number;
+}
+
+const { post, index = 99 } = Astro.props;
+const color = getPostColor(post.slug);
+const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const bc = getBandcampData(post.slug);
+const initials = post.data.title
+  .split(/[\s\-–—]+/)
+  .slice(0, 2)
+  .map((w: string) => w[0]?.toUpperCase() ?? "")
+  .join("");
+---
+
+<a
+  href={`${base}blog/${post.slug}`}
+  class="post-card playlist-item"
+  data-color={color.dark}
+>
+  <!-- Square cover art -->
+  <div class="post-card-cover">
+    {bc?.coverUrl ? (
+      <Image
+        src={bc.coverUrl}
+        alt={post.data.title}
+        width={300}
+        height={300}
+        class="post-card-img"
+        loading={index < 8 ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    ) : (
+      <div
+        class="post-card-placeholder"
+        style={`background-color: ${color.dark}; color: ${color.accent};`}
+      >
+        {initials}
+      </div>
+    )}
+  </div>
+
+  <!-- Metadata -->
+  <div class="post-card-title">{post.data.title}</div>
+  <div class="post-card-tags">
+    {post.data.tags?.slice(0, 3).join(" · ") ?? ""}
+  </div>
+</a>
+
+<style is:global>
+  /* PostCard styles — global so both server-rendered and JS-injected cards match */
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    padding: 0.5rem;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-elevated);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  @media (min-width: 641px) {
+    .post-card {
+      padding: 0.75rem;
+    }
+  }
+  .post-card:hover {
+    border-color: var(--theme-accent);
+  }
+  .post-card-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: 0.75rem;
+  }
+  .post-card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 1px solid var(--theme-border);
+  }
+  .post-card-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem;
+    font-weight: 700;
+    border: 1px solid var(--theme-border);
+  }
+  .post-card-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--theme-text-primary);
+  }
+  .post-card-tags {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--theme-text-muted);
+  }
+</style>

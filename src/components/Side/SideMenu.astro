@@ -1,0 +1,274 @@
+---
+import { getCollection } from "astro:content";
+import SideMenuItem from "./SideMenuItem.astro";
+import SideItemCard from "./SideItemCard.astro";
+
+const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+
+const INITIAL_COUNT = 12;
+
+const allPosts = await getCollection("blog");
+const recentPosts = allPosts
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, INITIAL_COUNT);
+
+const totalPosts = allPosts.filter((p) => !p.data.draft).length;
+const hasMore = totalPosts > INITIAL_COUNT;
+---
+
+<div
+  class="flex flex-col flex-1 h-full"
+  style="background-color: var(--theme-bg-base);"
+>
+  <!-- Nav links -->
+  <div
+    class="flex-shrink-0 border-b"
+    style="border-color: var(--theme-border);"
+  >
+    <ul class="py-1">
+      <SideMenuItem href={base} icon="home">ОПУСТИ ОРУЖИЕ, МРАЗЬ</SideMenuItem>
+    </ul>
+  </div>
+
+  <!-- About blurb -->
+  <div
+    class="flex-shrink-0 border-b px-4 py-3"
+    style="border-color: var(--theme-border);"
+  >
+    <h2
+      class="text-xs font-bold uppercase tracking-widest mb-2"
+      style="color: var(--theme-text-muted);"
+    >
+      ~ about
+    </h2>
+    <p
+      id="sidebar-about-text"
+      class="text-xs leading-relaxed"
+      style="color: var(--theme-text-secondary);"
+    >
+      Лучшее музыкально-критическое СМИ в этой вселенной (возможно, после The
+      Quietus).
+    </p>
+    <a
+      id="sidebar-about-link"
+      href={`${base}about`}
+      class="sidebar-about-link"
+    >
+      подробнее →
+    </a>
+  </div>
+
+  <!-- Recent posts -->
+  <div class="flex-1 overflow-y-auto min-h-0">
+    <div
+      class="sticky top-0 px-4 pt-3 pb-2 z-10 border-b"
+      style="background-color: var(--theme-bg-base); border-color: var(--theme-border);"
+    >
+      <h2
+        class="text-xs font-bold uppercase tracking-widest"
+        style="color: var(--theme-text-muted);"
+      >
+        ~ recent
+      </h2>
+    </div>
+    <ul id="recent-posts-list" class="pb-3">
+      {
+        recentPosts.map((post) => (
+          <li>
+            <SideItemCard post={post} />
+          </li>
+        ))
+      }
+    </ul>
+    {
+      hasMore && (
+        <div id="load-more-wrap" class="px-4 pb-3">
+          <button
+            id="load-more-btn"
+            class="load-more-btn"
+          >
+            Load more
+          </button>
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .sidebar-about-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--theme-accent);
+    text-decoration: none;
+    transition: text-decoration 0.15s;
+  }
+  .sidebar-about-link:hover {
+    text-decoration: underline;
+  }
+  .load-more-btn {
+    width: 100%;
+    padding: 0.625rem;
+    min-height: 44px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    color: var(--theme-text-muted);
+    background-color: var(--theme-bg-hover);
+    border: 1px solid var(--theme-border);
+    border-radius: 0.25rem;
+    transition: color 0.15s;
+  }
+  .load-more-btn:hover {
+    color: var(--theme-text-primary);
+  }
+</style>
+
+<script>
+  const BATCH = 12;
+  const INITIAL = 12;
+
+  let allPosts: any[] | null = null;
+  let visible = INITIAL;
+
+  function getBase(): string {
+    const el = document.querySelector<HTMLAnchorElement>(
+      "#recent-posts-list a",
+    );
+    if (!el) return "/";
+    const href = el.getAttribute("href") || "/";
+    const match = href.match(/^(\/[^/]*\/)blog\//);
+    return match ? match[1] : "/";
+  }
+
+  function escapeHtml(s: string): string {
+    return s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderPost(p: any, base: string): string {
+    return `<li><a href="${base}blog/${escapeHtml(p.slug)}"
+      class="side-item-card-dynamic"
+    ><div class="side-item-info-dynamic">
+        <div class="side-item-title-dynamic">${escapeHtml(p.title)}</div>
+        <div class="side-item-year-dynamic">${p.year}</div>
+      </div></a></li>`;
+  }
+
+  const boundButtons = new WeakSet();
+
+  function setup() {
+    // Bind all load-more buttons (mobile + desktop sidebar instances)
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.load-more-btn');
+    const base = getBase();
+
+    buttons.forEach((btn) => {
+      if (boundButtons.has(btn)) return;
+      boundButtons.add(btn);
+
+      btn.addEventListener("click", async () => {
+        if (!allPosts) {
+          // Show loading on all buttons
+          document.querySelectorAll<HTMLButtonElement>('.load-more-btn').forEach(b => b.textContent = 'Loading…');
+          try {
+            const res = await fetch(`${base}api/recent-posts.json`);
+            allPosts = await res.json();
+          } catch {
+            document.querySelectorAll<HTMLButtonElement>('.load-more-btn').forEach(b => b.textContent = 'Failed to load');
+            return;
+          }
+        }
+
+        const nextBatch = allPosts!.slice(visible, visible + BATCH);
+        const html = nextBatch.map((p) => renderPost(p, base)).join("");
+        // Append to ALL sidebar lists (mobile + desktop)
+        document.querySelectorAll('#recent-posts-list').forEach(l => l.insertAdjacentHTML("beforeend", html));
+        visible += nextBatch.length;
+
+        if (visible >= allPosts!.length) {
+          document.querySelectorAll('#load-more-wrap').forEach(w => (w as HTMLElement).style.display = 'none');
+        } else {
+          document.querySelectorAll<HTMLButtonElement>('.load-more-btn').forEach(b => b.textContent = 'Load more');
+        }
+      });
+    });
+  }
+
+  // Run on initial load and View Transitions
+  document.addEventListener("astro:page-load", setup);
+  setup();
+</script>
+
+<style is:global>
+  /* Dynamic sidebar cards injected by JS load-more */
+  .side-item-card-dynamic {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-left: 2px solid transparent;
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    transition: color 0.15s, background-color 0.15s, border-left-color 0.15s;
+  }
+  .side-item-card-dynamic:hover {
+    color: var(--theme-text-primary);
+    background-color: var(--theme-bg-hover);
+    border-left-color: var(--theme-accent);
+  }
+  .side-item-info-dynamic {
+    flex: 1;
+    min-width: 0;
+  }
+  .side-item-title-dynamic {
+    font-size: 0.875rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+  }
+  .side-item-year-dynamic {
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--theme-text-muted);
+  }
+</style>
+
+<script>
+  // About blurb i18n — regular <script> (Astro bundles + dedupes)
+  const translations: Record<string, { text: string; link: string }> = {
+    ru: {
+      text: "Лучшее музыкально-критическое СМИ в этой вселенной (возможно, после The Quietus).",
+      link: "ПО ЕБАЛУ →",
+    },
+    en: {
+      text: "The best music critical media outlet in this universe (possibly after The Quietus).",
+      link: "read more →",
+    },
+    de: {
+      text: "Das beste musikkritische Medium im ganzen Universum (möglicherweise nach The Quietus).",
+      link: "mehr erfahren →",
+    },
+  };
+
+  function updateAboutBlurb() {
+    const lang = localStorage.getItem("site-lang") || "ru";
+    const t = translations[lang] || translations.ru;
+    document.querySelectorAll('#sidebar-about-text').forEach(el => el.textContent = t.text);
+    document.querySelectorAll('#sidebar-about-link').forEach(el => el.textContent = t.link);
+  }
+
+  document.addEventListener("astro:page-load", updateAboutBlurb);
+  window.addEventListener("lang-changed", updateAboutBlurb);
+  updateAboutBlurb();
+</script>

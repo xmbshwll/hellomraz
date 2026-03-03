@@ -1,0 +1,139 @@
+---
+/**
+ * Related posts — shows 4 posts that share the most tags with the current post.
+ * Uses precomputed index from src/lib/related.ts (computed once for all pages).
+ */
+import { getRelatedPosts, getTopSharedTag } from '../lib/related';
+import type { RelatedPost } from '../lib/related';
+
+interface Props {
+  currentSlug: string;
+  tags: string[];
+}
+
+const { currentSlug, tags } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+
+if (!tags || tags.length === 0) return;
+
+const related = await getRelatedPosts(currentSlug, 4);
+if (related.length === 0) return;
+
+const topTag = getTopSharedTag(tags, related);
+---
+
+<div class="related-posts">
+  <h3 class="section-heading">More {topTag}</h3>
+
+  <div class="related-list">
+    {related.map((post: RelatedPost) => {
+      const postTags = post.tags.join(', ');
+      return (
+        <a href={`${base}blog/${post.slug}`} class="related-card">
+          {post.coverThumb ? (
+            <img
+              src={post.coverThumb}
+              alt={post.title}
+              width="48"
+              height="48"
+              loading="lazy"
+              decoding="async"
+              class="related-thumb"
+            />
+          ) : (
+            <div class="related-placeholder">
+              {post.title.charAt(0)}
+            </div>
+          )}
+          <div class="related-info">
+            <div class="related-title">{post.title}</div>
+            <div class="related-tags">{postTags}</div>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .related-posts {
+    border-top: 1px solid color-mix(in srgb, var(--theme-text-muted) 20%, transparent);
+    padding-top: 20px;
+    margin-top: 24px;
+  }
+  .section-heading {
+    color: var(--theme-accent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .related-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--theme-bg-hover);
+    border-radius: 8px;
+    padding: 8px;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.15s;
+  }
+  .related-card:hover {
+    background-color: var(--theme-bg-elevated);
+    transform: translateX(2px);
+  }
+  .related-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .related-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--theme-accent), var(--theme-bg-elevated));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-text-primary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .related-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .related-title {
+    font-size: 13px;
+    color: var(--theme-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .related-tags {
+    font-size: 11px;
+    color: var(--theme-text-muted);
+    margin-top: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .related-card {
+      padding: 12px;
+      gap: 14px;
+    }
+    .related-thumb,
+    .related-placeholder {
+      width: 56px;
+      height: 56px;
+    }
+  }
+</style>

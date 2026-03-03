@@ -1,159 +1,254 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
 
-const base = import.meta.env.BASE_URL || '/';
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('blog');
-  
-  // Get all unique tags
-  const uniqueTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))];
-  
-  // Create a path for each tag
-  return uniqueTags.map(tag => {
-    const filteredPosts = allPosts.filter(post => 
+  const tagCounts = new Map<string, number>();
+  for (const post of allPosts) {
+    for (const tag of post.data.tags ?? []) {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  const qualifiedTags = new Set(
+    [...tagCounts.entries()]
+      .filter(([, count]) => count >= 2)
+      .map(([tag]) => tag)
+  );
+
+  return [...qualifiedTags].map(tag => {
+    const filteredPosts = allPosts.filter(post =>
       post.data.tags?.some(t => t.toLowerCase() === tag.toLowerCase())
     );
     return {
       params: { tag },
-      props: { posts: filteredPosts },
+      props: { posts: filteredPosts, qualifiedTags },
     };
   });
 }
 
 const { tag } = Astro.params;
-const { posts = [] } = Astro.props;
-
-// Sort posts by date
+const { posts = [], qualifiedTags = new Set<string>() } = Astro.props;
 const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-// Generate related tags
 const relatedTags = [...new Set(
   sortedPosts.flatMap(post => post.data.tags || [])
-    .filter(t => t !== tag)
+    .filter(t => t !== tag && qualifiedTags.has(t))
 )].slice(0, 5);
+
+const POST_CAP = 50;
+const visiblePosts = sortedPosts.slice(0, POST_CAP);
+const hasMore = sortedPosts.length > POST_CAP;
 ---
 
-<BaseLayout title={`Posts tagged with "${tag}"`}>
-  <div class="w-full max-w-3xl mx-auto py-10 sm:py-16">
-    <!-- Header -->
-    <div class="relative mb-10">
-      <div class="absolute -top-20 -left-20 w-48 h-48 bg-zinc-100 dark:bg-zinc-900/30 rounded-full blur-3xl opacity-30 animate-blob"></div>
-      
-      <div class="relative">
-        <a href={`${base}tags`} class="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          <span>Back to all tags</span>
+<Layout title={`#${tag}`}>
+  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+    <PageHeader />
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <!-- Header -->
+      <div class="mb-6">
+        <a
+          href={`${base}tags`}
+          class="text-xs mb-3 inline-block"
+          style="color: var(--theme-accent);"
+        >
+          ← tags/
         </a>
-        
-        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">
+
+        <h1 class="text-2xl font-bold" style="color: var(--theme-text-primary);">
           #{tag}
         </h1>
-        
-        <p class="text-zinc-600 dark:text-zinc-400">
-          {sortedPosts.length} {sortedPosts.length === 1 ? 'article' : 'articles'}
+        <p class="text-sm mt-1" style="color: var(--theme-text-muted);">
+          {sortedPosts.length} {sortedPosts.length === 1 ? 'post' : 'posts'}
         </p>
       </div>
-    </div>
-    
-    <!-- Related tags -->
-    {relatedTags.length > 0 && (
-      <div class="mb-8">
-        <h2 class="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-3">Related topics</h2>
-        <div class="flex flex-wrap gap-2">
-          {relatedTags.map(relatedTag => (
-            <a 
-              href={`${base}tags/${relatedTag}`}
-              class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium bg-zinc-100 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-            >
-              #{relatedTag}
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
-    
-    <!-- Posts list -->
-    <div class="space-y-8">
-      {sortedPosts.map((post) => (
-        <article class="group relative">
-          <div class="flex flex-col sm:flex-row gap-4">
-            <div class="flex-shrink-0 text-sm text-zinc-500 dark:text-zinc-400 w-20">
-              {post.data.pubDate.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric' 
-              })}
-            </div>
-            
-            <div class="flex-1">
-              <h2 class="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-                <a href={`${base}blog/${post.slug}`}>
-                  {post.data.title}
-                </a>
-              </h2>
-              
-              <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-3 line-clamp-2">
-                {post.data.description}
-              </p>
-              
-              {post.data.tags && (
-                <div class="flex flex-wrap gap-2">
-                  {post.data.tags.slice(0, 3).map(postTag => (
-                    <span class={`text-xs px-2 py-0.5 rounded-full ${
-                      postTag === tag 
-                        ? 'bg-zinc-900/10 text-zinc-900 dark:bg-zinc-100/20 dark:text-zinc-100' 
-                        : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                    }`}>
-                      #{postTag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+
+      <!-- Related tags -->
+      {relatedTags.length > 0 && (
+        <div class="mb-6 pb-4 border-b" style="border-color: var(--theme-border);">
+          <div class="flex flex-wrap gap-1.5">
+            {relatedTags.map(relatedTag => (
+              <a
+                href={`${base}tags/${relatedTag}`}
+                class="related-tag-chip"
+              >
+                #{relatedTag}
+              </a>
+            ))}
           </div>
-        </article>
-      ))}
-    </div>
-    
-    <!-- Empty state -->
-    {sortedPosts.length === 0 && (
-      <div class="text-center py-12">
-        <p class="text-xl text-zinc-600 dark:text-zinc-400">No posts found for this tag.</p>
-        <a href={`${base}blog`} class="inline-flex items-center gap-2 mt-4 text-zinc-900 dark:text-zinc-100 hover:underline">
-          Browse all articles
-        </a>
+        </div>
+      )}
+
+      <!-- Posts list (capped) -->
+      <div class="space-y-0" id="tag-posts-list">
+        {visiblePosts.map((post) => (
+          <a
+            href={`${base}blog/${post.slug}`}
+            class="tag-post-row"
+          >
+            <span class="tag-post-date">
+              {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
+            </span>
+            <span class="tag-post-title">
+              {post.data.title}
+            </span>
+          </a>
+        ))}
       </div>
-    )}
+
+      <!-- Hidden posts loaded on demand -->
+      {hasMore && (
+        <div class="mt-4 text-center" id="tag-show-more-wrap">
+          <button
+            id="tag-show-more-btn"
+            class="show-more-btn"
+            data-tag={tag}
+            data-total={sortedPosts.length}
+            data-rendered={POST_CAP}
+          >
+            show all {sortedPosts.length} posts
+          </button>
+        </div>
+      )}
+
+      {sortedPosts.length === 0 && (
+        <div class="py-8">
+          <p class="text-sm" style="color: var(--theme-text-muted);">no posts found.</p>
+        </div>
+      )}
+    </div>
   </div>
-</BaseLayout>
+</Layout>
 
 <style>
-  @keyframes blob {
-    0% {
-      transform: translate(0px, 0px) scale(1);
-    }
-    33% {
-      transform: translate(20px, -20px) scale(1.1);
-    }
-    66% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
-    100% {
-      transform: translate(0px, 0px) scale(1);
-    }
+  .related-tag-chip {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--theme-border);
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
   }
-  
-  .animate-blob {
-    animation: blob 7s infinite;
+  .related-tag-chip:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
   }
-  
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .show-more-btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--theme-border);
+    color: var(--theme-text-muted);
+    background: var(--theme-bg-elevated);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .show-more-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
   }
 </style>
+
+<style is:global>
+  /* Global so dynamically inserted rows match server-rendered ones */
+  .tag-post-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--theme-border);
+    color: var(--theme-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s, background-color 0.15s;
+  }
+  .tag-post-row:hover {
+    color: var(--theme-text-primary);
+    background-color: var(--theme-bg-hover);
+  }
+  .tag-post-date {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    font-family: ui-monospace, monospace;
+    color: var(--theme-text-muted);
+  }
+  .tag-post-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  @media (max-width: 640px) {
+    .tag-post-row {
+      gap: 0.5rem;
+      padding: 0.625rem 0;
+      min-height: 44px;
+      align-items: center;
+    }
+    .tag-post-title {
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+</style>
+
+<script>
+  function initTagShowMore() {
+    const btn = document.getElementById('tag-show-more-btn');
+    const list = document.getElementById('tag-posts-list');
+    const wrap = document.getElementById('tag-show-more-wrap');
+    if (!btn || !list || !wrap) return;
+
+    const tag = btn.dataset.tag!;
+    const rendered = parseInt(btn.dataset.rendered || '50', 10);
+
+    btn.addEventListener('click', async () => {
+      btn.textContent = 'loading…';
+      try {
+        const base = document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
+        const res = await fetch(`${base}api/recent-posts.json`);
+        const allPosts: { slug: string; title: string; tags: string[]; date: string }[] = await res.json();
+
+        // Filter by tag, skip already-rendered
+        const tagLower = tag.toLowerCase();
+        const matching = allPosts.filter(p =>
+          p.tags?.some((t: string) => t.toLowerCase() === tagLower)
+        );
+        const remaining = matching.slice(rendered);
+
+        for (const post of remaining) {
+          const a = document.createElement('a');
+          a.href = `${base}blog/${post.slug}`;
+          a.className = 'tag-post-row';
+          const date = new Date(post.date);
+
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'tag-post-date';
+          dateSpan.textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'tag-post-title';
+          titleSpan.textContent = post.title;
+
+          a.appendChild(dateSpan);
+          a.appendChild(titleSpan);
+          list.appendChild(a);
+        }
+        wrap.remove();
+      } catch {
+        btn.textContent = 'failed to load';
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', initTagShowMore);
+  initTagShowMore();
+</script>

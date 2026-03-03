@@ -1,209 +1,267 @@
 ---
-import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import PostCard from "../components/PostCard.astro";
 
-const base = import.meta.env.BASE_URL || '/';
+const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
-// Get all blog posts
-const allPosts = await getCollection('blog');
+const allPosts = await getCollection("blog");
+const sorted = allPosts
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 
-// Get the 3 most recent posts
-const recentPosts = allPosts
-  .filter(post => !post.data.draft)
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 3);
-
-// Get all unique tags from posts
-const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].slice(0, 5);
+const INITIAL_MORE = 24;
+const morePosts = sorted.slice(0, INITIAL_MORE);
 ---
 
-<Layout title="Home | Astro Blog">
-  <!-- Hero Section -->
-  <section class="py-10 sm:py-16 md:py-20 px-4 sm:px-6">
-    <div class="max-w-2xl mx-auto relative">
-      <div class="absolute -top-10 sm:-top-20 -left-10 sm:-left-20 w-40 sm:w-64 h-40 sm:h-64 bg-zinc-100 dark:bg-zinc-800/50 rounded-full blur-3xl opacity-50 animate-blob theme-transition-bg"></div>
-      <div class="absolute -bottom-10 sm:-bottom-20 -right-10 sm:-right-20 w-40 sm:w-64 h-40 sm:h-64 bg-zinc-200 dark:bg-zinc-800/30 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000 theme-transition-bg"></div>
-      
-      <div class="relative text-center sm:text-left">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4 hero-text">
-          <span class="block">Writing on design,</span>
-          <span class="block mt-1">development, and</span>
-          <span class="block mt-1 relative">
-            <span class="relative inline-block">
-              digital experiences.
-              <span class="absolute -bottom-1 left-0 w-full h-1 bg-zinc-800 dark:bg-zinc-200 transform origin-left theme-transition-bg"></span>
-            </span>
-          </span>
-        </h1>
-        <p class="mt-4 sm:mt-6 md:mt-8 text-base sm:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg mx-auto sm:mx-0">
-          Welcome to my corner of the internet. I'm a developer sharing thoughts on creating meaningful digital experiences.
-        </p>
-        <div class="mt-6 sm:mt-8 md:mt-10 flex flex-wrap gap-3 sm:gap-4 md:gap-6 justify-center sm:justify-start">
-          <a 
-            href={`${base}about`} 
-            class="group relative inline-flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all duration-300 min-h-[44px]"
-          >
-            <span>More about me</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
-            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-zinc-800 dark:bg-zinc-200 transition-all duration-300 group-hover:w-full theme-transition-bg"></span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+<Layout title="Home">
+  <div
+    id="playlist-container"
+    style="background-color: var(--theme-bg-surface);"
+  >
+    <PageHeader />
+  </div>
 
-  <!-- Recent Posts Section -->
-  <section class="py-10 sm:py-12 md:py-16 px-4 sm:px-6 border-t border-zinc-100 dark:border-zinc-800">
-    <div class="max-w-3xl mx-auto">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 md:mb-12">
-        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 text-center sm:text-left">Recent Posts</h2>
-        <a 
-          href={`${base}blog`} 
-          class="group relative text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 self-center sm:self-auto min-h-[44px] flex items-center justify-center"
-        >
-          <span class="flex items-center gap-1">
-            View all posts
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
-          </span>
-          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-zinc-800 dark:bg-zinc-200 transition-all duration-300 group-hover:w-full theme-transition-bg"></span>
-        </a>
-      </div>
-      
-      <div class="grid gap-6 sm:gap-8 md:gap-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {recentPosts.map((post, index) => (
-          <article class="group relative flex flex-col items-start hover-3d max-w-sm mx-auto sm:mx-0 w-full">
-            <div class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 dark:bg-zinc-800/50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 sm:-inset-x-6 sm:rounded-2xl theme-transition-bg"></div>
-            
-            <div class="relative z-10 flex items-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400 mb-2 justify-center sm:justify-start w-full">
-              <time datetime={post.data.pubDate.toISOString()} class="font-medium">
-                {post.data.pubDate.toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </time>
-              <span class="relative z-10 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 sm:px-3 py-1 sm:py-1.5 font-medium text-zinc-600 dark:text-zinc-300 theme-transition-all">
-                {post.data.readingTime || `${Math.ceil(post.body.length / 2000)} min read`}
-              </span>
-            </div>
-            
-            <h3 class="relative z-10 mt-3 text-lg sm:text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors text-center sm:text-left w-full">
-              <a href={`${base}blog/${post.slug}`} class="min-h-[44px] flex items-center justify-center sm:justify-start">
-                <span class="absolute -inset-x-4 -inset-y-2.5 sm:-inset-x-6 sm:-inset-y-4"></span>
-                {post.data.title}
-              </a>
-            </h3>
-            
-            <p class="relative z-10 mt-2 sm:mt-3 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 text-center sm:text-left w-full">
-              {post.data.description}
-            </p>
-            
-            {post.data.tags && post.data.tags.length > 0 && (
-              <div class="relative z-10 mt-3 sm:mt-4 flex flex-wrap gap-2 justify-center sm:justify-start w-full">
-                {post.data.tags.slice(0, 3).map(tag => (
-                  <a 
-                    href={`${base}tags/${tag}`}
-                    class="inline-flex items-center rounded-full bg-zinc-100 px-2 sm:px-3 py-1 text-xs font-medium text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 transition-colors min-h-[28px]"
-                  >
-                    #{tag}
-                  </a>
-                ))}
-                {post.data.tags.length > 3 && (
-                  <span class="inline-flex items-center rounded-full bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400 min-h-[28px]">
-                    +{post.data.tags.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
-            
-            <a 
-              href={`${base}blog/${post.slug}`}
-              class="relative z-10 mt-3 sm:mt-4 flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors mx-auto sm:mx-0 min-h-[44px]"
-            >
-              <span class="relative overflow-hidden inline-block">
-                <span class="group-hover:-translate-y-full block transition-transform duration-300">Read article</span>
-                <span class="absolute top-0 left-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 whitespace-nowrap">Explore now</span>
-              </span>
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="ml-1 h-4 w-4 stroke-current transition-transform duration-300 group-hover:translate-x-1">
-                <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </a>
-          </article>
-        ))}
-      </div>
+  <!-- Reviews -->
+  <div class="reviews-section" style="background-color: var(--theme-bg-surface);">
+    <div class="flex items-center justify-between mb-4 border-b pb-2" style="border-color: var(--theme-border);">
+      <h2 class="text-lg font-bold" style="color: var(--theme-text-primary);">~ reviews</h2>
+      <a
+        href={`${base}blog`}
+        class="text-sm font-medium inline-flex items-center"
+        style="color: var(--theme-accent); min-height: 44px; padding: 8px 0;"
+      >
+        see all →
+      </a>
     </div>
-  </section>
+    <div
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
+      id="more-reviews-grid"
+      data-base={base}
+    >
+      {morePosts.map((post, i) => (
+        <PostCard post={post} index={i} />
+      ))}
+    </div>
 
-  <!-- Topics Section -->
-  {allTags.length > 0 && (
-    <section class="py-10 sm:py-12 md:py-16 px-4 sm:px-6 border-t border-zinc-100 dark:border-zinc-800">
-      <div class="max-w-3xl mx-auto">
-        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6 sm:mb-8 text-center sm:text-left">Explore Topics</h2>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-w-xs sm:max-w-none mx-auto">
-          {allTags.map(tag => {
-            const tagCount = allPosts.filter(post => post.data.tags && post.data.tags.includes(tag)).length;
-            return (
-              <a 
-                href={`${base}tags/${tag}`}
-                class="group flex flex-col p-3 sm:p-4 md:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition-all duration-300 min-h-[80px] sm:min-h-[90px]"
-              >
-                <div class="flex items-start justify-between mb-2">
-                  <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100 mr-2">#{tag}</span>
-                  <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-full flex-shrink-0">
-                    {tagCount} {tagCount === 1 ? 'post' : 'posts'}
-                  </span>
-                </div>
-                <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  Explore articles about {tag}
-                </p>
-              </a>
-            )
-          })}
-        </div>
-        
-        <div class="mt-6 sm:mt-8 text-center">
-          <a 
-            href={`${base}tags`} 
-            class="inline-flex items-center text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 min-h-[44px]"
-          >
-            <span>View all topics</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 ml-1">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  )}
+    <div class="flex justify-center mt-6" id="load-more-reviews-wrap">
+      <button
+        id="load-more-reviews-btn"
+        class="load-more-reviews-btn"
+      >
+        load more
+      </button>
+    </div>
+  </div>
 </Layout>
 
+<script>
+  interface ReviewPost {
+    slug: string;
+    title: string;
+    tags: string[];
+    coverLg: string | null;
+    colorDark: string;
+    colorAccent: string;
+    initials: string;
+  }
+
+  const BATCH = 12;
+  const INITIAL_MORE = 24;
+  let allPosts: ReviewPost[] | null = null;
+  let rendered = INITIAL_MORE;
+
+  function renderCard(post: ReviewPost, base: string): string {
+    const safeTitle = post.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const cover = post.coverLg
+      ? `<img src="${post.coverLg}" alt="${safeTitle}" width="300" height="300"
+           class="post-card-img" loading="lazy" decoding="async">`
+      : `<div class="post-card-placeholder"
+           style="background-color:${post.colorDark};color:${post.colorAccent};">${post.initials}</div>`;
+
+    const tags = post.tags.slice(0, 3).join(' · ');
+
+    return `<a href="${base}blog/${post.slug}"
+      class="post-card playlist-item" data-color="${post.colorDark}">
+      <div class="post-card-cover">${cover}</div>
+      <div class="post-card-title">${safeTitle}</div>
+      <div class="post-card-tags">${tags}</div>
+    </a>`;
+  }
+
+  async function fetchPosts(): Promise<ReviewPost[]> {
+    if (allPosts) return allPosts;
+    const grid = document.getElementById("more-reviews-grid");
+    const base = grid?.dataset.base || "/";
+    const res = await fetch(`${base}api/recent-posts.json`);
+    allPosts = await res.json();
+    return allPosts!;
+  }
+
+  function initMoreReviews() {
+    const btn = document.getElementById("load-more-reviews-btn");
+    const wrap = document.getElementById("load-more-reviews-wrap");
+    const grid = document.getElementById("more-reviews-grid");
+    if (!btn || !wrap || !grid) return;
+
+    // Reset state on page-load (view transitions may persist DOM)
+    if ((btn as any).__bound) return;
+    (btn as any).__bound = true;
+
+    btn.addEventListener("click", async () => {
+      btn.textContent = "loading…";
+      const posts = await fetchPosts();
+      const base = grid.dataset.base || "/";
+      const end = Math.min(rendered + BATCH, posts.length);
+
+      if (rendered >= posts.length) {
+        wrap.style.display = "none";
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      for (let i = rendered; i < end; i++) {
+        const div = document.createElement("div");
+        div.innerHTML = renderCard(posts[i], base);
+        fragment.appendChild(div.firstElementChild!);
+      }
+      grid.appendChild(fragment);
+      rendered = end;
+
+      if (rendered >= posts.length) {
+        wrap.style.display = "none";
+      } else {
+        btn.textContent = "load more";
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", initMoreReviews);
+  initMoreReviews();
+</script>
+
 <style>
-  /* Blob animation */
-  @keyframes blob {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    25% {
-      transform: translate(10px, -10px) scale(1.05);
-    }
-    50% {
-      transform: translate(0, 20px) scale(0.95);
-    }
-    75% {
-      transform: translate(-10px, -10px) scale(1.05);
+  .reviews-section {
+    padding: 1.5rem 1rem 2rem;
+    /* Add safe area inset for iPhone home indicator */
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+  @media (min-width: 640px) {
+    .reviews-section {
+      padding: 1.5rem 1.5rem 2rem;
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
     }
   }
-  
-  .animate-blob {
-    animation: blob 20s infinite ease-in-out;
+  .load-more-reviews-btn {
+    padding: 0.75rem 1.25rem;
+    min-height: 44px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid var(--theme-border);
+    color: var(--theme-text-secondary);
+    background: var(--theme-bg-elevated);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
   }
-  
-  .animation-delay-2000 {
-    animation-delay: 2s;
+  .load-more-reviews-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
   }
 </style>
+
+<style is:global>
+  /* PostCard styles — global so both server-rendered and JS-injected cards match */
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    padding: 0.5rem;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-elevated);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  @media (min-width: 641px) {
+    .post-card {
+      padding: 0.75rem;
+    }
+  }
+  .post-card:hover {
+    border-color: var(--theme-accent);
+  }
+  .post-card-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: 0.75rem;
+  }
+  .post-card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 1px solid var(--theme-border);
+  }
+  .post-card-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem;
+    font-weight: 700;
+    border: 1px solid var(--theme-border);
+  }
+  .post-card-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--theme-text-primary);
+  }
+  .post-card-tags {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--theme-text-muted);
+  }
+</style>
+
+<script>
+  /* Hover-color effect for cards */
+  function bindColorCards() {
+    const container = document.getElementById("playlist-container");
+    if (!container) return;
+
+    function setColor(color: string) {
+      const current = container!.getAttribute("data-color");
+      if (color && color !== current) {
+        container!.style.setProperty("--context-color", color);
+        container!.setAttribute("data-color", color);
+      }
+    }
+
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    for (const card of document.querySelectorAll(".playlist-item")) {
+      card.addEventListener("mouseover", () => {
+        const c = card.getAttribute("data-color");
+        if (!c) return;
+        timeout = setTimeout(() => setColor(c), 200);
+      });
+      card.addEventListener("mouseout", () => {
+        if (timeout) { clearTimeout(timeout); timeout = null; }
+      });
+      card.addEventListener("focus", () => {
+        const c = card.getAttribute("data-color");
+        if (c) setColor(c);
+      });
+    }
+  }
+  document.addEventListener("astro:page-load", bindColorCards);
+  bindColorCards();
+</script>

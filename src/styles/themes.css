@@ -1,0 +1,559 @@
+/* ============================================
+   Theme System — Nord-first, flat TUI aesthetic
+   ============================================ */
+
+/* === Default: Nord Dark Theme === */
+:root,
+[data-theme="dark"],
+[data-theme="nord"] {
+  --theme-bg-base: #2E3440;
+  --theme-bg-surface: #3B4252;
+  --theme-bg-elevated: #434C5E;
+  --theme-bg-hover: #4C566A;
+  --theme-bg-active: #4C566A;
+
+  --theme-text-primary: #ECEFF4;
+  --theme-text-secondary: #D8DEE9;
+  --theme-text-muted: #7b88a1;
+  --theme-text-inverted: #2E3440;
+
+  --theme-border: #4C566A;
+  --theme-border-subtle: #434C5E;
+
+  --theme-accent: #88C0D0;
+  --theme-accent-hover: #8FBCBB;
+  --theme-accent-tag-bg: #434C5E;
+  --theme-accent-tag-text: #D8DEE9;
+
+  --theme-code-bg: #2E3440;
+  --theme-code-text: #D8DEE9;
+  --theme-code-inline-bg: #3B4252;
+  --theme-code-inline-text: #BF616A;
+
+  --theme-blockquote-bg: #3B4252;
+  --theme-blockquote-border: #81A1C1;
+
+  --theme-success: #A3BE8C;
+  --theme-warning: #EBCB8B;
+  --theme-error: #BF616A;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #4C566A;
+  --theme-scrollbar-thumb-hover: #5E81AC;
+
+  color-scheme: dark;
+}
+
+/* === Light Theme (Nord Light) === */
+[data-theme="light"],
+[data-theme="nord-light"] {
+  --theme-bg-base: #ECEFF4;
+  --theme-bg-surface: #E5E9F0;
+  --theme-bg-elevated: #D8DEE9;
+  --theme-bg-hover: #c2c8d4;
+  --theme-bg-active: #b8bfcc;
+
+  --theme-text-primary: #2E3440;
+  --theme-text-secondary: #3B4252;
+  --theme-text-muted: #4C566A;
+  --theme-text-inverted: #ECEFF4;
+
+  --theme-border: #c2c8d4;
+  --theme-border-subtle: #D8DEE9;
+
+  --theme-accent: #5E81AC;
+  --theme-accent-hover: #81A1C1;
+  --theme-accent-tag-bg: #D8DEE9;
+  --theme-accent-tag-text: #2E3440;
+
+  --theme-code-bg: #2E3440;
+  --theme-code-text: #D8DEE9;
+  --theme-code-inline-bg: #D8DEE9;
+  --theme-code-inline-text: #BF616A;
+
+  --theme-blockquote-bg: #D8DEE9;
+  --theme-blockquote-border: #5E81AC;
+
+  --theme-success: #A3BE8C;
+  --theme-warning: #EBCB8B;
+  --theme-error: #BF616A;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #c2c8d4;
+  --theme-scrollbar-thumb-hover: #b0b8c8;
+
+  color-scheme: light;
+}
+
+/* === Catppuccin Mocha (Dark) === */
+[data-theme="catppuccin-mocha"] {
+  --theme-bg-base: #1e1e2e;
+  --theme-bg-surface: #313244;
+  --theme-bg-elevated: #45475a;
+  --theme-bg-hover: #585b70;
+  --theme-bg-active: #585b70;
+
+  --theme-text-primary: #cdd6f4;
+  --theme-text-secondary: #bac2de;
+  --theme-text-muted: #6c7086;
+  --theme-text-inverted: #1e1e2e;
+
+  --theme-border: #45475a;
+  --theme-border-subtle: #313244;
+
+  --theme-accent: #89b4fa;
+  --theme-accent-hover: #74c7ec;
+  --theme-accent-tag-bg: #45475a;
+  --theme-accent-tag-text: #cdd6f4;
+
+  --theme-code-bg: #1e1e2e;
+  --theme-code-text: #cdd6f4;
+  --theme-code-inline-bg: #313244;
+  --theme-code-inline-text: #f38ba8;
+
+  --theme-blockquote-bg: #313244;
+  --theme-blockquote-border: #89b4fa;
+
+  --theme-success: #a6e3a1;
+  --theme-warning: #f9e2af;
+  --theme-error: #f38ba8;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #45475a;
+  --theme-scrollbar-thumb-hover: #585b70;
+
+  color-scheme: dark;
+}
+
+/* === Catppuccin Macchiato (Dark) === */
+[data-theme="catppuccin-macchiato"] {
+  --theme-bg-base: #24273a;
+  --theme-bg-surface: #363a4f;
+  --theme-bg-elevated: #494d64;
+  --theme-bg-hover: #5b6078;
+  --theme-bg-active: #5b6078;
+
+  --theme-text-primary: #cad3f5;
+  --theme-text-secondary: #b8c0e0;
+  --theme-text-muted: #6e738d;
+  --theme-text-inverted: #24273a;
+
+  --theme-border: #494d64;
+  --theme-border-subtle: #363a4f;
+
+  --theme-accent: #8aadf4;
+  --theme-accent-hover: #7dc4e4;
+  --theme-accent-tag-bg: #494d64;
+  --theme-accent-tag-text: #cad3f5;
+
+  --theme-code-bg: #24273a;
+  --theme-code-text: #cad3f5;
+  --theme-code-inline-bg: #363a4f;
+  --theme-code-inline-text: #ed8796;
+
+  --theme-blockquote-bg: #363a4f;
+  --theme-blockquote-border: #8aadf4;
+
+  --theme-success: #a6da95;
+  --theme-warning: #eed49f;
+  --theme-error: #ed8796;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #494d64;
+  --theme-scrollbar-thumb-hover: #5b6078;
+
+  color-scheme: dark;
+}
+
+/* === Catppuccin Frappé (Dark) === */
+[data-theme="catppuccin-frappe"] {
+  --theme-bg-base: #303446;
+  --theme-bg-surface: #414559;
+  --theme-bg-elevated: #51576d;
+  --theme-bg-hover: #626880;
+  --theme-bg-active: #626880;
+
+  --theme-text-primary: #c6d0f5;
+  --theme-text-secondary: #b5bfe2;
+  --theme-text-muted: #737994;
+  --theme-text-inverted: #303446;
+
+  --theme-border: #51576d;
+  --theme-border-subtle: #414559;
+
+  --theme-accent: #8caaee;
+  --theme-accent-hover: #85c1dc;
+  --theme-accent-tag-bg: #51576d;
+  --theme-accent-tag-text: #c6d0f5;
+
+  --theme-code-bg: #303446;
+  --theme-code-text: #c6d0f5;
+  --theme-code-inline-bg: #414559;
+  --theme-code-inline-text: #e78284;
+
+  --theme-blockquote-bg: #414559;
+  --theme-blockquote-border: #8caaee;
+
+  --theme-success: #a6d189;
+  --theme-warning: #e5c890;
+  --theme-error: #e78284;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #51576d;
+  --theme-scrollbar-thumb-hover: #626880;
+
+  color-scheme: dark;
+}
+
+/* === Catppuccin Latte (Light) === */
+[data-theme="catppuccin-latte"] {
+  --theme-bg-base: #eff1f5;
+  --theme-bg-surface: #e6e9ef;
+  --theme-bg-elevated: #dce0e8;
+  --theme-bg-hover: #ccd0da;
+  --theme-bg-active: #bcc0cc;
+
+  --theme-text-primary: #4c4f69;
+  --theme-text-secondary: #5c5f77;
+  --theme-text-muted: #7c7f93;
+  --theme-text-inverted: #eff1f5;
+
+  --theme-border: #ccd0da;
+  --theme-border-subtle: #dce0e8;
+
+  --theme-accent: #1e66f5;
+  --theme-accent-hover: #209fb5;
+  --theme-accent-tag-bg: #dce0e8;
+  --theme-accent-tag-text: #4c4f69;
+
+  --theme-code-bg: #303446;
+  --theme-code-text: #c6d0f5;
+  --theme-code-inline-bg: #dce0e8;
+  --theme-code-inline-text: #d20f39;
+
+  --theme-blockquote-bg: #dce0e8;
+  --theme-blockquote-border: #1e66f5;
+
+  --theme-success: #40a02b;
+  --theme-warning: #df8e1d;
+  --theme-error: #d20f39;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #ccd0da;
+  --theme-scrollbar-thumb-hover: #bcc0cc;
+
+  color-scheme: light;
+}
+
+/* ============================================
+   Theme Application
+   ============================================ */
+
+[data-theme] body,
+[data-theme].dark body {
+  background: var(--theme-bg-base);
+  color: var(--theme-text-primary);
+}
+
+/* Scrollbar */
+[data-theme] * {
+  scrollbar-color: var(--theme-scrollbar-thumb) var(--theme-scrollbar-track);
+}
+[data-theme] *::-webkit-scrollbar-thumb {
+  background-color: var(--theme-scrollbar-thumb);
+}
+[data-theme] *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-scrollbar-thumb-hover);
+}
+
+/* ---- Surface overrides ---- */
+[data-theme] .themed-surface,
+[data-theme] .bg-zinc-900 {
+  background-color: var(--theme-bg-surface) !important;
+}
+
+[data-theme] .themed-base {
+  background-color: var(--theme-bg-base) !important;
+}
+
+/* ---- Text overrides ---- */
+[data-theme] .text-white,
+[data-theme] .text-zinc-100,
+[data-theme] .text-zinc-50 {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme] .text-zinc-200,
+[data-theme] .text-zinc-300 {
+  color: var(--theme-text-secondary) !important;
+}
+
+[data-theme] .text-zinc-400,
+[data-theme] .text-zinc-500 {
+  color: var(--theme-text-muted) !important;
+}
+
+[data-theme] .dark\:text-white,
+[data-theme] .dark\:text-zinc-100 {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme] .dark\:text-zinc-200,
+[data-theme] .dark\:text-zinc-300 {
+  color: var(--theme-text-secondary) !important;
+}
+
+[data-theme] .dark\:text-zinc-400 {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ---- Background overrides ---- */
+[data-theme] .bg-zinc-800,
+[data-theme] .dark\:bg-zinc-800 {
+  background-color: var(--theme-bg-elevated) !important;
+}
+
+[data-theme] .bg-zinc-900,
+[data-theme] .dark\:bg-zinc-900 {
+  background-color: var(--theme-bg-surface) !important;
+}
+
+[data-theme] .bg-zinc-950 {
+  background-color: var(--theme-bg-base) !important;
+}
+
+/* Hover backgrounds */
+[data-theme] .hover\:bg-zinc-800:hover,
+[data-theme] .dark\:hover\:bg-zinc-800:hover,
+[data-theme] .hover\:bg-zinc-800\/50:hover,
+[data-theme] .dark\:hover\:bg-zinc-800\/50:hover {
+  background-color: var(--theme-bg-hover) !important;
+}
+
+[data-theme] .hover\:bg-zinc-700:hover,
+[data-theme] .dark\:hover\:bg-zinc-700:hover {
+  background-color: var(--theme-bg-active) !important;
+}
+
+/* Card backgrounds — flat solid */
+[data-theme] .bg-zinc-500\/5 {
+  background-color: var(--theme-bg-elevated) !important;
+}
+
+[data-theme] .hover\:bg-zinc-500\/20:hover,
+[data-theme] .focus\:bg-zinc-500\/20:focus {
+  background-color: var(--theme-bg-hover) !important;
+}
+
+[data-theme] .bg-zinc-500\/10,
+[data-theme] .hover\:bg-zinc-500\/25:hover,
+[data-theme] .focus\:bg-zinc-500\/30:focus {
+  background-color: var(--theme-bg-hover) !important;
+}
+
+/* ---- Border overrides ---- */
+[data-theme] .border-zinc-100,
+[data-theme] .dark\:border-zinc-800,
+[data-theme] .border-zinc-200,
+[data-theme] .border-zinc-800 {
+  border-color: var(--theme-border) !important;
+}
+
+/* ---- Link / accent overrides ---- */
+[data-theme] a.text-blue-600,
+[data-theme] .dark\:text-blue-400,
+[data-theme] .text-blue-600 {
+  color: var(--theme-accent) !important;
+}
+
+[data-theme] a:hover.text-blue-600,
+[data-theme] a:hover.dark\:text-blue-400 {
+  color: var(--theme-accent-hover) !important;
+}
+
+/* ---- Tag overrides ---- */
+[data-theme] .dark\:bg-zinc-800.dark\:text-zinc-100,
+[data-theme] .bg-zinc-100.text-zinc-800 {
+  background-color: var(--theme-accent-tag-bg) !important;
+  color: var(--theme-accent-tag-text) !important;
+}
+
+/* ---- Code block overrides ---- */
+[data-theme] .markdown-content pre {
+  background-color: var(--theme-code-bg) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: 0 !important;
+}
+
+[data-theme] .markdown-content pre code {
+  color: var(--theme-code-text) !important;
+}
+
+[data-theme] .markdown-content code:not(pre code) {
+  background-color: var(--theme-code-inline-bg) !important;
+  color: var(--theme-code-inline-text) !important;
+  border-radius: 0 !important;
+}
+
+/* ---- Blockquote ---- */
+[data-theme] .markdown-content blockquote {
+  background-color: var(--theme-blockquote-bg) !important;
+  border-left-color: var(--theme-blockquote-border) !important;
+}
+
+/* ---- Markdown headings ---- */
+[data-theme] .markdown-content h1,
+[data-theme] .markdown-content h2,
+[data-theme] .markdown-content h3,
+[data-theme] .markdown-content h4,
+[data-theme] .markdown-content h5,
+[data-theme] .markdown-content h6 {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme] .markdown-content h1,
+[data-theme] .markdown-content h2 {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+[data-theme] .markdown-content {
+  color: var(--theme-text-secondary) !important;
+}
+
+[data-theme] .markdown-content a {
+  color: var(--theme-accent) !important;
+}
+[data-theme] .markdown-content a:hover {
+  color: var(--theme-accent-hover) !important;
+  border-bottom-color: var(--theme-accent-hover) !important;
+}
+
+[data-theme] .markdown-content hr {
+  background-color: var(--theme-border) !important;
+}
+
+[data-theme] .markdown-content table th {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text-primary) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+[data-theme] .markdown-content table td {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+/* ---- Remove all gradients ---- */
+[data-theme] .from-zinc-900,
+[data-theme] .bg-gradient-to-t,
+[data-theme] .bg-gradient-to-b,
+[data-theme] .bg-gradient-to-r,
+[data-theme] .bg-gradient-to-br {
+  background-image: none !important;
+}
+
+/* ---- Remove all shadows ---- */
+[data-theme] .shadow-lg,
+[data-theme] .shadow-md,
+[data-theme] .shadow-sm,
+[data-theme] .shadow-xl,
+[data-theme] .hover\:shadow-xl:hover {
+  box-shadow: none !important;
+}
+
+/* ---- Remove rounded for TUI feel (keep small radius) ---- */
+[data-theme] .rounded-full {
+  border-radius: 2px !important;
+}
+
+[data-theme] .rounded-xl,
+[data-theme] .rounded-lg,
+[data-theme] .rounded-md {
+  border-radius: 2px !important;
+}
+
+/* ---- Light theme text overrides ---- */
+[data-theme="light"] .text-zinc-900,
+[data-theme="nord-light"] .text-zinc-900,
+[data-theme="catppuccin-latte"] .text-zinc-900 {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme="light"] .text-zinc-800,
+[data-theme="nord-light"] .text-zinc-800,
+[data-theme="catppuccin-latte"] .text-zinc-800 {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme="light"] .text-zinc-600,
+[data-theme="nord-light"] .text-zinc-600,
+[data-theme="catppuccin-latte"] .text-zinc-600 {
+  color: var(--theme-text-secondary) !important;
+}
+
+[data-theme="light"] .bg-white,
+[data-theme="nord-light"] .bg-white,
+[data-theme="catppuccin-latte"] .bg-white {
+  background-color: var(--theme-bg-base) !important;
+}
+
+[data-theme="light"] .bg-zinc-100,
+[data-theme="light"] .bg-zinc-50,
+[data-theme="nord-light"] .bg-zinc-100,
+[data-theme="nord-light"] .bg-zinc-50,
+[data-theme="catppuccin-latte"] .bg-zinc-100,
+[data-theme="catppuccin-latte"] .bg-zinc-50 {
+  background-color: var(--theme-bg-surface) !important;
+}
+
+/* ---- PageHeader back button ---- */
+[data-theme] .bg-zinc-800\/80 {
+  background-color: var(--theme-bg-elevated) !important;
+}
+
+/* ---- Prose overrides ---- */
+[data-theme] .prose.dark\:prose-invert {
+  --tw-prose-body: var(--theme-text-secondary);
+  --tw-prose-headings: var(--theme-text-primary);
+  --tw-prose-links: var(--theme-accent);
+  --tw-prose-bold: var(--theme-text-primary);
+  --tw-prose-counters: var(--theme-text-muted);
+  --tw-prose-bullets: var(--theme-text-muted);
+  --tw-prose-hr: var(--theme-border);
+  --tw-prose-quotes: var(--theme-text-secondary);
+  --tw-prose-quote-borders: var(--theme-blockquote-border);
+  --tw-prose-code: var(--theme-code-inline-text);
+  --tw-prose-pre-code: var(--theme-code-text);
+  --tw-prose-pre-bg: var(--theme-code-bg);
+  --tw-prose-th-borders: var(--theme-border);
+  --tw-prose-td-borders: var(--theme-border);
+}
+
+/* ---- No transitions — instant theme switching ---- */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
+[data-theme].no-transition *,
+[data-theme].no-transition *::before,
+[data-theme].no-transition *::after {
+  transition: none !important;
+}
+
+/* ---- TUI-specific: border-based cards ---- */
+[data-theme] .tui-card {
+  background-color: var(--theme-bg-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0;
+}
+
+[data-theme] .tui-card:hover {
+  border-color: var(--theme-accent);
+}

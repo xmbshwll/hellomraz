@@ -1,0 +1,41 @@
+---
+interface Props {
+  href: string;
+  icon?: "home" | "search" | "library";
+}
+
+const { href, icon = "home" } = Astro.props;
+
+const icons = {
+  home: `<span class="text-sm">⌂</span>`,
+  search: `<span class="text-sm">⌕</span>`,
+  library: `<span class="text-sm">☰</span>`,
+};
+---
+
+<li>
+  <a href={href} class="side-menu-link">
+    <span set:html={icons[icon]} />
+    <slot />
+  </a>
+</li>
+
+<style>
+  .side-menu-link {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-left: 2px solid transparent;
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    transition: color 0.15s, background-color 0.15s, border-left-color 0.15s;
+  }
+  .side-menu-link:hover {
+    color: var(--theme-text-primary);
+    background-color: var(--theme-bg-hover);
+    border-left-color: var(--theme-accent);
+  }
+</style>

@@ -1,0 +1,528 @@
+---
+/**
+ * DateSelector — cascading Year / Month picker that navigates to the
+ * correct paginated page and scrolls to the month group anchor.
+ * Also includes a themed tag picker with search + top tags.
+ *
+ * Props:
+ *   dateIndex – JSON-serialisable map: { "2026-02": 1, "2026-01": 2, … }
+ *   baseUrl   – e.g. "/blog"
+ */
+
+interface Props {
+  dateIndex: Record<string, number>;
+  baseUrl: string;
+  currentYear?: number;
+  currentMonth?: number;
+}
+
+const { dateIndex, baseUrl, currentYear, currentMonth } = Astro.props;
+
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+
+// Derive available years and months-per-year
+const yearMonths: Record<number, number[]> = {};
+for (const key of Object.keys(dateIndex)) {
+  const [y, m] = key.split("-").map(Number);
+  if (!yearMonths[y]) yearMonths[y] = [];
+  yearMonths[y].push(m);
+}
+const sortedYears = Object.keys(yearMonths)
+  .map(Number)
+  .sort((a, b) => b - a);
+for (const y of sortedYears) {
+  yearMonths[y].sort((a, b) => b - a);
+}
+
+const MONTH_NAMES = [
+  "", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+---
+
+<div class="date-selector">
+  <label class="ds-label">Jump to</label>
+
+  <!-- Year select -->
+  <select id="ds-year" class="ds-select">
+    <option value="">Year</option>
+    {sortedYears.map((y) => (
+      <option value={y} selected={y === currentYear}>{y}</option>
+    ))}
+  </select>
+
+  <!-- Month select -->
+  <select id="ds-month" class="ds-select" disabled>
+    <option value="">Month</option>
+  </select>
+
+  <button id="ds-go" class="ds-go-btn" disabled>Go</button>
+
+  <!-- Separator -->
+  <span class="ds-sep">│</span>
+
+  <!-- Tag picker trigger -->
+  <div class="ds-tag-picker" id="ds-tag-picker">
+    <button
+      id="ds-tag-btn"
+      class="ds-tag-btn"
+      aria-expanded="false"
+      aria-haspopup="listbox"
+    >
+      <span id="ds-tag-label">#tag</span>
+      <span id="ds-tag-arrow" class="ds-arrow">▾</span>
+    </button>
+  </div>
+</div>
+
+<!-- Date picker script -->
+<script define:vars={{ yearMonths, dateIndex, baseUrl, MONTH_NAMES }}>
+  const yearEl  = document.getElementById('ds-year');
+  const monthEl = document.getElementById('ds-month');
+  const goEl    = document.getElementById('ds-go');
+
+  function populateMonths(year) {
+    monthEl.innerHTML = '<option value="">Month</option>';
+    var key = Number(year);
+    if (!year || !yearMonths[key]) {
+      monthEl.disabled = true;
+      goEl.disabled = true;
+      return;
+    }
+    for (const m of yearMonths[key]) {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = MONTH_NAMES[m];
+      monthEl.appendChild(opt);
+    }
+    monthEl.disabled = false;
+  }
+
+  yearEl.addEventListener('change', () => {
+    populateMonths(yearEl.value);
+    goEl.disabled = true;
+  });
+  monthEl.addEventListener('change', () => { goEl.disabled = !monthEl.value; });
+
+  goEl.addEventListener('click', () => {
+    const y = yearEl.value;
+    const m = monthEl.value.padStart(2, '0');
+    const key = `${y}-${m}`;
+    const page = dateIndex[key];
+    if (page == null) return;
+    const url = page === 1 ? baseUrl : `${baseUrl}/${page}`;
+    window.location.href = `${url}#month-${key}`;
+  });
+
+  if (yearEl.value) {
+    populateMonths(yearEl.value);
+    if (monthEl.value) goEl.disabled = false;
+  }
+</script>
+
+<!-- Tag picker script — loads tags lazily from API -->
+<script define:vars={{ base }}>
+  (function() {
+    const INITIAL_SHOW = 10;
+    let isOpen = false;
+    let dropdown = null;
+    let overlay = null;
+    let tagsData = null; // fetched lazily
+
+    async function loadTags() {
+      if (tagsData) return tagsData;
+      try {
+        const res = await fetch(`${base}api/tags.json`);
+        tagsData = await res.json();
+      } catch {
+        tagsData = [];
+      }
+      return tagsData;
+    }
+
+    function ensureDropdown(tags) {
+      if (dropdown && !document.body.contains(dropdown)) {
+        dropdown = null;
+        overlay = null;
+        isOpen = false;
+      }
+      if (dropdown) return dropdown;
+
+      // Overlay to catch outside clicks
+      overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;';
+      overlay.addEventListener('click', close);
+
+      // Dropdown container
+      dropdown = document.createElement('div');
+      dropdown.className = 'ds-tag-dropdown';
+
+      // Search input
+      const searchWrap = document.createElement('div');
+      searchWrap.className = 'ds-tag-search-wrap';
+      const searchInput = document.createElement('input');
+      searchInput.type = 'text';
+      searchInput.placeholder = 'search tags…';
+      searchInput.className = 'ds-tag-search';
+      searchInput.autocomplete = 'off';
+      searchWrap.appendChild(searchInput);
+      dropdown.appendChild(searchWrap);
+
+      // Tag list container
+      const listEl = document.createElement('div');
+      listEl.className = 'ds-tag-list';
+      dropdown.appendChild(listEl);
+
+      // "Show all" → navigate to tags page
+      const moreBtn = document.createElement('a');
+      moreBtn.className = 'ds-tag-more';
+      moreBtn.href = `${base}tags/`;
+      moreBtn.textContent = `all ${tags.length} tags →`;
+      moreBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        close();
+        window.location.href = moreBtn.href;
+      });
+      dropdown.appendChild(moreBtn);
+
+      function renderTags(filter) {
+        listEl.innerHTML = '';
+        const query = (filter || '').toLowerCase().trim();
+        let items = tags;
+
+        if (query) {
+          items = tags.filter(t => t.name.toLowerCase().includes(query));
+          moreBtn.style.display = 'none';
+        } else {
+          items = tags.slice(0, INITIAL_SHOW);
+          moreBtn.style.display = '';
+        }
+
+        if (items.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'ds-tag-empty';
+          empty.textContent = 'no matching tags';
+          listEl.appendChild(empty);
+          return;
+        }
+
+        for (const t of items) {
+          const btn = document.createElement('a');
+          btn.href = `${base}tags/${t.name}`;
+          btn.className = 'ds-tag-item';
+
+          const name = document.createElement('span');
+          name.className = 'ds-tag-name';
+          name.textContent = `#${t.name}`;
+          btn.appendChild(name);
+
+          const count = document.createElement('span');
+          count.className = 'ds-tag-count';
+          count.textContent = String(t.count);
+          btn.appendChild(count);
+
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            close();
+            window.location.href = btn.href;
+          });
+
+          listEl.appendChild(btn);
+        }
+      }
+
+      searchInput.addEventListener('input', () => renderTags(searchInput.value));
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const first = listEl.querySelector('.ds-tag-item');
+          if (first) {
+            close();
+            window.location.href = first.href;
+          }
+        }
+      });
+
+      renderTags('');
+      document.body.appendChild(dropdown);
+      return dropdown;
+    }
+
+    async function open() {
+      const btn = document.getElementById('ds-tag-btn');
+      if (!btn) return;
+      const tags = await loadTags();
+      const dd = ensureDropdown(tags);
+
+      // Position below the button
+      const rect = btn.getBoundingClientRect();
+      let left = rect.left;
+      let top = rect.bottom + 4;
+
+      // Prevent overflow right
+      const ddWidth = 280;
+      if (left + ddWidth > window.innerWidth) {
+        left = window.innerWidth - ddWidth - 8;
+      }
+      if (left < 4) left = 4;
+
+      // Prevent overflow bottom — flip above if needed
+      const maxHeight = 400;
+      if (top + maxHeight > window.innerHeight && rect.top > maxHeight) {
+        top = rect.top - maxHeight - 4;
+      }
+
+      dd.style.left = left + 'px';
+      dd.style.top = top + 'px';
+      dd.style.opacity = '1';
+      dd.style.pointerEvents = 'auto';
+
+      document.body.appendChild(overlay);
+      isOpen = true;
+      btn.setAttribute('aria-expanded', 'true');
+
+      const arrow = document.getElementById('ds-tag-arrow');
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+
+      // Focus search
+      const input = dd.querySelector('.ds-tag-search');
+      if (input) {
+        input.value = '';
+        input.dispatchEvent(new Event('input'));
+        setTimeout(() => input.focus(), 50);
+      }
+    }
+
+    function close() {
+      if (!isOpen) return;
+      if (dropdown) {
+        dropdown.style.opacity = '0';
+        dropdown.style.pointerEvents = 'none';
+      }
+      if (overlay && overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      isOpen = false;
+
+      const btn = document.getElementById('ds-tag-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+      const arrow = document.getElementById('ds-tag-arrow');
+      if (arrow) arrow.style.transform = '';
+    }
+
+    function toggle() {
+      isOpen ? close() : open();
+    }
+
+    function bindBtn() {
+      const btn = document.getElementById('ds-tag-btn');
+      if (!btn || btn.__tagBound) return;
+      btn.__tagBound = true;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggle();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) close();
+    });
+
+    document.addEventListener('astro:page-load', bindBtn);
+    bindBtn();
+  })();
+</script>
+
+<style>
+  .date-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .ds-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--theme-text-muted);
+  }
+  .ds-select {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    border: 1px solid var(--theme-border);
+    border-radius: 0.375rem;
+    background-color: var(--theme-bg-elevated);
+    color: var(--theme-text-primary);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .ds-select:hover {
+    border-color: var(--theme-accent);
+  }
+  .ds-select:focus {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
+  }
+  .ds-go-btn {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    min-height: 44px;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: var(--theme-accent);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .ds-go-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .ds-sep {
+    color: var(--theme-border);
+  }
+
+  /* Tag picker button — matches theme chooser style */
+  .ds-tag-picker {
+    position: relative;
+  }
+  .ds-tag-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--theme-border);
+    color: var(--theme-text-muted);
+    background: var(--theme-bg-elevated);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .ds-tag-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
+  .ds-arrow {
+    transition: transform 0.15s;
+  }
+
+  @media (max-width: 640px) {
+    .ds-sep {
+      display: none;
+    }
+  }
+</style>
+
+<!-- Dropdown styles (global because it's a body-appended portal) -->
+<style is:global>
+  .ds-tag-dropdown {
+    position: fixed;
+    width: 280px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--theme-border);
+    border-radius: 0.5rem;
+    background: var(--theme-bg-surface);
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.1s;
+  }
+  .ds-tag-search-wrap {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--theme-border);
+    flex-shrink: 0;
+  }
+  .ds-tag-search {
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    min-height: 36px;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    border: 1px solid var(--theme-border);
+    border-radius: 0.375rem;
+    background: var(--theme-bg-elevated);
+    color: var(--theme-text-primary);
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+  .ds-tag-search::placeholder {
+    color: var(--theme-text-muted);
+  }
+  .ds-tag-search:focus {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
+  }
+  .ds-tag-list {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding: 0.25rem 0;
+  }
+  .ds-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    min-height: 40px;
+    text-decoration: none;
+    color: var(--theme-text-secondary);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+  .ds-tag-item:hover {
+    background: var(--theme-bg-hover);
+    color: var(--theme-text-primary);
+  }
+  .ds-tag-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  .ds-tag-count {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: var(--theme-bg-elevated);
+    color: var(--theme-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .ds-tag-more {
+    flex-shrink: 0;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    min-height: 40px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    font-weight: 500;
+    text-align: center;
+    border: none;
+    border-top: 1px solid var(--theme-border);
+    background: var(--theme-bg-surface);
+    color: var(--theme-accent);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .ds-tag-more:hover {
+    background: var(--theme-bg-hover);
+  }
+  .ds-tag-empty {
+    padding: 1rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--theme-text-muted);
+    text-align: center;
+  }
+</style>

@@ -1,0 +1,181 @@
+---
+/**
+ * Multi-service streaming player with a switcher strip.
+ * Renders one iframe at a time; Bandcamp is the default when available.
+ */
+import type { StreamingLink } from '../lib/streaming';
+
+interface Props {
+  links: StreamingLink[];
+  bandcampAlbumId?: string | null;
+  bandcampUrl?: string | null;
+}
+
+const { links, bandcampAlbumId, bandcampUrl } = Astro.props;
+
+// Build the embeddable services list
+// For Bandcamp, override the embedUrl with the known albumId-based one
+const players = links
+  .map((link) => {
+    if (link.service === 'Bandcamp' && bandcampAlbumId) {
+      return {
+        ...link,
+        embedUrl: `https://bandcamp.com/EmbeddedPlayer/album=${bandcampAlbumId}/size=large/bgcol=181818/linkcol=22c55e/transparent=true/`,
+      };
+    }
+    return link;
+  })
+  .filter((link) => link.embedUrl);
+
+// Nothing to render
+if (players.length === 0) return;
+
+// Default to Bandcamp, or first available
+const defaultIndex = players.findIndex((p) => p.service === 'Bandcamp');
+const initialIdx = defaultIndex >= 0 ? defaultIndex : 0;
+
+// Fixed container height for consistent layout across pages
+const PLAYER_HEIGHT = 700; // px — consistent across all pages
+
+// Per-service iframe sizing — all use the same fixed height
+function iframeStyle(service: string): string {
+  const radius: Record<string, string> = {
+    Spotify: 'border-radius:12px;',
+    'Apple Music': 'border-radius:12px; overflow:hidden;',
+    Tidal: 'border-radius:12px;',
+    YouTube: 'border-radius:12px;',
+    'YouTube Music': 'border-radius:12px;',
+    'Yandex Music': 'border-radius:12px;',
+  };
+  return `border:0; width:100%; max-width:min(480px, 100%); height:${PLAYER_HEIGHT}px; ${radius[service] ?? ''}`;
+}
+---
+
+<div class="streaming-player flex-none w-full md:w-[480px]" data-initial={initialIdx}>
+  {/* Service switcher tabs — wrapping grid for consistent height */}
+  <div
+    class="tab-grid mb-3"
+    id="player-tabs"
+  >
+      {players.map((p, i) => (
+        <button
+          class="player-tab px-3 py-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
+          data-index={i}
+          style={`min-height:44px; ${
+            i === initialIdx
+              ? 'background-color: var(--theme-accent); color: #fff;'
+              : 'background-color: var(--theme-bg-hover); color: var(--theme-text-muted); border: 1px solid var(--theme-border);'
+          }`}
+        >
+          <span class="mr-1">{p.icon}</span>{p.service}
+        </button>
+      ))}
+    </div>
+
+  {/* Player iframes — only the active one is visible */}
+  <div id="player-frames">
+    {players.map((p, i) => (
+      <div
+        class="player-frame"
+        data-index={i}
+        data-service={p.service}
+        data-src={p.embedUrl}
+        data-style={iframeStyle(p.service)}
+        style={i === initialIdx ? '' : 'display:none;'}
+      >
+        {i === initialIdx ? (
+          <iframe
+            src={p.embedUrl}
+            style={iframeStyle(p.service)}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            seamless
+          >
+            <a href={p.url}>Listen on {p.service}</a>
+          </iframe>
+        ) : (
+          <div class="player-placeholder" style={iframeStyle(p.service)} />
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  function setupPlayerSwitcher() {
+    const container = document.querySelector('.streaming-player');
+    if (!container) return;
+
+    // Tabs stay inside the player (above the iframe)
+
+    // Tabs may have been moved outside the player container, so query from document
+    const tabButtons = document.querySelectorAll<HTMLButtonElement>('.player-tab');
+    const frames = container.querySelectorAll<HTMLElement>('.player-frame');
+
+    tabButtons.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const idx = tab.dataset.index!;
+
+        // Update tabs
+        tabButtons.forEach((t) => {
+          if (t.dataset.index === idx) {
+            t.style.cssText = 'background-color: var(--theme-accent); color: #fff;';
+          } else {
+            t.style.cssText = 'background-color: var(--theme-bg-hover); color: var(--theme-text-muted); border: 1px solid var(--theme-border);';
+          }
+        });
+
+        // Show/hide frames, lazy-load iframes on first switch
+        frames.forEach((frame) => {
+          if (frame.dataset.index === idx) {
+            frame.style.display = '';
+            // Lazy-create iframe if not yet loaded
+            if (!frame.querySelector('iframe')) {
+              const src = frame.dataset.src!;
+              const placeholder = frame.querySelector('.player-placeholder');
+              if (placeholder) {
+                const iframe = document.createElement('iframe');
+                iframe.src = src;
+                iframe.style.cssText = frame.dataset.style || '';
+                iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+                iframe.setAttribute('seamless', '');
+                frame.replaceChild(iframe, placeholder);
+              }
+            }
+          } else {
+            frame.style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupPlayerSwitcher);
+</script>
+
+<style>
+  /* Tab grid: always 4 columns, consistent layout regardless of count */
+  .tab-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .tab-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .streaming-player iframe {
+      max-width: 100% !important;
+      max-height: 70vh !important;
+    }
+    .streaming-player .player-frame {
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .streaming-player .player-placeholder {
+      max-width: 100% !important;
+      max-height: 70vh !important;
+    }
+  }
+</style>

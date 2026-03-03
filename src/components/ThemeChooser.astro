@@ -1,0 +1,242 @@
+---
+// ThemeChooser.astro — flat TUI-style theme picker
+---
+
+<div class="relative" id="theme-chooser">
+  <button
+    id="theme-chooser-btn"
+    class="theme-chooser-btn"
+    aria-label="Choose theme"
+    aria-expanded="false"
+    aria-haspopup="listbox"
+  >
+    <span id="theme-chooser-label">theme:dark</span>
+    <span id="theme-chooser-arrow" class="theme-arrow">▾</span>
+  </button>
+</div>
+
+<style>
+  .theme-chooser-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--theme-border);
+    color: var(--theme-text-muted);
+    background: var(--theme-bg-elevated);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .theme-chooser-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
+  .theme-arrow {
+    transition: transform 0.1s;
+  }
+</style>
+
+<script>
+  // ThemeChooser — bundled by Astro (emitted once, not inlined per page)
+  (function() {
+    if ((window as any).__themeChooserReady) return;
+    (window as any).__themeChooserReady = true;
+
+    let isOpen = false;
+    let overlay: HTMLElement | null = null;
+    let dropdown: HTMLElement | null = null;
+
+    interface ThemeEntry {
+      id: string;
+      label?: string;
+      bg?: string;
+      accent?: string;
+    }
+
+    const themes: ThemeEntry[] = [
+      { id: 'dark', label: 'dark', bg: '#2E3440', accent: '#88C0D0' },
+      { id: 'light', label: 'light', bg: '#ECEFF4', accent: '#5E81AC' },
+      { id: '_divider' },
+      { id: 'nord', label: 'nord', bg: '#2E3440', accent: '#88C0D0' },
+      { id: 'nord-light', label: 'nord-light', bg: '#ECEFF4', accent: '#5E81AC' },
+      { id: '_divider2' },
+      { id: 'catppuccin-mocha', label: 'catppuccin-mocha', bg: '#1e1e2e', accent: '#89b4fa' },
+      { id: 'catppuccin-macchiato', label: 'catppuccin-macchiato', bg: '#24273a', accent: '#8aadf4' },
+      { id: 'catppuccin-frappe', label: 'catppuccin-frappé', bg: '#303446', accent: '#8caaee' },
+      { id: 'catppuccin-latte', label: 'catppuccin-latte', bg: '#eff1f5', accent: '#1e66f5' },
+    ];
+
+    function isActiveTheme(id: string): boolean {
+      return (localStorage.getItem('color-theme') || 'dark') === id;
+    }
+
+    function ensureDropdown(): HTMLElement {
+      if (dropdown && !document.body.contains(dropdown)) {
+        dropdown = null;
+        overlay = null;
+        isOpen = false;
+      }
+      if (dropdown) return dropdown;
+
+      dropdown = document.createElement('div');
+      dropdown.id = 'theme-dropdown-portal';
+      dropdown.className = 'theme-dropdown';
+      dropdown.style.cssText = 'position:fixed;width:240px;border:1px solid var(--theme-border);background:var(--theme-bg-surface);z-index:99999;padding:4px;opacity:0;pointer-events:none;font-family:inherit;font-size:14px;border-radius:8px;';
+
+      for (const t of themes) {
+        if (t.id.startsWith('_divider')) {
+          const div = document.createElement('div');
+          div.style.cssText = 'height:1px;margin:2px 0;background:var(--theme-border);';
+          dropdown.appendChild(div);
+          continue;
+        }
+
+        const btn = document.createElement('button');
+        btn.setAttribute('data-theme-val', t.id);
+        btn.className = 'theme-option';
+        btn.style.cssText = 'display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border:none;font-size:14px;font-family:inherit;cursor:pointer;background:transparent;color:var(--theme-text-secondary);transition:background 0.1s,color 0.1s;min-height:44px;';
+
+        btn.addEventListener('mouseover', () => {
+          btn.style.background = 'var(--theme-bg-hover)';
+          btn.style.color = 'var(--theme-text-primary)';
+        });
+        btn.addEventListener('mouseout', () => {
+          const active = isActiveTheme(t.id);
+          btn.style.background = active ? 'var(--theme-bg-hover)' : 'transparent';
+          btn.style.color = active ? 'var(--theme-text-primary)' : 'var(--theme-text-secondary)';
+        });
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setColorTheme(t.id);
+          closeDropdown();
+        });
+
+        const dot = document.createElement('span');
+        dot.style.cssText = 'display:inline-flex;width:14px;height:14px;flex-shrink:0;overflow:hidden;border:1px solid rgba(128,128,128,0.3);';
+        const dotLeft = document.createElement('span');
+        dotLeft.style.cssText = `width:50%;height:100%;background:${t.bg};`;
+        const dotRight = document.createElement('span');
+        dotRight.style.cssText = `width:50%;height:100%;background:${t.accent};`;
+        dot.appendChild(dotLeft);
+        dot.appendChild(dotRight);
+        btn.appendChild(dot);
+
+        const lbl = document.createElement('span');
+        lbl.textContent = t.label!;
+        btn.appendChild(lbl);
+
+        const check = document.createElement('span');
+        check.className = 'theme-check-icon';
+        check.setAttribute('data-for-theme', t.id);
+        check.textContent = '✓';
+        check.style.cssText = 'margin-left:auto;display:none;color:var(--theme-accent);';
+        btn.appendChild(check);
+
+        dropdown.appendChild(btn);
+      }
+
+      document.body.appendChild(dropdown);
+
+      overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;display:none;';
+      overlay.addEventListener('click', closeDropdown);
+      document.body.appendChild(overlay);
+
+      return dropdown;
+    }
+
+    function updateChecks() {
+      const current = localStorage.getItem('color-theme') || 'dark';
+      document.querySelectorAll('.theme-check-icon').forEach((c) => {
+        (c as HTMLElement).style.display = c.getAttribute('data-for-theme') === current ? 'inline' : 'none';
+      });
+      if (dropdown && document.body.contains(dropdown)) {
+        dropdown.querySelectorAll('button[data-theme-val]').forEach((b) => {
+          const el = b as HTMLElement;
+          const active = el.getAttribute('data-theme-val') === current;
+          el.style.background = active ? 'var(--theme-bg-hover)' : 'transparent';
+          el.style.color = active ? 'var(--theme-text-primary)' : 'var(--theme-text-secondary)';
+        });
+      }
+      const lbl = document.getElementById('theme-chooser-label');
+      if (lbl) lbl.textContent = 'theme:' + current;
+    }
+
+    function toggleDropdown() {
+      if (isOpen) { closeDropdown(); return; }
+      ensureDropdown();
+
+      const btn = document.getElementById('theme-chooser-btn');
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      let left = rect.right - 240;
+      if (left < 4) left = 4;
+      if (left + 240 > window.innerWidth) left = window.innerWidth - 244;
+      dropdown!.style.top = (rect.bottom + 4) + 'px';
+      dropdown!.style.left = left + 'px';
+      dropdown!.style.opacity = '1';
+      dropdown!.style.pointerEvents = 'auto';
+      overlay!.style.display = 'block';
+      isOpen = true;
+
+      const arrow = document.getElementById('theme-chooser-arrow');
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+
+      updateChecks();
+    }
+
+    function closeDropdown() {
+      if (!dropdown) return;
+      dropdown.style.opacity = '0';
+      dropdown.style.pointerEvents = 'none';
+      if (overlay) overlay.style.display = 'none';
+      isOpen = false;
+
+      const arrow = document.getElementById('theme-chooser-arrow');
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+
+    function setColorTheme(theme: string) {
+      const html = document.documentElement;
+      html.setAttribute('data-theme', theme);
+      if (theme === 'light' || theme === 'nord-light' || theme === 'catppuccin-latte') {
+        html.classList.remove('dark');
+      } else {
+        html.classList.add('dark');
+      }
+      localStorage.setItem('color-theme', theme);
+      localStorage.setItem('theme', (theme === 'light' || theme === 'nord-light' || theme === 'catppuccin-latte') ? 'light' : 'dark');
+      updateChecks();
+    }
+
+    // Expose for the button click
+    (window as any).__toggleThemeDropdown = toggleDropdown;
+    (window as any).__setColorTheme = setColorTheme;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) closeDropdown();
+    });
+
+    function init() {
+      if (dropdown && !document.body.contains(dropdown)) {
+        dropdown = null;
+        overlay = null;
+        isOpen = false;
+      }
+      const saved = localStorage.getItem('color-theme') || 'dark';
+      const lbl = document.getElementById('theme-chooser-label');
+      if (lbl) lbl.textContent = 'theme:' + saved;
+
+      const btn = document.getElementById('theme-chooser-btn');
+      if (btn) btn.onclick = toggleDropdown;
+
+      updateChecks();
+    }
+
+    document.addEventListener('astro:page-load', init);
+    init();
+  })();
+</script>

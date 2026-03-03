@@ -1,127 +1,176 @@
 ---
-import Navigation from '../components/Navigation.astro';
-import Footer from '../components/Footer.astro';
-import Background from '../components/Background.astro';
-import '../styles/global.css';
+import { ViewTransitions } from "astro:transitions";
+import "./layout.css";
+import "../styles/global.css";
+import "../styles/themes.css";
+import SideMenu from "../components/Side/SideMenu.astro";
 
-export interface Props {
+interface Props {
   title: string;
   description?: string;
+  image?: string;
+  type?: string;
 }
 
-const { title, description = "A minimalist personal blog" } = Astro.props;
-const base = import.meta.env.BASE_URL || '/';
+const {
+  title = "poeba.lu",
+  description = "music reviews",
+  image,
+  type = "website",
+} = Astro.props;
+
+const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const siteUrl = Astro.site?.toString().replace(/\/$/, "") || "https://poeba.lu";
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImage = image || `${siteUrl}${base}og-default.png`;
+const fullTitle = `${title} | poeba.lu`;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <title>{title}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col">
-    <!-- Page transition overlay -->
-    <div id="page-transition" class="fixed inset-0 z-40 bg-white dark:bg-zinc-900 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
-      <div class="transition-spinner"></div>
-    </div>
-    
-    <!-- Background component with dot pattern and ambient glow -->
-    <Background />
-    
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 w-full flex-grow">
-      <Navigation />
-      <main class="py-12">
-        <slot />
-      </main>
-    </div>
-    <Footer />
-    
-    <script>
-      // Theme handling with transition effects
-      function setupThemeHandling() {
-        // Apply theme from localStorage or system preference
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        } else {
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/x-icon" href={`${base}favicon.ico`} />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${base}favicon-32x32.png`} />
+    <link rel="icon" type="image/png" sizes="16x16" href={`${base}favicon-16x16.png`} />
+    <link rel="apple-touch-icon" sizes="180x180" href={`${base}apple-touch-icon.png`} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="base-url" content={base} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="poeba.lu" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Telegram -->
+    <meta name="telegram:channel" content="@hellomraz" />
+    <link rel="preconnect" href="https://f4.bcbits.com" crossorigin />
+    <link rel="dns-prefetch" href="https://f4.bcbits.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <ViewTransitions fallback="none" />
+    <!-- Apply saved theme before first paint to prevent flash -->
+    <script is:inline>
+      (function() {
+        var t = localStorage.getItem('color-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.classList.add('no-transition');
+        if (t === 'light' || t === 'nord-light' || t === 'catppuccin-latte') {
           document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
         }
-        
-        // Listen for theme changes
-        document.addEventListener('themeChanged', () => {
-          // Add transition class to body
-          document.body.classList.add('theme-transitioning');
-          
-          // Remove class after transition completes
-          setTimeout(() => {
-            document.body.classList.remove('theme-transitioning');
-          }, 500);
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            document.documentElement.classList.remove('no-transition');
+          });
         });
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="app-shell flex items-stretch overflow-hidden" style="background-color: var(--theme-bg-base);">
+      <!-- Mobile sidebar overlay -->
+      <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay" aria-hidden="true">
+        <div class="mobile-sidebar-backdrop"></div>
+        <div class="mobile-sidebar-panel">
+          <div class="mobile-sidebar-header">
+            <button id="mobile-sidebar-close" class="mobile-sidebar-close" aria-label="Close menu">✕</button>
+          </div>
+          <div class="mobile-sidebar-content">
+            <SideMenu />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar — hidden on small screens -->
+      <div class="w-[280px] flex-col hidden lg:flex overflow-y-auto flex-shrink-0 border-r" style="border-color: var(--theme-border);" transition:persist="sidebar">
+        <SideMenu />
+      </div>
+      <!-- Main content -->
+      <div class="flex-1 overflow-y-auto overflow-x-hidden" style="background-color: var(--theme-bg-surface);">
+        <slot />
+      </div>
+    </div>
+
+    <!-- View-transitions support warning -->
+    <div
+      id="not-support"
+      class="fixed hidden bg-amber-700 bottom-0 inset-x-0 rounded-t-md text-center py-2 z-50 font-semibold text-sm"
+    >
+      Your browser doesn't support View Transitions yet — try Chrome or Edge.
+    </div>
+
+    <script>
+      if (!document.startViewTransition) {
+        const el = document.getElementById("not-support");
+        if (el) el.classList.remove("hidden");
       }
-      
-      // Initialize theme handling
-      document.addEventListener('DOMContentLoaded', setupThemeHandling);
+      document.addEventListener("astro:page-load", () => {
+        for (const el of document.querySelectorAll(".el-to-fade")) {
+          el.classList.remove("scale-90");
+        }
+      });
+    </script>
+
+    <!-- Mobile sidebar toggle -->
+    <script>
+      function initMobileSidebar() {
+        const overlay = document.getElementById('mobile-sidebar-overlay');
+        if (!overlay) return;
+
+        function open() {
+          overlay.classList.add('open');
+          overlay.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        }
+        function close() {
+          overlay.classList.remove('open');
+          overlay.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        }
+
+        // Always re-bind: the button may be persisted but overlay is fresh
+        const openBtn = document.getElementById('mobile-menu-btn');
+        const closeBtn = document.getElementById('mobile-sidebar-close');
+        const backdrop = overlay.querySelector('.mobile-sidebar-backdrop');
+
+        if (openBtn) {
+          // Remove previous handler to avoid duplicates on persist
+          openBtn.onclick = open;
+        }
+        if (closeBtn) closeBtn.onclick = close;
+        if (backdrop) (backdrop as HTMLElement).onclick = close;
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+        });
+
+        // Close on navigation (view transitions)
+        close();
+      }
+      document.addEventListener('astro:page-load', initMobileSidebar);
+      initMobileSidebar();
     </script>
   </body>
 </html>
-
-<style>
-  /* Enhanced page transition effects */
-  #page-transition {
-    transition: opacity 0.3s ease;
-    backdrop-filter: blur(4px);
-  }
-  
-  /* Transition spinner animation */
-  .transition-spinner {
-    width: 30px;
-    height: 30px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top-color: #3b82f6;
-    animation: spin 0.7s linear infinite;
-  }
-  
-  :global(.dark) .transition-spinner {
-    border-color: rgba(255, 255, 255, 0.1);
-    border-top-color: #60a5fa;
-  }
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  
-  /* Content entrance animation */
-  main {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  
-  main.content-entering {
-    animation: content-fade-in 0.6s ease forwards;
-  }
-  
-  @keyframes content-fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Theme transition effect */
-  body.theme-transitioning * {
-    transition-duration: 0.3s !important;
-  }
-</style>

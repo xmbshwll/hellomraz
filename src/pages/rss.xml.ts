@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 export async function GET(context) {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   const posts = await getCollection('blog');
   
   // Sort posts by date
@@ -18,7 +19,7 @@ export async function GET(context) {
       title: post.data.title,
       pubDate: post.data.pubDate,
       description: post.data.description,
-      link: `/blog/${post.slug}/`,
+      link: `${base}blog/${post.slug}/`,
       categories: post.data.tags || [],
     })),
   });

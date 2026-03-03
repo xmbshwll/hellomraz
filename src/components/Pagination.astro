@@ -1,0 +1,100 @@
+---
+interface Props {
+  currentPage: number;
+  lastPage: number;
+  baseUrl: string; // e.g. "/blog"
+}
+
+const { currentPage, lastPage, baseUrl } = Astro.props;
+
+// Build page URL — page 1 has no suffix
+function pageUrl(page: number) {
+  return page === 1 ? baseUrl : `${baseUrl}/${page}`;
+}
+
+// Determine which page numbers to show
+function getPageNumbers(): (number | '...')[] {
+  const pages: (number | '...')[] = [];
+  if (lastPage <= 7) {
+    for (let i = 1; i <= lastPage; i++) pages.push(i);
+    return pages;
+  }
+  // Always show first, last, and a window around current
+  const windowStart = Math.max(2, currentPage - 1);
+  const windowEnd = Math.min(lastPage - 1, currentPage + 1);
+
+  pages.push(1);
+  if (windowStart > 2) pages.push('...');
+  for (let i = windowStart; i <= windowEnd; i++) pages.push(i);
+  if (windowEnd < lastPage - 1) pages.push('...');
+  pages.push(lastPage);
+  return pages;
+}
+
+const pageNumbers = getPageNumbers();
+const hasPrev = currentPage > 1;
+const hasNext = currentPage < lastPage;
+---
+
+<nav class="flex items-center justify-center gap-1 mt-10 mb-4 flex-wrap" aria-label="Pagination">
+  <!-- Previous -->
+  {hasPrev ? (
+    <a
+      href={pageUrl(currentPage - 1)}
+      class="px-3 py-2 text-sm rounded-md transition-colors inline-flex items-center justify-center"
+      style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+      aria-label="Previous page"
+    >
+      ← Prev
+    </a>
+  ) : (
+    <span
+      class="px-3 py-2 text-sm rounded-md opacity-40 cursor-not-allowed inline-flex items-center justify-center"
+      style="color: var(--theme-text-muted); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+    >
+      ← Prev
+    </span>
+  )}
+
+  <!-- Page numbers -->
+  {pageNumbers.map((p) =>
+    p === '...' ? (
+      <span class="px-2 py-2 text-sm inline-flex items-center justify-center" style="color: var(--theme-text-muted); min-height: 44px;">…</span>
+    ) : p === currentPage ? (
+      <span
+        class="px-3 py-2 text-sm font-bold rounded-md inline-flex items-center justify-center"
+        style="color: var(--theme-text-primary); background-color: var(--theme-accent); color: #fff; min-height: 44px; min-width: 44px;"
+        aria-current="page"
+      >
+        {p}
+      </span>
+    ) : (
+      <a
+        href={pageUrl(p)}
+        class="px-3 py-2 text-sm rounded-md transition-colors hover:opacity-80 inline-flex items-center justify-center"
+        style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+      >
+        {p}
+      </a>
+    )
+  )}
+
+  <!-- Next -->
+  {hasNext ? (
+    <a
+      href={pageUrl(currentPage + 1)}
+      class="px-3 py-2 text-sm rounded-md transition-colors inline-flex items-center justify-center"
+      style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+      aria-label="Next page"
+    >
+      Next →
+    </a>
+  ) : (
+    <span
+      class="px-3 py-2 text-sm rounded-md opacity-40 cursor-not-allowed inline-flex items-center justify-center"
+      style="color: var(--theme-text-muted); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+    >
+      Next →
+    </span>
+  )}
+</nav>
