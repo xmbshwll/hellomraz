@@ -31,11 +31,28 @@ const fullTitle = `${title} | poeba.lu`;
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <link rel="icon" type="image/x-icon" href={`${base}favicon.ico`} />
-    <link rel="icon" type="image/png" sizes="32x32" href={`${base}favicon-32x32.png`} />
-    <link rel="icon" type="image/png" sizes="16x16" href={`${base}favicon-16x16.png`} />
-    <link rel="apple-touch-icon" sizes="180x180" href={`${base}apple-touch-icon.png`} />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href={`${base}favicon-32x32.png`}
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href={`${base}favicon-16x16.png`}
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href={`${base}apple-touch-icon.png`}
+    />
     <link rel="canonical" href={canonicalUrl} />
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
@@ -71,31 +88,42 @@ const fullTitle = `${title} | poeba.lu`;
     <ViewTransitions fallback="none" />
     <!-- Apply saved theme before first paint to prevent flash -->
     <script is:inline>
-      (function() {
-        var t = localStorage.getItem('color-theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', t);
-        document.documentElement.classList.add('no-transition');
-        if (t === 'light' || t === 'nord-light' || t === 'catppuccin-latte') {
-          document.documentElement.classList.remove('dark');
+      (function () {
+        var t = localStorage.getItem("color-theme") || "dark";
+        document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("no-transition");
+        if (t === "light" || t === "nord-light" || t === "catppuccin-latte") {
+          document.documentElement.classList.remove("dark");
         } else {
-          document.documentElement.classList.add('dark');
+          document.documentElement.classList.add("dark");
         }
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            document.documentElement.classList.remove('no-transition');
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            document.documentElement.classList.remove("no-transition");
           });
         });
       })();
     </script>
   </head>
   <body>
-    <div class="app-shell flex items-stretch overflow-hidden" style="background-color: var(--theme-bg-base);">
+    <div
+      class="app-shell flex items-stretch overflow-hidden"
+      style="background-color: var(--theme-bg-base);"
+    >
       <!-- Mobile sidebar overlay -->
-      <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay" aria-hidden="true">
+      <div
+        id="mobile-sidebar-overlay"
+        class="mobile-sidebar-overlay"
+        aria-hidden="true"
+      >
         <div class="mobile-sidebar-backdrop"></div>
         <div class="mobile-sidebar-panel">
           <div class="mobile-sidebar-header">
-            <button id="mobile-sidebar-close" class="mobile-sidebar-close" aria-label="Close menu">✕</button>
+            <button
+              id="mobile-sidebar-close"
+              class="mobile-sidebar-close"
+              aria-label="Close menu">✕</button
+            >
           </div>
           <div class="mobile-sidebar-content">
             <SideMenu />
@@ -104,11 +132,18 @@ const fullTitle = `${title} | poeba.lu`;
       </div>
 
       <!-- Sidebar — hidden on small screens -->
-      <div class="w-[280px] flex-col hidden lg:flex overflow-y-auto flex-shrink-0 border-r" style="border-color: var(--theme-border);" transition:persist="sidebar">
+      <div
+        class="w-[280px] flex-col hidden lg:flex overflow-y-auto flex-shrink-0 border-r"
+        style="border-color: var(--theme-border);"
+        transition:persist="sidebar"
+      >
         <SideMenu />
       </div>
       <!-- Main content -->
-      <div class="flex-1 overflow-y-auto overflow-x-hidden" style="background-color: var(--theme-bg-surface);">
+      <div
+        class="flex-1 overflow-y-auto overflow-x-hidden"
+        style="background-color: var(--theme-bg-surface);"
+      >
         <slot />
       </div>
     </div>
@@ -136,24 +171,24 @@ const fullTitle = `${title} | poeba.lu`;
     <!-- Mobile sidebar toggle -->
     <script>
       function initMobileSidebar() {
-        const overlay = document.getElementById('mobile-sidebar-overlay');
+        const overlay = document.getElementById("mobile-sidebar-overlay");
         if (!overlay) return;
 
         function open() {
-          overlay.classList.add('open');
-          overlay.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
+          overlay.classList.add("open");
+          overlay.setAttribute("aria-hidden", "false");
+          document.body.style.overflow = "hidden";
         }
         function close() {
-          overlay.classList.remove('open');
-          overlay.setAttribute('aria-hidden', 'true');
-          document.body.style.overflow = '';
+          overlay.classList.remove("open");
+          overlay.setAttribute("aria-hidden", "true");
+          document.body.style.overflow = "";
         }
 
         // Always re-bind: the button may be persisted but overlay is fresh
-        const openBtn = document.getElementById('mobile-menu-btn');
-        const closeBtn = document.getElementById('mobile-sidebar-close');
-        const backdrop = overlay.querySelector('.mobile-sidebar-backdrop');
+        const openBtn = document.getElementById("mobile-menu-btn");
+        const closeBtn = document.getElementById("mobile-sidebar-close");
+        const backdrop = overlay.querySelector(".mobile-sidebar-backdrop");
 
         if (openBtn) {
           // Remove previous handler to avoid duplicates on persist
@@ -162,14 +197,14 @@ const fullTitle = `${title} | poeba.lu`;
         if (closeBtn) closeBtn.onclick = close;
         if (backdrop) (backdrop as HTMLElement).onclick = close;
 
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && overlay.classList.contains("open")) close();
         });
 
         // Close on navigation (view transitions)
         close();
       }
-      document.addEventListener('astro:page-load', initMobileSidebar);
+      document.addEventListener("astro:page-load", initMobileSidebar);
       initMobileSidebar();
     </script>
   </body>
