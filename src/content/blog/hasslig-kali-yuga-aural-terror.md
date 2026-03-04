@@ -5,5 +5,3 @@ tags: ['black metal', 'metal', 'noise', 'punk', 'raw black metal', 'rock & roll'
 ---
 
 КАЛИ ЮГА ХАЛИ ГАЛИ ТЕРРОР!!!!11111
-
-[Bandcamp](https://hasslig.bandcamp.com/album/kali-yuga-aural-terror)

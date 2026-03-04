@@ -7,5 +7,3 @@ tags: ['punk', 'ushc', 'hardcore punk', 'supplication tapes', 'united states']
 РЕШИВШИЕ НЕ ВЫЛЕЗАТЬ ИЗ ВАГИНЫ - ДЕМКА (2026)
 
 Отличная демка хардкорщиков из бурно цветущей подвальной сцены Индианы. 5 песен, 5 минут, есть трек об отсутствии мозга (очевидно от удара по ебалу).
-
-[Bandcamp](https://ragdollrecords.bandcamp.com/album/demo-3)

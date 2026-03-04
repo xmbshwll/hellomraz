@@ -5,5 +5,3 @@ tags: ['rock', 'heavy rock', 'post-punk', 'post-rock', 'psychedelic rock', 'punk
 ---
 
 !!!!!
-
-[Bandcamp](https://heycolossus.bandcamp.com/album/heaven-was-wild)

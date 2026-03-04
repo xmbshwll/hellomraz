@@ -5,5 +5,3 @@ tags: ['blu', 'darko the super', 'david lynch', 'hip hop', 'hip-hop rap', 'homeb
 ---
 
 MF Grimm, после призыва пенсильванца Darko the Super продюсировать прошлогодний The Hunt for the Gingerbread Man 2: Get the Dough, теперь отдает долги - новый альбом отличного абстрактно-психоделичного эмси на продакшене другой легенды.
-
-[Bandcamp](https://darkothesuper.bandcamp.com/album/beware-of-bob)

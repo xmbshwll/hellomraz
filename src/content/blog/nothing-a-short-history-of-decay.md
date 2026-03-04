@@ -5,5 +5,3 @@ tags: ['alternative', 'dream pop', 'grunge', 'indie', 'post-punk', 'shoegaze']
 ---
 
 Любителям - новый Nothing.
-
-[Bandcamp](https://nothing.bandcamp.com/album/a-short-history-of-decay)

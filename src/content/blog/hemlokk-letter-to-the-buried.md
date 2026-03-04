@@ -5,5 +5,3 @@ tags: ['black metal', 'folk', 'dark folk', 'folk music', 'goth folk', 'neoclassi
 ---
 
 Новый альбом, на этот раз полностью фолковый, соло блэк проекта из британского Сассекса. Красивая музыка.
-
-[Bandcamp](https://hemlokk.bandcamp.com/album/letter-to-the-buried)
