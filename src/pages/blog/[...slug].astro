@@ -10,7 +10,7 @@ import RelatedPosts from "../../components/RelatedPosts.astro";
 import { getPostColor } from "../../lib/colors";
 import { getBandcampData } from "../../lib/bandcamp";
 import { getStreamingLinks } from "../../lib/streaming";
-import { getAlbum } from "../../lib/albums";
+import { getAlbum, parseArtistAlbum } from "../../lib/albums";
 import "../../layouts/styles/markdown.css";
 
 export async function getStaticPaths() {
@@ -62,12 +62,20 @@ const bcCover = bc?.coverUrl;
 
 // Album metadata from albums.json
 const albumEntry = getAlbum(post.slug);
-const albumArtist = albumEntry?.artist;
-const albumName = albumEntry?.album;
 const albumTags = albumEntry?.bcTags;
+
+// Artist/album: prefer albums.json, fall back to parsing the post title
+const parsed = parseArtistAlbum(post.data.title);
+const albumArtist = albumEntry?.artist || parsed?.artist;
+const albumName = albumEntry?.album || parsed?.album;
 
 // Get all streaming links from pre-extracted data
 const streamingLinks = getStreamingLinks(post.slug);
+
+// Best available "buy/listen" link when no Bandcamp URL
+const primaryLink = !bcUrl && streamingLinks.length > 0
+  ? { service: streamingLinks[0].service, url: streamingLinks[0].url }
+  : undefined;
 
 // Social preview image — use cover (large version) or fallback
 let ogImage: string | undefined;
@@ -203,6 +211,7 @@ const postDescription = post.data.description || `${post.data.title} — music r
           date={post.data.pubDate}
           releaseDate={albumEntry?.releaseDate}
           bandcampUrl={bcUrl ?? undefined}
+          primaryLink={primaryLink}
           linkedTags={linkedTags}
         />
 

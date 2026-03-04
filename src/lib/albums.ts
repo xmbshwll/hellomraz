@@ -23,6 +23,20 @@ export function getAlbum(slug: string): AlbumEntry | undefined {
 }
 
 /**
+ * Parse artist and album name from post title.
+ * Titles follow the pattern "Artist - Album Name" (with ` - ` separator).
+ * Used as fallback when albums.json lacks scraped metadata.
+ */
+export function parseArtistAlbum(title: string): { artist: string; album: string } | undefined {
+  const idx = title.indexOf(' - ');
+  if (idx < 0) return undefined;
+  const artist = title.slice(0, idx).trim();
+  const album = title.slice(idx + 3).trim();
+  if (!artist || !album) return undefined;
+  return { artist, album };
+}
+
+/**
  * Get a smaller cover URL for thumbnails.
  * Supports Bandcamp, Spotify, and Deezer cover URLs.
  *
