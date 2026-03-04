@@ -14,9 +14,11 @@ export interface BandcampEntry {
 
 export function getBandcampData(slug: string): BandcampEntry | undefined {
   const entry = albums[slug];
-  if (!entry || !entry.bandcampUrl) return undefined;
+  if (!entry) return undefined;
+  // Return data when we have a Bandcamp URL or at least a cover from another source
+  if (!entry.bandcampUrl && !entry.coverUrl) return undefined;
   return {
-    url: entry.bandcampUrl,
+    url: entry.bandcampUrl ?? '',
     albumId: entry.albumId ?? null,
     coverUrl: entry.coverUrl ?? null,
     artist: entry.artist,

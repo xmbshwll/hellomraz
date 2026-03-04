@@ -69,8 +69,15 @@ const albumTags = albumEntry?.bcTags;
 // Get all streaming links from pre-extracted data
 const streamingLinks = getStreamingLinks(post.slug);
 
-// Social preview image — use Bandcamp cover (large version) or fallback
-const ogImage = bcCover ? bcCover.replace(/_5\.jpg$/, '_2.jpg') : undefined;
+// Social preview image — use cover (large version) or fallback
+let ogImage: string | undefined;
+if (bcCover) {
+  if (bcCover.includes('bcbits.com')) {
+    ogImage = bcCover.replace(/_5\.jpg$/, '_2.jpg');
+  } else {
+    ogImage = bcCover;
+  }
+}
 const postDescription = post.data.description || `${post.data.title} — music review on poeba.lu`;
 ---
 
