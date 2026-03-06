@@ -1,6 +1,7 @@
 ---
 import ThemeChooser from "./ThemeChooser.astro";
 import LangSwitcher from "./LangSwitcher.astro";
+import HeaderSearch from "./HeaderSearch.astro";
 import DateSelector from "./DateSelector.astro";
 import { getCollection } from "astro:content";
 
@@ -24,7 +25,7 @@ sorted.forEach((post, i) => {
 ---
 
 <div class="page-header" transition:name="page-header" transition:persist>
-  <!-- Left: Hamburger (mobile) + Date picker -->
+  <!-- Left: Hamburger (mobile) + Search + Date picker -->
   <div class="header-left">
     <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Open menu">
       <svg
@@ -39,6 +40,7 @@ sorted.forEach((post, i) => {
           clip-rule="evenodd"></path>
       </svg>
     </button>
+    <HeaderSearch />
     <DateSelector dateIndex={dateIndex} baseUrl={`${base}blog`} />
   </div>
 
