@@ -1,0 +1,23 @@
+import type { APIRoute, GetStaticPaths } from 'astro';
+import {
+  getLinkedTagNames,
+  getPostsForTag,
+} from '../../../lib/blog-data.mjs';
+import { TAG_PAGE_POST_CAP } from '../../../lib/feed-limits.mjs';
+import { toTagPost } from '../../../lib/post-payloads.mjs';
+
+export const getStaticPaths = (async () => {
+  return (await getLinkedTagNames()).map((tag) => ({
+    params: { tag },
+  }));
+}) satisfies GetStaticPaths;
+
+export const GET: APIRoute = async ({ params }) => {
+  const posts = (await getPostsForTag(params.tag ?? ''))
+    .slice(TAG_PAGE_POST_CAP)
+    .map(toTagPost);
+
+  return new Response(JSON.stringify(posts), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+};

@@ -2,8 +2,8 @@
  * Related posts — precomputed tag-based index.
  * Builds the index ONCE and caches it for all 1,187 blog pages.
  */
-import { getCollection } from 'astro:content';
 import { getCoverThumb } from './albums';
+import { getPublishedPosts } from './blog-data.mjs';
 
 export interface RelatedPost {
   slug: string;
@@ -20,7 +20,7 @@ export async function getRelatedPosts(
 ): Promise<RelatedPost[]> {
   if (!_cache) {
     _cache = new Map();
-    const posts = await getCollection('blog', ({ data }) => !data.draft);
+    const posts = await getPublishedPosts();
 
     // Build tag → post slugs index
     const tagIndex = new Map<string, string[]>();

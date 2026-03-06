@@ -31,7 +31,9 @@
     color: var(--theme-text-muted);
     background: var(--theme-bg-elevated);
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
   .lang-chooser-btn:hover {
     border-color: var(--theme-accent);
@@ -43,244 +45,122 @@
 </style>
 
 <script>
-  // LangSwitcher — bundled by Astro (emitted once, not inlined per page)
-  (function () {
-    if ((window as any).__langChooserReady) return;
-    (window as any).__langChooserReady = true;
+  import { mountSelectableDropdown } from '../lib/selectable-dropdown.mjs';
+  import {
+    getCurrentSiteLang,
+    setCurrentSiteLang,
+    SITE_LANGS,
+  } from '../lib/site-i18n.mjs';
 
-    interface LangEntry {
-      id: string;
-      label: string;
-    }
+  function getBase(): string {
+    const meta = document.querySelector('meta[name="base-url"]');
+    return meta ? meta.getAttribute('content') || '/' : '/';
+  }
 
-    const LANGS: LangEntry[] = [
-      { id: "ru", label: "Русский" },
-      { id: "en", label: "English" },
-      { id: "de", label: "Deutsch" },
-    ];
+  function getSlug(): string | null {
+    const el = document.querySelector('[data-post-slug]');
+    return el ? el.getAttribute('data-post-slug') : null;
+  }
 
-    let isOpen = false;
-    let overlay: HTMLElement | null = null;
-    let dropdown: HTMLElement | null = null;
+  function removeFallbackBanner() {
+    const banner = document.getElementById('lang-fallback-banner');
+    if (banner) banner.remove();
+  }
 
-    function getCurrentLang(): string {
-      return localStorage.getItem("site-lang") || "ru";
-    }
+  function showFallbackBanner(lang: string) {
+    removeFallbackBanner();
 
-    function ensureDropdown(): HTMLElement {
-      if (dropdown && !document.body.contains(dropdown)) {
-        dropdown = null;
-        overlay = null;
-        isOpen = false;
-      }
-      if (dropdown) return dropdown;
+    const content = document.querySelector('.markdown-content');
+    if (!content) return;
 
-      dropdown = document.createElement("div");
-      dropdown.id = "lang-dropdown-portal";
-      dropdown.style.cssText =
-        "position:fixed;width:200px;border:1px solid var(--theme-border);background:var(--theme-bg-surface);z-index:99999;padding:4px;opacity:0;pointer-events:none;font-family:inherit;font-size:14px;border-radius:8px;";
+    const messages = {
+      en: 'Translation not yet available — showing original Russian.',
+      de: 'Übersetzung noch nicht verfügbar — Original auf Russisch.',
+    };
 
-      for (const lang of LANGS) {
-        const btn = document.createElement("button");
-        btn.setAttribute("data-lang-val", lang.id);
-        btn.style.cssText =
-          "display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border:none;font-size:14px;font-family:inherit;cursor:pointer;background:transparent;color:var(--theme-text-secondary);transition:background 0.1s,color 0.1s;min-height:44px;";
+    const banner = document.createElement('div');
+    banner.id = 'lang-fallback-banner';
+    banner.style.cssText =
+      'padding:8px 12px;margin-bottom:12px;font-size:12px;border:1px dashed var(--theme-border);color:var(--theme-text-muted);';
+    banner.textContent = messages[lang] || messages.en;
+    content.parentNode?.insertBefore(banner, content);
+  }
 
-        btn.addEventListener("mouseover", () => {
-          btn.style.background = "var(--theme-bg-hover)";
-          btn.style.color = "var(--theme-text-primary)";
-        });
-        btn.addEventListener("mouseout", () => {
-          const active = lang.id === getCurrentLang();
-          btn.style.background = active ? "var(--theme-bg-hover)" : "transparent";
-          btn.style.color = active ? "var(--theme-text-primary)" : "var(--theme-text-secondary)";
-        });
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          setLang(lang.id);
-          closeDropdown();
-        });
+  function applyTranslation(lang: string) {
+    const content = document.querySelector('.markdown-content') as HTMLElement | null;
+    if (!content) return;
 
-        const lbl = document.createElement("span");
-        lbl.textContent = lang.label;
-        btn.appendChild(lbl);
+    const slug = getSlug();
+    if (!slug) return;
 
-        const check = document.createElement("span");
-        check.className = "lang-check-icon";
-        check.setAttribute("data-for-lang", lang.id);
-        check.textContent = "✓";
-        check.style.cssText =
-          "margin-left:auto;display:none;color:var(--theme-accent);";
-        btn.appendChild(check);
-
-        dropdown.appendChild(btn);
-      }
-
-      document.body.appendChild(dropdown);
-
-      overlay = document.createElement("div");
-      overlay.style.cssText = "position:fixed;inset:0;z-index:99998;display:none;";
-      overlay.addEventListener("click", closeDropdown);
-      document.body.appendChild(overlay);
-
-      return dropdown;
-    }
-
-    function updateChecks() {
-      const current = getCurrentLang();
-      document.querySelectorAll(".lang-check-icon").forEach((c) => {
-        (c as HTMLElement).style.display =
-          c.getAttribute("data-for-lang") === current ? "inline" : "none";
-      });
-      if (dropdown && document.body.contains(dropdown)) {
-        dropdown.querySelectorAll("button[data-lang-val]").forEach((b) => {
-          const el = b as HTMLElement;
-          const active = el.getAttribute("data-lang-val") === current;
-          el.style.background = active ? "var(--theme-bg-hover)" : "transparent";
-          el.style.color = active ? "var(--theme-text-primary)" : "var(--theme-text-secondary)";
-        });
-      }
-      const lbl = document.getElementById("lang-chooser-label");
-      if (lbl) lbl.textContent = "lang:" + current;
-    }
-
-    function toggleDropdown() {
-      if (isOpen) { closeDropdown(); return; }
-      ensureDropdown();
-
-      const btn = document.getElementById("lang-chooser-btn");
-      if (!btn) return;
-      const rect = btn.getBoundingClientRect();
-      let left = rect.right - 200;
-      if (left < 4) left = 4;
-      if (left + 200 > window.innerWidth) left = window.innerWidth - 204;
-      dropdown!.style.top = rect.bottom + 4 + "px";
-      dropdown!.style.left = left + "px";
-      dropdown!.style.opacity = "1";
-      dropdown!.style.pointerEvents = "auto";
-      overlay!.style.display = "block";
-      isOpen = true;
-
-      const arrow = document.getElementById("lang-chooser-arrow");
-      if (arrow) arrow.style.transform = "rotate(180deg)";
-
-      updateChecks();
-    }
-
-    function closeDropdown() {
-      if (!dropdown) return;
-      dropdown.style.opacity = "0";
-      dropdown.style.pointerEvents = "none";
-      if (overlay) overlay.style.display = "none";
-      isOpen = false;
-
-      const arrow = document.getElementById("lang-chooser-arrow");
-      if (arrow) arrow.style.transform = "rotate(0deg)";
-    }
-
-    function setLang(lang: string) {
-      localStorage.setItem("site-lang", lang);
-      updateChecks();
-      applyTranslation(lang);
-      window.dispatchEvent(new CustomEvent("lang-changed", { detail: lang }));
-    }
-
-    function getBase(): string {
-      const meta = document.querySelector('meta[name="base-url"]');
-      return meta ? meta.getAttribute("content") || "/" : "/";
-    }
-
-    function getSlug(): string | null {
-      const el = document.querySelector("[data-post-slug]");
-      return el ? el.getAttribute("data-post-slug") : null;
-    }
-
-    function applyTranslation(lang: string) {
-      const content = document.querySelector(".markdown-content") as HTMLElement | null;
-      if (!content) return;
-
-      const slug = getSlug();
-      if (!slug) return;
-
-      if (lang === "ru") {
-        const original = content.getAttribute("data-original-html");
-        if (original) content.innerHTML = original;
-        removeFallbackBanner();
-        return;
-      }
-
-      if (!content.getAttribute("data-original-html")) {
-        content.setAttribute("data-original-html", content.innerHTML);
-      }
-
-      const base = getBase();
-      const url = base + "i18n/" + lang + "/" + slug + ".txt";
-
-      content.style.opacity = "0.5";
-      fetch(url)
-        .then((res) => {
-          if (!res.ok) throw new Error("not found");
-          return res.text();
-        })
-        .then((md) => {
-          const html = md
-            .trim()
-            .split(/\n\n+/)
-            .filter((p) => p.trim())
-            .map((p) => "<p>" + p.trim().replace(/\n/g, "<br>") + "</p>")
-            .join("\n");
-          content.innerHTML = html;
-          content.style.opacity = "1";
-          removeFallbackBanner();
-        })
-        .catch(() => {
-          content.style.opacity = "1";
-          showFallbackBanner(lang);
-        });
-    }
-
-    function showFallbackBanner(lang: string) {
+    if (lang === 'ru') {
+      const original = content.getAttribute('data-original-html');
+      if (original) content.innerHTML = original;
       removeFallbackBanner();
-      const content = document.querySelector(".markdown-content");
-      if (!content) return;
-      const msgs: Record<string, string> = {
-        en: "Translation not yet available — showing original Russian.",
-        de: "Übersetzung noch nicht verfügbar — Original auf Russisch.",
-      };
-      const banner = document.createElement("div");
-      banner.id = "lang-fallback-banner";
-      banner.style.cssText =
-        "padding:8px 12px;margin-bottom:12px;font-size:12px;border:1px dashed var(--theme-border);color:var(--theme-text-muted);";
-      banner.textContent = msgs[lang] || msgs.en;
-      content.parentNode!.insertBefore(banner, content);
+      return;
     }
 
-    function removeFallbackBanner() {
-      const b = document.getElementById("lang-fallback-banner");
-      if (b) b.remove();
+    if (!content.getAttribute('data-original-html')) {
+      content.setAttribute('data-original-html', content.innerHTML);
     }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen) closeDropdown();
-    });
+    const url = `${getBase()}i18n/${lang}/${slug}.txt`;
+    content.style.opacity = '0.5';
 
-    function init() {
-      const btn = document.getElementById("lang-chooser-btn");
-      if (btn) btn.onclick = toggleDropdown;
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error('Translation not found');
+        return response.text();
+      })
+      .then((markdown) => {
+        const html = markdown
+          .trim()
+          .split(/\n\n+/)
+          .filter((paragraph) => paragraph.trim())
+          .map(
+            (paragraph) =>
+              `<p>${paragraph.trim().replace(/\n/g, '<br>')}</p>`,
+          )
+          .join('\n');
 
-      if (dropdown && !document.body.contains(dropdown)) {
-        dropdown = null;
-        overlay = null;
-        isOpen = false;
-      }
-      updateChecks();
-      const lang = getCurrentLang();
-      if (lang !== "ru") {
-        applyTranslation(lang);
-      }
+        content.innerHTML = html;
+        content.style.opacity = '1';
+        removeFallbackBanner();
+      })
+      .catch(() => {
+        content.style.opacity = '1';
+        showFallbackBanner(lang);
+      });
+  }
+
+  function setLang(lang: 'ru' | 'en' | 'de') {
+    setCurrentSiteLang(lang);
+    applyTranslation(lang);
+  }
+
+  function initLangSwitcher() {
+    const lang = getCurrentSiteLang();
+    if (lang !== 'ru') {
+      applyTranslation(lang);
     }
+  }
 
-    document.addEventListener("astro:page-load", init);
-    init();
-  })();
+  mountSelectableDropdown({
+    readyFlag: '__langChooserReady',
+    buttonId: 'lang-chooser-btn',
+    labelId: 'lang-chooser-label',
+    arrowId: 'lang-chooser-arrow',
+    panelId: 'lang-dropdown-portal',
+    width: 200,
+    align: 'end',
+    useOverlay: true,
+    maxHeight: 220,
+    getOptions: () => SITE_LANGS,
+    getCurrent: getCurrentSiteLang,
+    setCurrent: setLang,
+    formatLabel: (lang) => `lang:${lang}`,
+  });
+
+  document.addEventListener('astro:page-load', initLangSwitcher);
+  initLangSwitcher();
 </script>

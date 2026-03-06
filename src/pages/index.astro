@@ -1,18 +1,16 @@
 ---
-import { getCollection } from "astro:content";
-import Layout from "../layouts/Layout.astro";
-import PageHeader from "../components/PageHeader.astro";
-import PostCard from "../components/PostCard.astro";
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import PostCard from '../components/PostCard.astro';
+import { getDateIndex, getRecentPosts } from '../lib/blog-data.mjs';
+import { HOME_REVIEW_INITIAL_POSTS } from '../lib/feed-limits.mjs';
 
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
-const allPosts = await getCollection("blog");
-const sorted = allPosts
-  .filter((p) => !p.data.draft)
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-
-const INITIAL_MORE = 24;
-const morePosts = sorted.slice(0, INITIAL_MORE);
+const [dateIndex, morePosts] = await Promise.all([
+  getDateIndex(),
+  getRecentPosts(HOME_REVIEW_INITIAL_POSTS),
+]);
 ---
 
 <Layout title="Home">
@@ -20,7 +18,7 @@ const morePosts = sorted.slice(0, INITIAL_MORE);
     id="playlist-container"
     style="background-color: var(--theme-bg-surface);"
   >
-    <PageHeader />
+    <PageHeader dateIndex={dateIndex} />
   </div>
 
   <!-- Reviews -->
@@ -68,9 +66,8 @@ const morePosts = sorted.slice(0, INITIAL_MORE);
   }
 
   const BATCH = 12;
-  const INITIAL_MORE = 24;
   let allPosts: ReviewPost[] | null = null;
-  let rendered = INITIAL_MORE;
+  let loaded = 0;
 
   function renderCard(post: ReviewPost, base: string): string {
     const safeTitle = post.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -92,52 +89,56 @@ const morePosts = sorted.slice(0, INITIAL_MORE);
 
   async function fetchPosts(): Promise<ReviewPost[]> {
     if (allPosts) return allPosts;
-    const grid = document.getElementById("more-reviews-grid");
-    const base = grid?.dataset.base || "/";
-    const res = await fetch(`${base}api/recent-posts.json`);
+    const grid = document.getElementById('more-reviews-grid');
+    const base = grid?.dataset.base || '/';
+    const res = await fetch(`${base}api/review-cards.json`);
     allPosts = await res.json();
     return allPosts!;
   }
 
   function initMoreReviews() {
-    const btn = document.getElementById("load-more-reviews-btn");
-    const wrap = document.getElementById("load-more-reviews-wrap");
-    const grid = document.getElementById("more-reviews-grid");
+    const btn = document.getElementById('load-more-reviews-btn');
+    const wrap = document.getElementById('load-more-reviews-wrap');
+    const grid = document.getElementById('more-reviews-grid');
     if (!btn || !wrap || !grid) return;
 
-    // Reset state on page-load (view transitions may persist DOM)
     if ((btn as any).__bound) return;
     (btn as any).__bound = true;
 
-    btn.addEventListener("click", async () => {
-      btn.textContent = "loading…";
-      const posts = await fetchPosts();
-      const base = grid.dataset.base || "/";
-      const end = Math.min(rendered + BATCH, posts.length);
+    // Reset state for a fresh page instance.
+    loaded = 0;
+    wrap.style.display = '';
+    btn.textContent = 'load more';
 
-      if (rendered >= posts.length) {
-        wrap.style.display = "none";
+    btn.addEventListener('click', async () => {
+      btn.textContent = 'loading…';
+      const posts = await fetchPosts();
+      const base = grid.dataset.base || '/';
+      const end = Math.min(loaded + BATCH, posts.length);
+
+      if (loaded >= posts.length) {
+        wrap.style.display = 'none';
         return;
       }
 
       const fragment = document.createDocumentFragment();
-      for (let i = rendered; i < end; i++) {
-        const div = document.createElement("div");
+      for (let i = loaded; i < end; i++) {
+        const div = document.createElement('div');
         div.innerHTML = renderCard(posts[i], base);
         fragment.appendChild(div.firstElementChild!);
       }
       grid.appendChild(fragment);
-      rendered = end;
+      loaded = end;
 
-      if (rendered >= posts.length) {
-        wrap.style.display = "none";
+      if (loaded >= posts.length) {
+        wrap.style.display = 'none';
       } else {
-        btn.textContent = "load more";
+        btn.textContent = 'load more';
       }
     });
   }
 
-  document.addEventListener("astro:page-load", initMoreReviews);
+  document.addEventListener('astro:page-load', initMoreReviews);
   initMoreReviews();
 </script>
 
@@ -235,33 +236,33 @@ const morePosts = sorted.slice(0, INITIAL_MORE);
 <script>
   /* Hover-color effect for cards */
   function bindColorCards() {
-    const container = document.getElementById("playlist-container");
+    const container = document.getElementById('playlist-container');
     if (!container) return;
 
     function setColor(color: string) {
-      const current = container!.getAttribute("data-color");
+      const current = container!.getAttribute('data-color');
       if (color && color !== current) {
-        container!.style.setProperty("--context-color", color);
-        container!.setAttribute("data-color", color);
+        container!.style.setProperty('--context-color', color);
+        container!.setAttribute('data-color', color);
       }
     }
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
-    for (const card of document.querySelectorAll(".playlist-item")) {
-      card.addEventListener("mouseover", () => {
-        const c = card.getAttribute("data-color");
+    for (const card of document.querySelectorAll('.playlist-item')) {
+      card.addEventListener('mouseover', () => {
+        const c = card.getAttribute('data-color');
         if (!c) return;
         timeout = setTimeout(() => setColor(c), 200);
       });
-      card.addEventListener("mouseout", () => {
+      card.addEventListener('mouseout', () => {
         if (timeout) { clearTimeout(timeout); timeout = null; }
       });
-      card.addEventListener("focus", () => {
-        const c = card.getAttribute("data-color");
+      card.addEventListener('focus', () => {
+        const c = card.getAttribute('data-color');
         if (c) setColor(c);
       });
     }
   }
-  document.addEventListener("astro:page-load", bindColorCards);
+  document.addEventListener('astro:page-load', bindColorCards);
   bindColorCards();
 </script>

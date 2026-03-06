@@ -1,40 +1,36 @@
 ---
-import type { GetStaticPaths } from "astro";
-import { getCollection } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-import PageHeader from "../../components/PageHeader.astro";
-import PostCard from "../../components/PostCard.astro";
-import Pagination from "../../components/Pagination.astro";
+import type { GetStaticPaths } from 'astro';
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PostCard from '../../components/PostCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getDateIndex, getPublishedPosts } from '../../lib/blog-data.mjs';
 
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 const MONTH_LABELS = [
-  "", "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  '', 'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 export const getStaticPaths = (async ({ paginate }) => {
   const pageSize = 24;
-  const allPosts = await getCollection("blog");
-  const sorted = allPosts
-    .filter((p) => !p.data.draft)
-    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-
-  const pages = paginate(sorted, { pageSize });
+  const pages = paginate(await getPublishedPosts(), { pageSize });
 
   return pages;
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
+const dateIndex = await getDateIndex();
 
 // Group this page's posts by month for section headers
 type MonthGroup = { key: string; label: string; posts: typeof page.data };
 const monthGroups: MonthGroup[] = [];
-let currentKey = "";
+let currentKey = '';
 
 for (const post of page.data) {
   const d = post.data.pubDate;
-  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   if (key !== currentKey) {
     currentKey = key;
     monthGroups.push({
@@ -47,9 +43,9 @@ for (const post of page.data) {
 }
 ---
 
-<Layout title={page.currentPage === 1 ? "All Reviews" : `All Reviews — Page ${page.currentPage}`}>
+<Layout title={page.currentPage === 1 ? 'All Reviews' : `All Reviews — Page ${page.currentPage}`}>
   <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
-    <PageHeader />
+    <PageHeader dateIndex={dateIndex} />
 
     <div class="px-4 sm:px-6 pb-8" style="padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));">
       <div class="mb-8">

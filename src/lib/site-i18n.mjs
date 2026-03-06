@@ -1,0 +1,76 @@
+/** @typedef {'ru' | 'en' | 'de'} SiteLang */
+
+/** @type {{ id: SiteLang; label: string }[]} */
+export const SITE_LANGS = [
+  { id: 'ru', label: 'Русский' },
+  { id: 'en', label: 'English' },
+  { id: 'de', label: 'Deutsch' },
+];
+
+const SITE_COPY = {
+  sidebarAbout: {
+    ru: {
+      text: 'Лучшее музыкально-критическое СМИ в этой вселенной (возможно, после The Quietus).',
+      link: 'ПО ЕБАЛУ →',
+    },
+    en: {
+      text: 'The best music critical media outlet in this universe (possibly after The Quietus).',
+      link: 'read more →',
+    },
+    de: {
+      text: 'Das beste musikkritische Medium im ganzen Universum (möglicherweise nach The Quietus).',
+      link: 'mehr erfahren →',
+    },
+  },
+  aboutPage: {
+    ru: {
+      about: '~ about',
+      text: '<p>Опусти Оружие, Мразь — самое лучшее во вселенной музыкально-критическое СМИ (возможно, после The Quietus).</p><p>Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются, восхищение музыкальным вкусом - напротив.</p><p>С любовью ПО ЕБАЛУ, из Берлина</p>',
+      links: '~ links',
+      support: '~ support',
+    },
+    en: {
+      about: '~ about',
+      text: '<p>Опусти Оружие, Мразь <i>(Drop Your Weapon, Scum)</i> — the best music criticism outlet in the universe (possibly after The Quietus).</p><p>A fast DIY freestyle blog. Complaints are not accepted; admiration for the musical taste, on the other hand, is welcome.</p><p>With love ПО ЕБАЛУ <i>(PUNCH IN THE FACE)</i>, from Berlin</p>',
+      links: '~ links',
+      support: '~ support',
+    },
+    de: {
+      about: '~ about',
+      text: '<p>Опусти Оружие, Мразь <i>(Leg die Waffe nieder, Mistkerl)</i> — das beste Musikkritik-Medium im Universum (möglicherweise nach The Quietus).</p><p>Ein schneller DIY-Freestyle-Blog. Beschwerden werden nicht angenommen; Bewunderung für den Musikgeschmack hingegen schon.</p><p>Mit Liebe ПО ЕБАЛУ <i>(INS GESICHT PUNCHEN)</i>, aus Berlin</p>',
+      links: '~ links',
+      support: '~ support',
+    },
+  },
+};
+
+/**
+ * @template {keyof typeof SITE_COPY} T
+ * @param {T} section
+ * @param {SiteLang | string} [lang='ru']
+ * @returns {(typeof SITE_COPY)[T]['ru']}
+ */
+export function getSiteCopy(section, lang = 'ru') {
+  const sectionCopy = SITE_COPY[section];
+  if (!sectionCopy) {
+    throw new Error(`Unknown site copy section: ${section}`);
+  }
+
+  return sectionCopy[lang] ?? sectionCopy.ru;
+}
+
+/**
+ * @returns {SiteLang}
+ */
+export function getCurrentSiteLang() {
+  const lang = localStorage.getItem('site-lang');
+  return SITE_LANGS.some((entry) => entry.id === lang) ? lang : 'ru';
+}
+
+/**
+ * @param {SiteLang} lang
+ */
+export function setCurrentSiteLang(lang) {
+  localStorage.setItem('site-lang', lang);
+  window.dispatchEvent(new CustomEvent('lang-changed', { detail: lang }));
+}

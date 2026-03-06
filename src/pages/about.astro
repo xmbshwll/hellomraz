@@ -1,13 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import PageHeader from "../components/PageHeader.astro";
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getDateIndex } from '../lib/blog-data.mjs';
 
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const dateIndex = await getDateIndex();
 ---
 
 <Layout title="About" description="О блоге Опусти Оружие, Мразь">
   <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
-    <PageHeader />
+    <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->
@@ -159,46 +160,26 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 </style>
 
 <script>
-  const translations: Record<
-    string,
-    { about: string; text: string; links: string; support: string }
-  > = {
-    ru: {
-      about: "~ about",
-      text: "<p>Опусти Оружие, Мразь — самое лучшее во вселенной музыкально-критическое СМИ (возможно, после The Quietus).</p><p>Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются, восхищение музыкальным вкусом - напротив.</p><p>С любовью ПО ЕБАЛУ, из Берлина</p>",
-      links: "~ links",
-      support: "~ support",
-    },
-    en: {
-      about: "~ about",
-      text: "<p>Опусти Оружие, Мразь <i>(Drop Your Weapon, Scum)</i> — the best music criticism outlet in the universe (possibly after The Quietus).</p><p>A fast DIY freestyle blog. Complaints are not accepted; admiration for the musical taste, on the other hand, is welcome.</p><p>With love ПО ЕБАЛУ <i>(PUNCH IN THE FACE)</i>, from Berlin</p>",
-      links: "~ links",
-      support: "~ support",
-    },
-    de: {
-      about: "~ about",
-      text: "<p>Опусти Оружие, Мразь <i>(Leg die Waffe nieder, Mistkerl)</i> — das beste Musikkritik-Medium im Universum (möglicherweise nach The Quietus).</p><p>Ein schneller DIY-Freestyle-Blog. Beschwerden werden nicht angenommen; Bewunderung für den Musikgeschmack hingegen schon.</p><p>Mit Liebe ПО ЕБАЛУ <i>(INS GESICHT PUNCHEN)</i>, aus Berlin</p>",
-      links: "~ links",
-      support: "~ support",
-    },
-  };
+  import {
+    getCurrentSiteLang,
+    getSiteCopy,
+  } from '../lib/site-i18n.mjs';
 
   function updateAboutPage() {
-    const lang = localStorage.getItem("site-lang") || "ru";
-    const t = translations[lang] || translations.ru;
+    const copy = getSiteCopy('aboutPage', getCurrentSiteLang());
 
-    const heading = document.getElementById("about-heading");
-    const text = document.getElementById("about-text");
-    const linksHeading = document.getElementById("links-heading");
-    const supportHeading = document.getElementById("support-heading");
+    const heading = document.getElementById('about-heading');
+    const text = document.getElementById('about-text');
+    const linksHeading = document.getElementById('links-heading');
+    const supportHeading = document.getElementById('support-heading');
 
-    if (heading) heading.textContent = t.about;
-    if (text) text.innerHTML = t.text;
-    if (linksHeading) linksHeading.textContent = t.links;
-    if (supportHeading) supportHeading.textContent = t.support;
+    if (heading) heading.textContent = copy.about;
+    if (text) text.innerHTML = copy.text;
+    if (linksHeading) linksHeading.textContent = copy.links;
+    if (supportHeading) supportHeading.textContent = copy.support;
   }
 
-  document.addEventListener("astro:page-load", updateAboutPage);
-  window.addEventListener("lang-changed", updateAboutPage);
+  document.addEventListener('astro:page-load', updateAboutPage);
+  window.addEventListener('lang-changed', updateAboutPage);
   updateAboutPage();
 </script>

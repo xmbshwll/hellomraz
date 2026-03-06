@@ -1,30 +1,24 @@
 ---
-import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import {
+  getDateIndex,
+  getQualifiedTags,
+  getTotalTagCount,
+} from '../../lib/blog-data.mjs';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
-const allPosts = await getCollection('blog');
-const tagCounts = new Map<string, number>();
-for (const post of allPosts) {
-  for (const tag of post.data.tags ?? []) {
-    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
-  }
-}
-
-// Only show tags that have dedicated pages (2+ posts)
-const tagObjects = [...tagCounts.entries()]
-  .filter(([, count]) => count >= 2)
-  .map(([name, count]) => ({ name, count }))
-  .sort((a, b) => b.count - a.count);
-
-const totalTags = tagCounts.size;
+const [dateIndex, tagObjects, totalTags] = await Promise.all([
+  getDateIndex(),
+  getQualifiedTags(),
+  getTotalTagCount(),
+]);
 ---
 
 <Layout title="Tags">
   <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
-    <PageHeader />
+    <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->

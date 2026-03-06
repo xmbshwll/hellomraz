@@ -1,27 +1,18 @@
 ---
-import ThemeChooser from "./ThemeChooser.astro";
-import LangSwitcher from "./LangSwitcher.astro";
-import HeaderSearch from "./HeaderSearch.astro";
-import DateSelector from "./DateSelector.astro";
-import { getCollection } from "astro:content";
+import '../styles/selectable-dropdown.css';
+import ThemeChooser from './ThemeChooser.astro';
+import LangSwitcher from './LangSwitcher.astro';
+import HeaderSearch from './HeaderSearch.astro';
+import DateSelector from './DateSelector.astro';
 
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+interface Props {
+  dateIndex: Record<string, number>;
+  currentYear?: number;
+  currentMonth?: number;
+}
 
-// Build date index for DateSelector — always available in the header
-const pageSize = 24;
-const allPosts = await getCollection("blog");
-const sorted = allPosts
-  .filter((p) => !p.data.draft)
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-
-const dateIndex: Record<string, number> = {};
-sorted.forEach((post, i) => {
-  const d = post.data.pubDate;
-  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  if (!(key in dateIndex)) {
-    dateIndex[key] = Math.floor(i / pageSize) + 1;
-  }
-});
+const { dateIndex, currentYear, currentMonth } = Astro.props;
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 ---
 
 <div class="page-header" transition:name="page-header" transition:persist>
@@ -41,7 +32,12 @@ sorted.forEach((post, i) => {
       </svg>
     </button>
     <HeaderSearch />
-    <DateSelector dateIndex={dateIndex} baseUrl={`${base}blog`} />
+    <DateSelector
+      dateIndex={dateIndex}
+      baseUrl={`${base}blog`}
+      currentYear={currentYear}
+      currentMonth={currentMonth}
+    />
   </div>
 
   <!-- Right: BMC + Theme chooser + Telegram -->

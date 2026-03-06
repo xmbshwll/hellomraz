@@ -1,53 +1,51 @@
 ---
-import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import {
+  getDateIndex,
+  getLinkedTagNames,
+  getQualifiedTagPages,
+} from '../../lib/blog-data.mjs';
+import { TAG_PAGE_POST_CAP } from '../../lib/feed-limits.mjs';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('blog');
-  const tagCounts = new Map<string, number>();
-  for (const post of allPosts) {
-    for (const tag of post.data.tags ?? []) {
-      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
-    }
-  }
+  const [tagPages, linkedTagNames] = await Promise.all([
+    getQualifiedTagPages(),
+    getLinkedTagNames(),
+  ]);
 
-  const qualifiedTags = new Set(
-    [...tagCounts.entries()]
-      .filter(([, count]) => count >= 2)
-      .map(([tag]) => tag)
-  );
+  return tagPages.map(({ name, posts }) => ({
+    params: { tag: name },
+    props: { posts, linkedTagNames },
+  }));
+}
 
-  return [...qualifiedTags].map(tag => {
-    const filteredPosts = allPosts.filter(post =>
-      post.data.tags?.some(t => t.toLowerCase() === tag.toLowerCase())
-    );
-    return {
-      params: { tag },
-      props: { posts: filteredPosts, qualifiedTags },
-    };
-  });
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  linkedTagNames: string[];
 }
 
 const { tag } = Astro.params;
-const { posts = [], qualifiedTags = new Set<string>() } = Astro.props;
-const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const { posts = [], linkedTagNames = [] } = Astro.props as Props;
+const linkedTags = new Set<string>(linkedTagNames);
+const dateIndex = await getDateIndex();
+const sortedPosts = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const relatedTags = [...new Set(
-  sortedPosts.flatMap(post => post.data.tags || [])
-    .filter(t => t !== tag && qualifiedTags.has(t))
+  sortedPosts.flatMap((post) => post.data.tags || [])
+    .filter((value) => value !== tag && linkedTags.has(value))
 )].slice(0, 5);
 
-const POST_CAP = 50;
-const visiblePosts = sortedPosts.slice(0, POST_CAP);
-const hasMore = sortedPosts.length > POST_CAP;
+const visiblePosts = sortedPosts.slice(0, TAG_PAGE_POST_CAP);
+const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
 ---
 
 <Layout title={`#${tag}`}>
   <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
-    <PageHeader />
+    <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->
@@ -72,7 +70,7 @@ const hasMore = sortedPosts.length > POST_CAP;
       {relatedTags.length > 0 && (
         <div class="mb-6 pb-4 border-b" style="border-color: var(--theme-border);">
           <div class="flex flex-wrap gap-1.5">
-            {relatedTags.map(relatedTag => (
+            {relatedTags.map((relatedTag) => (
               <a
                 href={`${base}tags/${relatedTag}`}
                 class="related-tag-chip"
@@ -108,8 +106,6 @@ const hasMore = sortedPosts.length > POST_CAP;
             id="tag-show-more-btn"
             class="show-more-btn"
             data-tag={tag}
-            data-total={sortedPosts.length}
-            data-rendered={POST_CAP}
           >
             show all {sortedPosts.length} posts
           </button>
@@ -208,23 +204,15 @@ const hasMore = sortedPosts.length > POST_CAP;
     if (!btn || !list || !wrap) return;
 
     const tag = btn.dataset.tag!;
-    const rendered = parseInt(btn.dataset.rendered || '50', 10);
 
     btn.addEventListener('click', async () => {
       btn.textContent = 'loading…';
       try {
         const base = document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
-        const res = await fetch(`${base}api/recent-posts.json`);
-        const allPosts: { slug: string; title: string; tags: string[]; date: string }[] = await res.json();
+        const res = await fetch(`${base}api/tag-posts/${encodeURIComponent(tag)}.json`);
+        const remainingPosts: { slug: string; title: string; date: string }[] = await res.json();
 
-        // Filter by tag, skip already-rendered
-        const tagLower = tag.toLowerCase();
-        const matching = allPosts.filter(p =>
-          p.tags?.some((t: string) => t.toLowerCase() === tagLower)
-        );
-        const remaining = matching.slice(rendered);
-
-        for (const post of remaining) {
+        for (const post of remainingPosts) {
           const a = document.createElement('a');
           a.href = `${base}blog/${post.slug}`;
           a.className = 'tag-post-row';

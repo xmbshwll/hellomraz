@@ -251,6 +251,129 @@
   color-scheme: light;
 }
 
+/* === Rosé Pine (Dark) === */
+[data-theme="rose-pine"] {
+  --theme-bg-base: #191724;
+  --theme-bg-surface: #1f1d2e;
+  --theme-bg-elevated: #26233a;
+  --theme-bg-hover: #403d52;
+  --theme-bg-active: #524f67;
+
+  --theme-text-primary: #e0def4;
+  --theme-text-secondary: #908caa;
+  --theme-text-muted: #6e6a86;
+  --theme-text-inverted: #191724;
+
+  --theme-border: #524f67;
+  --theme-border-subtle: #403d52;
+
+  --theme-accent: #31748f;
+  --theme-accent-hover: #9ccfd8;
+  --theme-accent-tag-bg: #26233a;
+  --theme-accent-tag-text: #e0def4;
+
+  --theme-code-bg: #191724;
+  --theme-code-text: #e0def4;
+  --theme-code-inline-bg: #1f1d2e;
+  --theme-code-inline-text: #eb6f92;
+
+  --theme-blockquote-bg: #1f1d2e;
+  --theme-blockquote-border: #9ccfd8;
+
+  --theme-success: #31748f;
+  --theme-warning: #f6c177;
+  --theme-error: #eb6f92;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #403d52;
+  --theme-scrollbar-thumb-hover: #524f67;
+
+  color-scheme: dark;
+}
+
+/* === Rosé Pine Moon (Dark) === */
+[data-theme="rose-pine-moon"] {
+  --theme-bg-base: #232136;
+  --theme-bg-surface: #2a273f;
+  --theme-bg-elevated: #393552;
+  --theme-bg-hover: #44415a;
+  --theme-bg-active: #56526e;
+
+  --theme-text-primary: #e0def4;
+  --theme-text-secondary: #908caa;
+  --theme-text-muted: #6e6a86;
+  --theme-text-inverted: #232136;
+
+  --theme-border: #56526e;
+  --theme-border-subtle: #44415a;
+
+  --theme-accent: #3e8fb0;
+  --theme-accent-hover: #9ccfd8;
+  --theme-accent-tag-bg: #393552;
+  --theme-accent-tag-text: #e0def4;
+
+  --theme-code-bg: #232136;
+  --theme-code-text: #e0def4;
+  --theme-code-inline-bg: #2a273f;
+  --theme-code-inline-text: #eb6f92;
+
+  --theme-blockquote-bg: #2a273f;
+  --theme-blockquote-border: #9ccfd8;
+
+  --theme-success: #3e8fb0;
+  --theme-warning: #f6c177;
+  --theme-error: #eb6f92;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #44415a;
+  --theme-scrollbar-thumb-hover: #56526e;
+
+  color-scheme: dark;
+}
+
+/* === Rosé Pine Dawn (Light) === */
+[data-theme="rose-pine-dawn"] {
+  --theme-bg-base: #faf4ed;
+  --theme-bg-surface: #fffaf3;
+  --theme-bg-elevated: #f2e9e1;
+  --theme-bg-hover: #dfdad9;
+  --theme-bg-active: #cecacd;
+
+  --theme-text-primary: #575279;
+  --theme-text-secondary: #797593;
+  --theme-text-muted: #9893a5;
+  --theme-text-inverted: #faf4ed;
+
+  --theme-border: #cecacd;
+  --theme-border-subtle: #dfdad9;
+
+  --theme-accent: #286983;
+  --theme-accent-hover: #56949f;
+  --theme-accent-tag-bg: #f2e9e1;
+  --theme-accent-tag-text: #575279;
+
+  --theme-code-bg: #f2e9e1;
+  --theme-code-text: #575279;
+  --theme-code-inline-bg: #f2e9e1;
+  --theme-code-inline-text: #b4637a;
+
+  --theme-blockquote-bg: #f2e9e1;
+  --theme-blockquote-border: #56949f;
+
+  --theme-success: #286983;
+  --theme-warning: #ea9d34;
+  --theme-error: #b4637a;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #dfdad9;
+  --theme-scrollbar-thumb-hover: #cecacd;
+
+  color-scheme: light;
+}
+
 /* ============================================
    Theme Application
    ============================================ */
@@ -480,25 +603,29 @@
 /* ---- Light theme text overrides ---- */
 [data-theme="light"] .text-zinc-900,
 [data-theme="nord-light"] .text-zinc-900,
-[data-theme="catppuccin-latte"] .text-zinc-900 {
+[data-theme="catppuccin-latte"] .text-zinc-900,
+[data-theme="rose-pine-dawn"] .text-zinc-900 {
   color: var(--theme-text-primary) !important;
 }
 
 [data-theme="light"] .text-zinc-800,
 [data-theme="nord-light"] .text-zinc-800,
-[data-theme="catppuccin-latte"] .text-zinc-800 {
+[data-theme="catppuccin-latte"] .text-zinc-800,
+[data-theme="rose-pine-dawn"] .text-zinc-800 {
   color: var(--theme-text-primary) !important;
 }
 
 [data-theme="light"] .text-zinc-600,
 [data-theme="nord-light"] .text-zinc-600,
-[data-theme="catppuccin-latte"] .text-zinc-600 {
+[data-theme="catppuccin-latte"] .text-zinc-600,
+[data-theme="rose-pine-dawn"] .text-zinc-600 {
   color: var(--theme-text-secondary) !important;
 }
 
 [data-theme="light"] .bg-white,
 [data-theme="nord-light"] .bg-white,
-[data-theme="catppuccin-latte"] .bg-white {
+[data-theme="catppuccin-latte"] .bg-white,
+[data-theme="rose-pine-dawn"] .bg-white {
   background-color: var(--theme-bg-base) !important;
 }
 
@@ -507,7 +634,9 @@
 [data-theme="nord-light"] .bg-zinc-100,
 [data-theme="nord-light"] .bg-zinc-50,
 [data-theme="catppuccin-latte"] .bg-zinc-100,
-[data-theme="catppuccin-latte"] .bg-zinc-50 {
+[data-theme="catppuccin-latte"] .bg-zinc-50,
+[data-theme="rose-pine-dawn"] .bg-zinc-100,
+[data-theme="rose-pine-dawn"] .bg-zinc-50 {
   background-color: var(--theme-bg-surface) !important;
 }
 

@@ -34,6 +34,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 </div>
 
 <script>
+  import { createFloatingDropdown } from "../lib/floating-dropdown.mjs";
   import {
     getSearchResultPrimaryLabel,
     getSearchResultSecondaryLabel,
@@ -160,62 +161,35 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
     (root as any).__headerSearchBound = true;
 
-    if (resultsEl.parentNode !== document.body) {
-      document.body.appendChild(resultsEl);
-    }
-
     const base = root.dataset.base || "/";
     let requestId = 0;
-    let positionRaf = 0;
 
-    function positionResults() {
-      const gutter = 4;
-      const rect = fieldEl.getBoundingClientRect();
-      const width = Math.min(
-        Math.max(220, rect.width),
-        window.innerWidth - gutter * 2,
-      );
-      let left = rect.left;
-      if (left + width > window.innerWidth - gutter) {
-        left = window.innerWidth - width - gutter;
-      }
-      if (left < gutter) left = gutter;
-
-      let top = rect.bottom + 6;
-      let maxHeight = Math.min(352, window.innerHeight - top - gutter);
-
-      if (maxHeight < 160 && rect.top > window.innerHeight / 2) {
-        const aboveMaxHeight = Math.min(352, rect.top - gutter - 6);
-        if (aboveMaxHeight > maxHeight) {
-          maxHeight = aboveMaxHeight;
-          top = Math.max(gutter, rect.top - maxHeight - 6);
-        }
-      }
-
-      resultsEl.style.left = `${left}px`;
-      resultsEl.style.top = `${Math.max(gutter, top)}px`;
-      resultsEl.style.width = `${width}px`;
-      resultsEl.style.maxHeight = `${Math.max(120, maxHeight)}px`;
-    }
-
-    function schedulePosition() {
-      if (!root.classList.contains("is-open")) return;
-      if (positionRaf) return;
-      positionRaf = window.requestAnimationFrame(() => {
-        positionRaf = 0;
-        positionResults();
-      });
-    }
-
-    function setOpen(open: boolean) {
-      root.classList.toggle("is-open", open);
-      resultsEl.hidden = !open;
-      if (open) positionResults();
-    }
+    const floatingSearchResults = createFloatingDropdown({
+      getAnchor: () => fieldEl,
+      getPanel: () => resultsEl,
+      zIndex: 99999,
+      position: {
+        align: "start",
+        width: (anchorRect) => Math.max(220, anchorRect.width),
+        offset: 6,
+        viewportPadding: 4,
+        maxHeight: 352,
+        minHeight: 120,
+        flipThreshold: 160,
+      },
+      setPanelOpen(panel, open) {
+        panel.hidden = !open;
+        panel.style.opacity = open ? "1" : "0";
+        panel.style.pointerEvents = open ? "auto" : "none";
+      },
+      onOpenChange(open) {
+        root.classList.toggle("is-open", open);
+      },
+    });
 
     function resetResults() {
       resultsEl.innerHTML = "";
-      setOpen(false);
+      floatingSearchResults.close();
     }
 
     function syncClearButton() {
@@ -241,14 +215,14 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
       if (!cachedEntries) {
         renderMessage(resultsEl, "searching…", "loading");
-        setOpen(true);
+        floatingSearchResults.open();
       }
 
       const matches = await findMatches(trimmed);
       if (currentRequest !== requestId) return [] as PreparedSearchEntry[];
 
       renderResults(resultsEl, matches, base, trimmed);
-      setOpen(true);
+      floatingSearchResults.open();
       return matches;
     }
 
@@ -260,7 +234,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
         window.location.href = `${base}blog/${first.slug}`;
       } else if (input.value.trim()) {
         renderResults(resultsEl, [], base, input.value);
-        setOpen(true);
+        floatingSearchResults.open();
       }
     });
 
@@ -291,20 +265,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       input.focus();
     });
 
-    document.addEventListener("click", (event) => {
-      const target = event.target as Node;
-      if (!root.contains(target) && !resultsEl.contains(target)) {
-        setOpen(false);
-      }
-    });
-
-    window.addEventListener("resize", schedulePosition);
-    document.addEventListener("scroll", schedulePosition, true);
-
     document.addEventListener("astro:page-load", () => {
-      if (resultsEl.parentNode !== document.body) {
-        document.body.appendChild(resultsEl);
-      }
       input.value = "";
       syncClearButton();
       resetResults();
