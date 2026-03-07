@@ -57,9 +57,24 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     searchText: string;
   }
 
+  const SEARCH_INPUT_DEBOUNCE_MS = 120;
+
   let cachedBase = "";
   let cachedEntries: PreparedSearchEntry[] | null = null;
   let loadingPromise: Promise<PreparedSearchEntry[]> | null = null;
+
+  function navigateInternal(url: string) {
+    const navigate = (window as Window & {
+      __hellomrazNavigate?: (href: string) => Promise<void> | void;
+    }).__hellomrazNavigate;
+
+    if (typeof navigate === "function") {
+      void navigate(url);
+      return;
+    }
+
+    window.location.assign(url);
+  }
 
   async function loadSearchIndex(base: string): Promise<PreparedSearchEntry[]> {
     if (cachedEntries && cachedBase === base) return cachedEntries;
@@ -138,8 +153,13 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
   }
 
   function bindHeaderSearch() {
-    const root = document.getElementById("header-search") as HTMLElement | null;
-    if (!root || (root as any).__headerSearchBound) return;
+    const root = document.getElementById("header-search") as
+      | (HTMLElement & {
+          __headerSearchBound?: boolean;
+          __headerSearchReset?: () => void;
+        })
+      | null;
+    if (!root || root.__headerSearchBound) return;
 
     const form = root.querySelector(
       ".header-search-form",
@@ -159,10 +179,11 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
     if (!form || !fieldEl || !input || !clearBtn || !resultsEl) return;
 
-    (root as any).__headerSearchBound = true;
+    root.__headerSearchBound = true;
 
     const base = root.dataset.base || "/";
     let requestId = 0;
+    let searchTimer: number | undefined;
 
     const floatingSearchResults = createFloatingDropdown({
       getAnchor: () => fieldEl,
@@ -190,6 +211,16 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     function resetResults() {
       resultsEl.innerHTML = "";
       floatingSearchResults.close();
+    }
+
+    function resetSearch() {
+      requestId += 1;
+      if (searchTimer) {
+        window.clearTimeout(searchTimer);
+      }
+      input.value = "";
+      syncClearButton();
+      resetResults();
     }
 
     function syncClearButton() {
@@ -226,12 +257,24 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       return matches;
     }
 
+    function scheduleResultsUpdate() {
+      if (searchTimer) {
+        window.clearTimeout(searchTimer);
+      }
+      searchTimer = window.setTimeout(() => {
+        void updateResults(input.value);
+      }, SEARCH_INPUT_DEBOUNCE_MS);
+    }
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (searchTimer) {
+        window.clearTimeout(searchTimer);
+      }
       const matches = await findMatches(input.value);
       const first = matches[0];
       if (first) {
-        window.location.href = `${base}blog/${first.slug}`;
+        navigateInternal(`${base}blog/${first.slug}`);
       } else if (input.value.trim()) {
         renderResults(resultsEl, [], base, input.value);
         floatingSearchResults.open();
@@ -248,7 +291,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     });
 
     input.addEventListener("input", () => {
-      void updateResults(input.value);
+      scheduleResultsUpdate();
     });
 
     input.addEventListener("keydown", (event) => {
@@ -259,22 +302,26 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     });
 
     clearBtn.addEventListener("click", () => {
-      input.value = "";
-      syncClearButton();
-      resetResults();
+      resetSearch();
       input.focus();
     });
 
-    document.addEventListener("astro:page-load", () => {
-      input.value = "";
-      syncClearButton();
-      resetResults();
-    });
-
+    root.__headerSearchReset = resetSearch;
     syncClearButton();
   }
 
-  document.addEventListener("astro:page-load", bindHeaderSearch);
+  function handleHeaderSearchPageLoad() {
+    bindHeaderSearch();
+
+    const root = document.getElementById("header-search") as
+      | (HTMLElement & {
+          __headerSearchReset?: () => void;
+        })
+      | null;
+    root?.__headerSearchReset?.();
+  }
+
+  document.addEventListener("astro:page-load", handleHeaderSearchPageLoad);
   bindHeaderSearch();
 </script>
 

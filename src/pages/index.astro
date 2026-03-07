@@ -14,21 +14,17 @@ const [dateIndex, morePosts] = await Promise.all([
 ---
 
 <Layout title="Home">
-  <div
-    id="playlist-container"
-    style="background-color: var(--theme-bg-surface);"
-  >
+  <div id="playlist-container" class="theme-surface">
     <PageHeader dateIndex={dateIndex} />
   </div>
 
   <!-- Reviews -->
-  <div class="reviews-section" style="background-color: var(--theme-bg-surface);">
-    <div class="flex items-center justify-between mb-4 border-b pb-2" style="border-color: var(--theme-border);">
-      <h2 class="text-lg font-bold" style="color: var(--theme-text-primary);">~ reviews</h2>
+  <div class="reviews-section theme-surface">
+    <div class="flex items-center justify-between mb-4 border-b pb-2 theme-border">
+      <h2 class="text-lg font-bold theme-text-primary">~ reviews</h2>
       <a
         href={`${base}blog`}
-        class="text-sm font-medium inline-flex items-center"
-        style="color: var(--theme-accent); min-height: 44px; padding: 8px 0;"
+        class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
       >
         see all →
       </a>
@@ -154,6 +150,10 @@ const [dateIndex, morePosts] = await Promise.all([
       padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
     }
   }
+  .reviews-link {
+    padding: 8px 0;
+    text-decoration: none;
+  }
   .load-more-reviews-btn {
     padding: 0.75rem 1.25rem;
     min-height: 44px;
@@ -234,35 +234,62 @@ const [dateIndex, morePosts] = await Promise.all([
 </style>
 
 <script>
-  /* Hover-color effect for cards */
   function bindColorCards() {
     const container = document.getElementById('playlist-container');
-    if (!container) return;
+    const grid = document.getElementById('more-reviews-grid') as
+      | (HTMLElement & {
+          __colorCardsBound?: boolean;
+        })
+      | null;
+    if (!container || !grid || grid.__colorCardsBound) return;
+
+    grid.__colorCardsBound = true;
 
     function setColor(color: string) {
-      const current = container!.getAttribute('data-color');
+      const current = container.getAttribute('data-color');
       if (color && color !== current) {
-        container!.style.setProperty('--context-color', color);
-        container!.setAttribute('data-color', color);
+        container.style.setProperty('--context-color', color);
+        container.setAttribute('data-color', color);
       }
     }
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
-    for (const card of document.querySelectorAll('.playlist-item')) {
-      card.addEventListener('mouseover', () => {
-        const c = card.getAttribute('data-color');
-        if (!c) return;
-        timeout = setTimeout(() => setColor(c), 200);
-      });
-      card.addEventListener('mouseout', () => {
-        if (timeout) { clearTimeout(timeout); timeout = null; }
-      });
-      card.addEventListener('focus', () => {
-        const c = card.getAttribute('data-color');
-        if (c) setColor(c);
-      });
-    }
+
+    grid.addEventListener('mouseover', (event) => {
+      const card = (event.target as HTMLElement).closest<HTMLElement>('.playlist-item');
+      if (!card) return;
+
+      const related = event.relatedTarget;
+      if (related instanceof Node && card.contains(related)) return;
+
+      const color = card.getAttribute('data-color');
+      if (!color) return;
+
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => setColor(color), 200);
+    });
+
+    grid.addEventListener('mouseout', (event) => {
+      const card = (event.target as HTMLElement).closest<HTMLElement>('.playlist-item');
+      if (!card) return;
+
+      const related = event.relatedTarget;
+      if (related instanceof Node && card.contains(related)) return;
+
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+    });
+
+    grid.addEventListener('focusin', (event) => {
+      const card = (event.target as HTMLElement).closest<HTMLElement>('.playlist-item');
+      if (!card) return;
+      const color = card.getAttribute('data-color');
+      if (color) setColor(color);
+    });
   }
+
   document.addEventListener('astro:page-load', bindColorCards);
   bindColorCards();
 </script>

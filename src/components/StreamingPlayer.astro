@@ -1,44 +1,30 @@
 ---
 /**
- * Multi-service streaming player with a switcher strip.
- * Renders one iframe at a time; Bandcamp is the default when available.
+ * Multi-service streaming player with uninterrupted internal-navigation playback.
+ * The live iframe is owned by the persistent FloatingPlayerDock host.
  */
 import type { StreamingLink } from '../lib/streaming';
+import {
+  buildStreamingPlayers,
+  getInitialStreamingPlayerIndex,
+} from '../lib/streaming-player.mjs';
 
 interface Props {
   links: StreamingLink[];
   bandcampAlbumId?: string | null;
-  bandcampUrl?: string | null;
+  coverUrl?: string | null;
+  slug: string;
+  title: string;
 }
 
-const { links, bandcampAlbumId, bandcampUrl } = Astro.props;
+const { links, bandcampAlbumId, coverUrl, slug, title } = Astro.props;
 
-// Build the embeddable services list
-// For Bandcamp, override the embedUrl with the known albumId-based one
-const players = links
-  .map((link) => {
-    if (link.service === 'Bandcamp' && bandcampAlbumId) {
-      return {
-        ...link,
-        embedUrl: `https://bandcamp.com/EmbeddedPlayer/album=${bandcampAlbumId}/size=large/bgcol=181818/linkcol=22c55e/transparent=true/`,
-      };
-    }
-    return link;
-  })
-  .filter((link) => link.embedUrl);
-
-// Nothing to render
+const players = buildStreamingPlayers(links, bandcampAlbumId);
 if (players.length === 0) return;
 
-// Default to Bandcamp, or first available
-const defaultIndex = players.findIndex((p) => p.service === 'Bandcamp');
-const initialIdx = defaultIndex >= 0 ? defaultIndex : 0;
+const initialIdx = getInitialStreamingPlayerIndex(players);
 
-// Fixed container height for consistent layout across pages
-const PLAYER_HEIGHT = 700; // px — consistent across all pages
-
-// Per-service iframe sizing — all use the same fixed height
-function iframeStyle(service: string): string {
+function iframeChromeStyle(service: string): string {
   const radius: Record<string, string> = {
     Spotify: 'border-radius:12px;',
     'Apple Music': 'border-radius:12px; overflow:hidden;',
@@ -47,135 +33,481 @@ function iframeStyle(service: string): string {
     'YouTube Music': 'border-radius:12px;',
     'Yandex Music': 'border-radius:12px;',
   };
-  return `border:0; width:100%; max-width:min(480px, 100%); height:${PLAYER_HEIGHT}px; ${radius[service] ?? ''}`;
+  return radius[service] ?? '';
 }
 ---
 
-<div class="streaming-player flex-none w-full md:w-[480px]" data-initial={initialIdx}>
-  {/* Service switcher tabs — wrapping grid for consistent height */}
-  <div
-    class="tab-grid mb-3"
-    id="player-tabs"
-  >
-      {players.map((p, i) => (
+<div
+  class="streaming-player flex-none w-full md:w-[480px]"
+  data-player-slug={slug}
+  data-player-title={title}
+  data-player-cover={coverUrl ?? ''}
+  data-initial={initialIdx}
+  data-active-index={initialIdx}
+>
+  <div class="player-toolbar">
+    <button type="button" class="player-pin-btn" data-player-pin>
+      keep playing ↗
+    </button>
+  </div>
+
+  <div class="player-live">
+    <div class="tab-grid mb-3" data-player-tabs>
+      {players.map((player, index) => (
         <button
-          class="player-tab px-3 py-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap"
-          data-index={i}
-          style={`min-height:44px; ${
-            i === initialIdx
-              ? 'background-color: var(--theme-accent); color: #fff;'
-              : 'background-color: var(--theme-bg-hover); color: var(--theme-text-muted); border: 1px solid var(--theme-border);'
-          }`}
+          type="button"
+          class:list={['player-tab px-3 py-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap', { 'is-active': index === initialIdx }]}
+          data-index={index}
+          data-service={player.service}
+          data-src={player.embedUrl}
+          data-chrome-style={iframeChromeStyle(player.service)}
+          aria-pressed={index === initialIdx ? 'true' : 'false'}
         >
-          <span class="mr-1">{p.icon}</span>{p.service}
+          <span class="mr-1">{player.icon}</span>{player.service}
         </button>
       ))}
     </div>
 
-  {/* Player iframes — only the active one is visible */}
-  <div id="player-frames">
-    {players.map((p, i) => (
-      <div
-        class="player-frame"
-        data-index={i}
-        data-service={p.service}
-        data-src={p.embedUrl}
-        data-style={iframeStyle(p.service)}
-        style={i === initialIdx ? '' : 'display:none;'}
-      >
-        {i === initialIdx ? (
-          <iframe
-            src={p.embedUrl}
-            style={iframeStyle(p.service)}
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            seamless
-          >
-            <a href={p.url}>Listen on {p.service}</a>
-          </iframe>
-        ) : (
-          <div class="player-placeholder" style={iframeStyle(p.service)} />
-        )}
+    <div class="player-dock-note" hidden>
+      <div class="player-dock-note-copy">
+        <div class="player-dock-note-title">playing in floating widget</div>
+        <div class="player-dock-note-service" data-player-dock-service></div>
       </div>
-    ))}
+    </div>
+
+    <div class="player-stage" data-streaming-player-anchor={slug}>
+      <div class="player-stage-placeholder">
+        <div class="player-stage-copy">
+          <div class="player-stage-title">persistent player</div>
+          <div class="player-stage-message" data-player-stage-message>
+            Playback stays alive while you browse this site.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-  function setupPlayerSwitcher() {
-    const container = document.querySelector('.streaming-player');
-    if (!container) return;
+  import {
+    getStreamingPlayerUiState,
+    shouldAutoRestoreStreamingPlayer,
+  } from '../lib/streaming-player.mjs';
 
-    // Tabs stay inside the player (above the iframe)
+  interface StreamingPlayerDockState {
+    slug: string;
+    title: string;
+    service: string;
+    index: number;
+    mode: 'inline' | 'floating';
+    pinned: boolean;
+    expanded: boolean;
+  }
 
-    // Tabs may have been moved outside the player container, so query from document
-    const tabButtons = document.querySelectorAll<HTMLButtonElement>('.player-tab');
-    const frames = container.querySelectorAll<HTMLElement>('.player-frame');
+  interface StreamingPlayerDockApi {
+    activate: (payload: {
+      slug: string;
+      title: string;
+      service: string;
+      index: number;
+      embedUrl: string;
+      coverUrl?: string;
+      chromeStyle: string;
+      mode?: 'inline' | 'floating';
+      allowReplace?: boolean;
+      expand?: boolean;
+      pinned?: boolean;
+    }) => boolean;
+    close: () => void;
+    showInline: (slug?: string) => boolean;
+    showFloating: (options?: {
+      expand?: boolean;
+      pinned?: boolean;
+    }) => boolean;
+    toggleExpanded: (force?: boolean) => void;
+    refresh: () => void;
+    getState: () => StreamingPlayerDockState | null;
+  }
 
-    tabButtons.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const idx = tab.dataset.index!;
+  function getDockApi(): StreamingPlayerDockApi | null {
+    return ((window as any).__streamingPlayerDock as StreamingPlayerDockApi | undefined) ?? null;
+  }
 
-        // Update tabs
-        tabButtons.forEach((t) => {
-          if (t.dataset.index === idx) {
-            t.style.cssText = 'background-color: var(--theme-accent); color: #fff;';
-          } else {
-            t.style.cssText = 'background-color: var(--theme-bg-hover); color: var(--theme-text-muted); border: 1px solid var(--theme-border);';
-          }
-        });
+  function getTabs(container: HTMLElement): HTMLButtonElement[] {
+    return Array.from(container.querySelectorAll<HTMLButtonElement>('.player-tab'));
+  }
 
-        // Show/hide frames, lazy-load iframes on first switch
-        frames.forEach((frame) => {
-          if (frame.dataset.index === idx) {
-            frame.style.display = '';
-            // Lazy-create iframe if not yet loaded
-            if (!frame.querySelector('iframe')) {
-              const src = frame.dataset.src!;
-              const placeholder = frame.querySelector('.player-placeholder');
-              if (placeholder) {
-                const iframe = document.createElement('iframe');
-                iframe.src = src;
-                iframe.style.cssText = frame.dataset.style || '';
-                iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-                iframe.setAttribute('seamless', '');
-                frame.replaceChild(iframe, placeholder);
-              }
-            }
-          } else {
-            frame.style.display = 'none';
-          }
-        });
-      });
+  function getActiveIndex(container: HTMLElement): number {
+    return Number(container.dataset.activeIndex || container.dataset.initial || '0');
+  }
+
+  function setActiveIndex(container: HTMLElement, index: number) {
+    container.dataset.activeIndex = String(index);
+  }
+
+  function syncTabState(container: HTMLElement, activeIndex: number) {
+    getTabs(container).forEach((tab) => {
+      const isActive = Number(tab.dataset.index || '-1') === activeIndex;
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
   }
 
+  function getPlayerPayload(container: HTMLElement, index: number) {
+    const tab = getTabs(container).find(
+      (candidate) => Number(candidate.dataset.index || '-1') === index,
+    );
+    const embedUrl = tab?.dataset.src;
+    if (!tab || !embedUrl) {
+      return null;
+    }
+
+    return {
+      service: tab.dataset.service || 'Streaming service',
+      embedUrl,
+      coverUrl: container.dataset.playerCover || undefined,
+      chromeStyle: tab.dataset.chromeStyle || '',
+    };
+  }
+
+  function syncPlayerUi(container: HTMLElement) {
+    const dock = getDockApi();
+    const state = dock?.getState?.() ?? null;
+    const slug = container.dataset.playerSlug || '';
+    const uiState = getStreamingPlayerUiState(state, slug);
+
+    if (state?.slug === slug) {
+      setActiveIndex(container, state.index);
+    }
+
+    syncTabState(container, getActiveIndex(container));
+    container.classList.toggle('is-floating-session', uiState === 'floating');
+    container.classList.toggle('is-inline-session', uiState === 'inline');
+
+    const note = container.querySelector<HTMLElement>('.player-dock-note');
+    const placeholder = container.querySelector<HTMLElement>('.player-stage-placeholder');
+    const serviceEl = container.querySelector<HTMLElement>('[data-player-dock-service]');
+    if (placeholder) {
+      placeholder.hidden = uiState === 'inline';
+    }
+    if (note) {
+      note.hidden = uiState !== 'floating';
+    }
+    if (serviceEl) {
+      serviceEl.textContent =
+        uiState === 'floating'
+          ? `${state?.service || 'Streaming service'} · use the widget controls to hide or close it`
+          : '';
+    }
+
+    const stageMessage = container.querySelector<HTMLElement>('[data-player-stage-message]');
+    if (stageMessage) {
+      stageMessage.textContent =
+        uiState === 'blocked'
+          ? 'Another album is already playing in the floating widget. Click any tab to switch here.'
+          : 'Playback stays alive while you browse this site.';
+    }
+  }
+
+  function activatePlayer(
+    container: HTMLElement,
+    index: number,
+    options: {
+      mode?: 'inline' | 'floating';
+      allowReplace?: boolean;
+      expand?: boolean;
+      pinned?: boolean;
+    } = {},
+  ) {
+    const dock = getDockApi();
+    if (!dock) return false;
+
+    const payload = getPlayerPayload(container, index);
+    if (!payload) return false;
+
+    const activated = dock.activate({
+      slug: container.dataset.playerSlug || '',
+      title: container.dataset.playerTitle || 'Streaming player',
+      index,
+      ...payload,
+      mode: options.mode,
+      allowReplace: options.allowReplace,
+      expand: options.expand,
+      pinned: options.pinned,
+    });
+
+    if (activated) {
+      setActiveIndex(container, index);
+    }
+
+    syncPlayerUi(container);
+    return activated;
+  }
+
+  function activateInitialPlayer(container: HTMLElement, allowReplace = false) {
+    const initialIndex = Number(container.dataset.initial || '0');
+    return activatePlayer(container, initialIndex, {
+      mode: 'inline',
+      allowReplace,
+      expand: false,
+      pinned: false,
+    });
+  }
+
+  function initPlayerSession(container: HTMLElement) {
+    const dock = getDockApi();
+    if (!dock) return;
+
+    const state = dock.getState?.() ?? null;
+    const slug = container.dataset.playerSlug || '';
+
+    if (!state) {
+      activateInitialPlayer(container);
+      return;
+    }
+
+    if (state.mode === 'inline' && state.slug !== slug) {
+      activateInitialPlayer(container, true);
+      return;
+    }
+
+    if (state.slug === slug) {
+      setActiveIndex(container, state.index);
+      if (shouldAutoRestoreStreamingPlayer(state, slug)) {
+        dock.showInline(slug);
+      } else {
+        dock.refresh();
+      }
+    }
+
+    syncPlayerUi(container);
+  }
+
+  function bindStreamingPlayer(container: HTMLElement) {
+    if (container.dataset.playerBound === 'true') {
+      initPlayerSession(container);
+      return;
+    }
+    container.dataset.playerBound = 'true';
+
+    getTabs(container).forEach((tab) => {
+      tab.addEventListener('click', () => {
+        activatePlayer(container, Number(tab.dataset.index || '0'), {
+          mode: 'inline',
+          allowReplace: true,
+          expand: false,
+          pinned: false,
+        });
+      });
+    });
+
+    const pinBtn = container.querySelector<HTMLButtonElement>('[data-player-pin]');
+    pinBtn?.addEventListener('click', () => {
+      const dock = getDockApi();
+      if (!dock) return;
+
+      const state = dock.getState?.() ?? null;
+      const slug = container.dataset.playerSlug || '';
+      if (state?.slug === slug) {
+        dock.showFloating({
+          expand: true,
+          pinned: true,
+        });
+        syncPlayerUi(container);
+        return;
+      }
+
+      activatePlayer(container, getActiveIndex(container), {
+        mode: 'floating',
+        allowReplace: true,
+        expand: true,
+        pinned: true,
+      });
+    });
+
+    const handleInlineResetRequest = (event: Event) => {
+      if (!document.body.contains(container)) {
+        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        return;
+      }
+
+      const customEvent = event as CustomEvent<{ slug?: string }>;
+      const slug = container.dataset.playerSlug || '';
+      if (customEvent.detail?.slug !== slug) {
+        return;
+      }
+
+      const initialIndex = Number(container.dataset.initial || '0');
+      activatePlayer(container, initialIndex, {
+        mode: 'inline',
+        allowReplace: true,
+        expand: false,
+        pinned: false,
+      });
+    };
+
+    const handleDockChange = () => {
+      if (!document.body.contains(container)) {
+        window.removeEventListener('streaming-player-dock-change', handleDockChange);
+        window.removeEventListener('streaming-player-dock-ready', handleDockReady);
+        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        return;
+      }
+
+      const state = getDockApi()?.getState?.() ?? null;
+      const slug = container.dataset.playerSlug || '';
+      if (!state || (state.mode === 'inline' && state.slug !== slug)) {
+        activateInitialPlayer(container, !!state);
+        return;
+      }
+
+      syncPlayerUi(container);
+    };
+
+    const handleDockReady = () => {
+      if (!document.body.contains(container)) {
+        window.removeEventListener('streaming-player-dock-ready', handleDockReady);
+        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        return;
+      }
+      initPlayerSession(container);
+    };
+
+    window.addEventListener('streaming-player-dock-change', handleDockChange);
+    window.addEventListener('streaming-player-dock-ready', handleDockReady);
+    window.addEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+    initPlayerSession(container);
+  }
+
+  function setupPlayerSwitcher() {
+    document.querySelectorAll<HTMLElement>('.streaming-player').forEach(bindStreamingPlayer);
+  }
+
   document.addEventListener('astro:page-load', setupPlayerSwitcher);
+  setupPlayerSwitcher();
 </script>
 
 <style>
-  /* Tab grid: always 4 columns, consistent layout regardless of count */
+  .player-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+  }
+  .player-pin-btn {
+    min-height: 36px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-elevated);
+    color: var(--theme-text-secondary);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .player-pin-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
+  .player-dock-note {
+    display: none;
+    border: 1px solid var(--theme-border);
+    background: color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent);
+    padding: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+  .streaming-player.is-floating-session .player-dock-note {
+    display: block;
+  }
+  .streaming-player.is-floating-session .player-toolbar,
+  .streaming-player.is-floating-session .player-stage {
+    display: none;
+  }
+  .player-dock-note-copy {
+    min-width: 0;
+    flex: 1;
+  }
+  .player-dock-note-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--theme-text-primary);
+  }
+  .player-dock-note-service {
+    margin-top: 0.1875rem;
+    font-size: 0.75rem;
+    color: var(--theme-text-secondary);
+  }
+  .player-live {
+    min-width: 0;
+  }
   .tab-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 4px;
+  }
+  .player-tab {
+    min-height: 44px;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-hover);
+    color: var(--theme-text-muted);
+  }
+  .player-tab:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-text-primary);
+  }
+  .player-tab.is-active,
+  .player-tab[aria-pressed='true'] {
+    border-color: var(--theme-accent);
+    background-color: var(--theme-accent);
+    color: #fff;
+  }
+  .player-stage {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 700px;
+  }
+  .player-stage-placeholder {
+    height: 100%;
+    border: 1px solid var(--theme-border);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent), var(--theme-bg-surface)),
+      radial-gradient(circle at top left, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  .player-stage-placeholder[hidden] {
+    display: none;
+  }
+  .player-stage-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 18rem;
+  }
+  .player-stage-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--theme-text-primary);
+  }
+  .player-stage-message {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--theme-text-secondary);
   }
 
   @media (max-width: 640px) {
     .tab-grid {
       grid-template-columns: repeat(3, 1fr);
     }
-    .streaming-player iframe {
-      max-width: 100% !important;
-      max-height: 70vh !important;
-    }
-    .streaming-player .player-frame {
-      max-width: 100%;
-      overflow: hidden;
-    }
-    .streaming-player .player-placeholder {
-      max-width: 100% !important;
-      max-height: 70vh !important;
+    .player-stage {
+      height: 70vh;
     }
   }
 </style>

@@ -18,12 +18,12 @@ interface Props {
 
 const { dateIndex, baseUrl, currentYear, currentMonth } = Astro.props;
 
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 // Derive available years and months-per-year
 const yearMonths: Record<number, number[]> = {};
 for (const key of Object.keys(dateIndex)) {
-  const [y, m] = key.split("-").map(Number);
+  const [y, m] = key.split('-').map(Number);
   if (!yearMonths[y]) yearMonths[y] = [];
   yearMonths[y].push(m);
 }
@@ -35,27 +35,26 @@ for (const y of sortedYears) {
 }
 
 const MONTH_NAMES = [
-  "",
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  '',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 ---
 
-<div class="date-selector" data-base={base}>
+<div class="date-selector" data-base={base} data-current-month={currentMonth ?? ''}>
   <label class="ds-label">Jump to</label>
 
-  <!-- Year select -->
-  <select id="ds-year" class="ds-select">
+  <select class="ds-select" data-ds-year>
     <option value="">Year</option>
     {
       sortedYears.map((y) => (
@@ -66,259 +65,329 @@ const MONTH_NAMES = [
     }
   </select>
 
-  <!-- Month select -->
-  <select id="ds-month" class="ds-select" disabled>
+  <select class="ds-select" data-ds-month disabled>
     <option value="">Month</option>
   </select>
 
-  <button id="ds-go" class="ds-go-btn" disabled>Go</button>
+  <button class="ds-go-btn" type="button" data-ds-go disabled>Go</button>
 
-  <!-- Separator -->
   <span class="ds-sep">│</span>
 
-  <!-- Tag picker trigger -->
-  <div class="ds-tag-picker" id="ds-tag-picker">
+  <div class="ds-tag-picker">
     <button
-      id="ds-tag-btn"
       class="ds-tag-btn"
+      type="button"
+      data-ds-tag-btn
       aria-expanded="false"
       aria-haspopup="listbox"
     >
-      <span id="ds-tag-label">#tag</span>
-      <span id="ds-tag-arrow" class="ds-arrow">▾</span>
+      <span>#tag</span>
+      <span class="ds-arrow" data-ds-tag-arrow>▾</span>
     </button>
   </div>
 </div>
 
-<!-- Date picker script -->
 <script define:vars={{ yearMonths, dateIndex, baseUrl, MONTH_NAMES }}>
-  const yearEl = document.getElementById("ds-year");
-  const monthEl = document.getElementById("ds-month");
-  const goEl = document.getElementById("ds-go");
+  function navigateInternal(url) {
+    const navigate = window.__hellomrazNavigate;
 
-  function populateMonths(year) {
+    if (typeof navigate === 'function') {
+      void navigate(url);
+      return;
+    }
+
+    window.location.assign(url);
+  }
+
+  function populateMonths(monthEl, goEl, year, selectedMonth = '') {
     monthEl.innerHTML = '<option value="">Month</option>';
-    var key = Number(year);
-    if (!year || !yearMonths[key]) {
+
+    const yearKey = Number(year);
+    if (!year || !yearMonths[yearKey]) {
       monthEl.disabled = true;
       goEl.disabled = true;
       return;
     }
-    for (const m of yearMonths[key]) {
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = MONTH_NAMES[m];
-      monthEl.appendChild(opt);
+
+    for (const month of yearMonths[yearKey]) {
+      const option = document.createElement('option');
+      option.value = String(month);
+      option.textContent = MONTH_NAMES[month];
+      option.selected = String(month) === selectedMonth;
+      monthEl.appendChild(option);
     }
+
     monthEl.disabled = false;
-  }
-
-  yearEl.addEventListener("change", () => {
-    populateMonths(yearEl.value);
-    goEl.disabled = true;
-  });
-  monthEl.addEventListener("change", () => {
     goEl.disabled = !monthEl.value;
-  });
-
-  goEl.addEventListener("click", () => {
-    const y = yearEl.value;
-    const m = monthEl.value.padStart(2, "0");
-    const key = `${y}-${m}`;
-    const page = dateIndex[key];
-    if (page == null) return;
-    const url = page === 1 ? baseUrl : `${baseUrl}/${page}`;
-    window.location.href = `${url}#month-${key}`;
-  });
-
-  if (yearEl.value) {
-    populateMonths(yearEl.value);
-    if (monthEl.value) goEl.disabled = false;
   }
+
+  function bindDateSelector(root) {
+    if (root.dataset.dateSelectorBound === 'true') {
+      return;
+    }
+    root.dataset.dateSelectorBound = 'true';
+
+    const yearEl = root.querySelector('[data-ds-year]');
+    const monthEl = root.querySelector('[data-ds-month]');
+    const goEl = root.querySelector('[data-ds-go]');
+    if (!yearEl || !monthEl || !goEl) {
+      return;
+    }
+
+    const initialMonth = root.dataset.currentMonth || '';
+
+    yearEl.addEventListener('change', () => {
+      populateMonths(monthEl, goEl, yearEl.value);
+    });
+
+    monthEl.addEventListener('change', () => {
+      goEl.disabled = !monthEl.value;
+    });
+
+    goEl.addEventListener('click', () => {
+      const year = yearEl.value;
+      const month = monthEl.value.padStart(2, '0');
+      const key = `${year}-${month}`;
+      const page = dateIndex[key];
+      if (page == null) return;
+      const url = page === 1 ? baseUrl : `${baseUrl}/${page}`;
+      navigateInternal(`${url}#month-${key}`);
+    });
+
+    if (yearEl.value) {
+      populateMonths(monthEl, goEl, yearEl.value, initialMonth);
+    }
+  }
+
+  function initDateSelectors() {
+    document.querySelectorAll('.date-selector').forEach(bindDateSelector);
+  }
+
+  if (!window.__dateSelectorPageLoadBound) {
+    window.__dateSelectorPageLoadBound = true;
+    document.addEventListener('astro:page-load', initDateSelectors);
+  }
+  initDateSelectors();
 </script>
 
-<!-- Tag picker script — loads tags lazily from API -->
 <script>
-  import { createFloatingDropdown } from "../lib/floating-dropdown.mjs";
+  import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
 
-  (function () {
-    const INITIAL_SHOW = 10;
-    let dropdown: HTMLElement | null = null;
-    let tagsData: { name: string; count: number }[] | null = null;
+  interface TagSummary {
+    name: string;
+    count: number;
+  }
 
-    function getBase(): string {
-      const root = document.querySelector(".date-selector");
-      return root?.getAttribute("data-base") || "/";
+  interface DateSelectorRoot extends HTMLElement {
+    __tagPickerBound?: boolean;
+    __tagDropdown?: HTMLElement | null;
+  }
+
+  type DateSelectorWindow = Window & {
+    __dateSelectorTagPageLoadBound?: boolean;
+  };
+
+  const INITIAL_SHOW = 10;
+  const tagDataCache = new Map<string, Promise<TagSummary[]>>();
+
+  function navigateInternal(url: string) {
+    const navigate = (window as Window & {
+      __hellomrazNavigate?: (href: string) => Promise<void> | void;
+    }).__hellomrazNavigate;
+
+    if (typeof navigate === 'function') {
+      void navigate(url);
+      return;
     }
 
-    async function loadTags() {
-      if (tagsData) return tagsData;
-      try {
-        const res = await fetch(`${getBase()}api/tags.json`);
-        tagsData = await res.json();
-      } catch {
-        tagsData = [];
-      }
-      return tagsData;
-    }
+    window.location.assign(url);
+  }
 
-    function ensureDropdown(tags: { name: string; count: number }[]) {
-      if (dropdown?.isConnected) return dropdown;
+  function getBase(root: HTMLElement): string {
+    return root.dataset.base || '/';
+  }
 
-      dropdown = document.createElement("div");
-      dropdown.className = "ds-tag-dropdown";
-
-      const searchWrap = document.createElement("div");
-      searchWrap.className = "ds-tag-search-wrap";
-      const searchInput = document.createElement("input");
-      searchInput.type = "text";
-      searchInput.placeholder = "search tags…";
-      searchInput.className = "ds-tag-search";
-      searchInput.autocomplete = "off";
-      searchWrap.appendChild(searchInput);
-      dropdown.appendChild(searchWrap);
-
-      const listEl = document.createElement("div");
-      listEl.className = "ds-tag-list";
-      dropdown.appendChild(listEl);
-
-      const moreBtn = document.createElement("a");
-      moreBtn.className = "ds-tag-more";
-      moreBtn.href = `${getBase()}tags/`;
-      moreBtn.textContent = `all ${tags.length} tags →`;
-      moreBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        floatingTagDropdown.close();
-        window.location.href = moreBtn.href;
-      });
-      dropdown.appendChild(moreBtn);
-
-      function renderTags(filter: string) {
-        listEl.innerHTML = "";
-        const query = (filter || "").toLowerCase().trim();
-        let items = tags;
-
-        if (query) {
-          items = tags.filter((tag) => tag.name.toLowerCase().includes(query));
-          moreBtn.style.display = "none";
-        } else {
-          items = tags.slice(0, INITIAL_SHOW);
-          moreBtn.style.display = "";
-        }
-
-        if (items.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "ds-tag-empty";
-          empty.textContent = "no matching tags";
-          listEl.appendChild(empty);
-          return;
-        }
-
-        for (const tag of items) {
-          const btn = document.createElement("a");
-          btn.href = `${getBase()}tags/${tag.name}`;
-          btn.className = "ds-tag-item";
-
-          const name = document.createElement("span");
-          name.className = "ds-tag-name";
-          name.textContent = `#${tag.name}`;
-          btn.appendChild(name);
-
-          const count = document.createElement("span");
-          count.className = "ds-tag-count";
-          count.textContent = String(tag.count);
-          btn.appendChild(count);
-
-          btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            floatingTagDropdown.close();
-            window.location.href = btn.href;
-          });
-
-          listEl.appendChild(btn);
-        }
-      }
-
-      searchInput.addEventListener("input", () =>
-        renderTags(searchInput.value),
-      );
-      searchInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const first = listEl.querySelector(
-            ".ds-tag-item",
-          ) as HTMLAnchorElement | null;
-          if (first) {
-            floatingTagDropdown.close();
-            window.location.href = first.href;
+  function loadTags(base: string) {
+    let request = tagDataCache.get(base);
+    if (!request) {
+      request = fetch(`${base}api/tags.json`)
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error('Failed to load tags');
           }
-        }
-      });
+          return (await response.json()) as TagSummary[];
+        })
+        .catch(() => [] as TagSummary[]);
+      tagDataCache.set(base, request);
+    }
+    return request;
+  }
 
-      renderTags("");
-      return dropdown;
+  function ensureDropdown(
+    root: DateSelectorRoot,
+    tags: TagSummary[],
+    closeDropdown: () => void,
+  ) {
+    if (root.__tagDropdown?.isConnected) {
+      return root.__tagDropdown;
+    }
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'ds-tag-dropdown';
+
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'ds-tag-search-wrap';
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'search tags…';
+    searchInput.className = 'ds-tag-search';
+    searchInput.autocomplete = 'off';
+    searchWrap.appendChild(searchInput);
+    dropdown.appendChild(searchWrap);
+
+    const listEl = document.createElement('div');
+    listEl.className = 'ds-tag-list';
+    dropdown.appendChild(listEl);
+
+    const moreBtn = document.createElement('a');
+    moreBtn.className = 'ds-tag-more';
+    moreBtn.href = `${getBase(root)}tags/`;
+    moreBtn.textContent = `all ${tags.length} tags →`;
+    moreBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      closeDropdown();
+      navigateInternal(moreBtn.href);
+    });
+    dropdown.appendChild(moreBtn);
+
+    function renderTags(filter: string) {
+      listEl.innerHTML = '';
+      const query = filter.toLowerCase().trim();
+      let items = tags;
+
+      if (query) {
+        items = tags.filter((tag) => tag.name.toLowerCase().includes(query));
+        moreBtn.style.display = 'none';
+      } else {
+        items = tags.slice(0, INITIAL_SHOW);
+        moreBtn.style.display = '';
+      }
+
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'ds-tag-empty';
+        empty.textContent = 'no matching tags';
+        listEl.appendChild(empty);
+        return;
+      }
+
+      for (const tag of items) {
+        const link = document.createElement('a');
+        link.href = `${getBase(root)}tags/${tag.name}`;
+        link.className = 'ds-tag-item';
+
+        const name = document.createElement('span');
+        name.className = 'ds-tag-name';
+        name.textContent = `#${tag.name}`;
+        link.appendChild(name);
+
+        const count = document.createElement('span');
+        count.className = 'ds-tag-count';
+        count.textContent = String(tag.count);
+        link.appendChild(count);
+
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          closeDropdown();
+          navigateInternal(link.href);
+        });
+
+        listEl.appendChild(link);
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      renderTags(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const first = listEl.querySelector('.ds-tag-item') as HTMLAnchorElement | null;
+        if (first) {
+          closeDropdown();
+          navigateInternal(first.href);
+        }
+      }
+    });
+
+    renderTags('');
+    root.__tagDropdown = dropdown;
+    return dropdown;
+  }
+
+  function bindTagPicker(root: DateSelectorRoot) {
+    if (root.__tagPickerBound) {
+      return;
+    }
+    root.__tagPickerBound = true;
+
+    const button = root.querySelector<HTMLButtonElement>('[data-ds-tag-btn]');
+    const arrow = root.querySelector<HTMLElement>('[data-ds-tag-arrow]');
+    if (!button || !arrow) {
+      return;
     }
 
     const floatingTagDropdown = createFloatingDropdown({
-      getAnchor: () =>
-        document.getElementById("ds-tag-btn") as HTMLElement | null,
-      getPanel: () => dropdown,
+      getAnchor: () => button,
+      getPanel: () => root.__tagDropdown ?? null,
       useOverlay: true,
       zIndex: 99999,
       position: {
-        align: "start",
+        align: 'start',
         width: 280,
         offset: 4,
         viewportPadding: 4,
         maxHeight: 400,
       },
       setPanelOpen(panel, open) {
-        panel.style.opacity = open ? "1" : "0";
-        panel.style.pointerEvents = open ? "auto" : "none";
+        panel.style.opacity = open ? '1' : '0';
+        panel.style.pointerEvents = open ? 'auto' : 'none';
       },
       onOpenChange(open, panel) {
-        const btn = document.getElementById("ds-tag-btn");
-        if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
-
-        const arrow = document.getElementById("ds-tag-arrow");
-        if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "";
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        arrow.style.transform = open ? 'rotate(180deg)' : '';
 
         if (open && panel) {
-          const input = panel.querySelector(
-            ".ds-tag-search",
-          ) as HTMLInputElement | null;
+          const input = panel.querySelector('.ds-tag-search') as HTMLInputElement | null;
           if (input) {
-            input.value = "";
-            input.dispatchEvent(new Event("input"));
-            setTimeout(() => input.focus(), 50);
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+            requestAnimationFrame(() => input.focus());
           }
         }
       },
     });
 
-    async function toggle() {
-      const tags = await loadTags();
-      ensureDropdown(tags);
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const tags = await loadTags(getBase(root));
+      ensureDropdown(root, tags, () => floatingTagDropdown.close());
       floatingTagDropdown.toggle();
-    }
+    });
+  }
 
-    function bindBtn() {
-      const btn = document.getElementById("ds-tag-btn") as
-        | (HTMLButtonElement & {
-            __tagBound?: boolean;
-          })
-        | null;
-      if (!btn || btn.__tagBound) return;
-      btn.__tagBound = true;
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        void toggle();
-      });
-    }
+  function initTagPickers() {
+    document
+      .querySelectorAll<DateSelectorRoot>('.date-selector')
+      .forEach(bindTagPicker);
+  }
 
-    document.addEventListener("astro:page-load", bindBtn);
-    bindBtn();
-  })();
+  if (!(window as DateSelectorWindow).__dateSelectorTagPageLoadBound) {
+    (window as DateSelectorWindow).__dateSelectorTagPageLoadBound = true;
+    document.addEventListener('astro:page-load', initTagPickers);
+  }
+  initTagPickers();
 </script>
 
 <style>
@@ -374,8 +443,6 @@ const MONTH_NAMES = [
   .ds-sep {
     color: var(--theme-border);
   }
-
-  /* Tag picker button — matches theme chooser style */
   .ds-tag-picker {
     position: relative;
   }
@@ -411,7 +478,6 @@ const MONTH_NAMES = [
   }
 </style>
 
-<!-- Dropdown styles (global because it's a body-appended portal) -->
 <style is:global>
   .ds-tag-dropdown {
     position: fixed;

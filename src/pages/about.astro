@@ -7,41 +7,27 @@ const dateIndex = await getDateIndex();
 ---
 
 <Layout title="About" description="О блоге Опусти Оружие, Мразь">
-  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+  <div class="min-h-full theme-surface">
     <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->
-      <div
-        class="mb-8 border-b pb-4"
-        style="border-color: var(--theme-border);"
-      >
-        <h1
-          class="text-2xl font-bold"
-          style="color: var(--theme-text-primary);"
-        >
+      <div class="mb-8 border-b pb-4 theme-border">
+        <h1 class="text-2xl font-bold theme-text-primary">
           $ whoami
         </h1>
-        <p class="text-sm mt-2" style="color: var(--theme-text-muted);">
+        <p class="text-sm mt-2 theme-text-muted">
           music · reviews · underground
         </p>
       </div>
 
       <!-- About Section -->
       <div class="mb-8">
-        <h2
-          id="about-heading"
-          class="text-lg font-bold mb-4"
-          style="color: var(--theme-text-primary);"
-        >
+        <h2 id="about-heading" class="text-lg font-bold mb-4 theme-text-primary">
           ~ about
         </h2>
 
-        <div
-          id="about-text"
-          class="space-y-3 text-sm"
-          style="color: var(--theme-text-secondary);"
-        >
+        <div id="about-text" class="space-y-3 text-sm theme-text-secondary">
           <p>
             Опусти Оружие, Мразь — самое лучшее во вселенной
             музыкально-критическое СМИ (возможно, после The Quietus).
@@ -54,33 +40,20 @@ const dateIndex = await getDateIndex();
       </div>
 
       <!-- Contact -->
-      <div class="border-t pt-6" style="border-color: var(--theme-border);">
-        <h2
-          id="links-heading"
-          class="text-lg font-bold mb-4"
-          style="color: var(--theme-text-primary);"
-        >
+      <div class="border-t pt-6 theme-border">
+        <h2 id="links-heading" class="text-lg font-bold mb-4 theme-text-primary">
           ~ links
         </h2>
-        <ul
-          class="space-y-1 text-sm"
-          style="color: var(--theme-text-secondary);"
-        >
+        <ul class="space-y-1 text-sm theme-text-secondary">
           <li class="py-2">
-            → telegram: <a
-              href="https://t.me/hellomraz"
-              class="inline-flex items-center"
-              style="color: var(--theme-accent); min-height: 44px;"
-              >@hellomraz</a
-            >
+            → telegram: <a href="https://t.me/hellomraz" class="about-link theme-text-accent">@hellomraz</a>
           </li>
           <li class="py-2">
             → BlueSky: <a
               href="https://bsky.app/profile/xmbshwll.bsky.social"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center"
-              style="color: var(--theme-accent); min-height: 44px;">@xmbshwll</a
+              class="about-link theme-text-accent">@xmbshwll</a
             >
           </li>
           <li class="py-2">
@@ -88,23 +61,15 @@ const dateIndex = await getDateIndex();
               href="https://github.com/xmbshwll/hellomraz"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center"
-              style="color: var(--theme-accent); min-height: 44px;">@xmbshwll</a
+              class="about-link theme-text-accent">@xmbshwll</a
             >
           </li>
         </ul>
       </div>
 
       <!-- Support -->
-      <div
-        class="border-t pt-6 mt-2"
-        style="border-color: var(--theme-border);"
-      >
-        <h2
-          id="support-heading"
-          class="text-lg font-bold mb-4"
-          style="color: var(--theme-text-primary);"
-        >
+      <div class="border-t pt-6 mt-2 theme-border">
+        <h2 id="support-heading" class="text-lg font-bold mb-4 theme-text-primary">
           ~ support
         </h2>
         <a
@@ -125,6 +90,10 @@ const dateIndex = await getDateIndex();
 </Layout>
 
 <style>
+  .about-link {
+    min-height: 44px;
+    text-decoration: none;
+  }
   .bmc-card {
     display: flex;
     align-items: center;
@@ -165,6 +134,10 @@ const dateIndex = await getDateIndex();
     getSiteCopy,
   } from '../lib/site-i18n.mjs';
 
+  type AboutPageWindow = Window & {
+    __aboutPageBindingsReady?: boolean;
+  };
+
   function updateAboutPage() {
     const copy = getSiteCopy('aboutPage', getCurrentSiteLang());
 
@@ -179,7 +152,11 @@ const dateIndex = await getDateIndex();
     if (supportHeading) supportHeading.textContent = copy.support;
   }
 
-  document.addEventListener('astro:page-load', updateAboutPage);
-  window.addEventListener('lang-changed', updateAboutPage);
+  if (!(window as AboutPageWindow).__aboutPageBindingsReady) {
+    (window as AboutPageWindow).__aboutPageBindingsReady = true;
+    document.addEventListener('astro:page-load', updateAboutPage);
+    window.addEventListener('lang-changed', updateAboutPage);
+  }
+
   updateAboutPage();
 </script>

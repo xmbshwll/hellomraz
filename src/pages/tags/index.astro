@@ -17,16 +17,16 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
 ---
 
 <Layout title="Tags">
-  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+  <div class="min-h-full theme-surface">
     <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->
-      <div class="mb-6 border-b pb-3" style="border-color: var(--theme-border);">
-        <h1 class="text-2xl font-bold" style="color: var(--theme-text-primary);">
+      <div class="mb-6 border-b pb-3 theme-border">
+        <h1 class="text-2xl font-bold theme-text-primary">
           $ ls tags/
         </h1>
-        <p class="text-sm mt-1" style="color: var(--theme-text-muted);">
+        <p class="text-sm mt-1 theme-text-muted">
           {tagObjects.length} topics ({totalTags - tagObjects.length} single-post tags hidden)
         </p>
       </div>
@@ -45,7 +45,7 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
 
       {tagObjects.length === 0 ? (
         <div class="py-8">
-          <p class="text-sm" style="color: var(--theme-text-muted);">no tags found.</p>
+          <p class="text-sm theme-text-muted">no tags found.</p>
         </div>
       ) : (
         <div id="tag-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -56,8 +56,8 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
               data-tag={tag.name.toLowerCase()}
             >
               <div class="flex items-center justify-between">
-                <span class="text-sm font-medium" style="color: var(--theme-text-primary);">#{tag.name}</span>
-                <span class="text-xs font-mono" style="color: var(--theme-text-muted);">
+                <span class="text-sm font-medium theme-text-primary">#{tag.name}</span>
+                <span class="text-xs font-mono theme-text-muted">
                   {tag.count}
                 </span>
               </div>
@@ -66,7 +66,7 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
         </div>
       )}
 
-      <div id="tag-no-results" class="tag-no-results" style="display:none;">
+      <div id="tag-no-results" class="tag-no-results" hidden>
         no matching tags
       </div>
     </div>
@@ -75,7 +75,9 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
 
 <script>
   function initTagFilter() {
-    const input = document.getElementById('tag-filter') as HTMLInputElement | null;
+    const input = document.getElementById('tag-filter') as
+      | (HTMLInputElement & { __tagFilterBound?: boolean })
+      | null;
     const grid = document.getElementById('tag-grid');
     const countEl = document.getElementById('tag-filter-count');
     const noResults = document.getElementById('tag-no-results');
@@ -91,7 +93,7 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
       for (const card of cards) {
         const tag = card.getAttribute('data-tag') || '';
         const match = !query || tag.includes(query);
-        card.style.display = match ? '' : 'none';
+        card.hidden = !match;
         if (match) visible++;
       }
 
@@ -99,14 +101,16 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
         countEl.textContent = query ? `${visible} / ${total}` : '';
       }
       if (noResults) {
-        noResults.style.display = visible === 0 ? '' : 'none';
+        noResults.hidden = visible !== 0;
       }
     }
 
-    input.addEventListener('input', filter);
+    if (!input.__tagFilterBound) {
+      input.__tagFilterBound = true;
+      input.addEventListener('input', filter);
+    }
 
-    // If navigated back with value still in input, re-filter
-    if (input.value) filter();
+    filter();
   }
 
   document.addEventListener('astro:page-load', initTagFilter);

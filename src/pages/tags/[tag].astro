@@ -44,31 +44,27 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
 ---
 
 <Layout title={`#${tag}`}>
-  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+  <div class="min-h-full theme-surface">
     <PageHeader dateIndex={dateIndex} />
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <!-- Header -->
       <div class="mb-6">
-        <a
-          href={`${base}tags`}
-          class="text-xs mb-3 inline-block"
-          style="color: var(--theme-accent);"
-        >
+        <a href={`${base}tags`} class="text-xs mb-3 inline-block theme-text-accent">
           ← tags/
         </a>
 
-        <h1 class="text-2xl font-bold" style="color: var(--theme-text-primary);">
+        <h1 class="text-2xl font-bold theme-text-primary">
           #{tag}
         </h1>
-        <p class="text-sm mt-1" style="color: var(--theme-text-muted);">
+        <p class="text-sm mt-1 theme-text-muted">
           {sortedPosts.length} {sortedPosts.length === 1 ? 'post' : 'posts'}
         </p>
       </div>
 
       <!-- Related tags -->
       {relatedTags.length > 0 && (
-        <div class="mb-6 pb-4 border-b" style="border-color: var(--theme-border);">
+        <div class="mb-6 pb-4 border-b theme-border">
           <div class="flex flex-wrap gap-1.5">
             {relatedTags.map((relatedTag) => (
               <a
@@ -114,7 +110,7 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
 
       {sortedPosts.length === 0 && (
         <div class="py-8">
-          <p class="text-sm" style="color: var(--theme-text-muted);">no posts found.</p>
+          <p class="text-sm theme-text-muted">no posts found.</p>
         </div>
       )}
     </div>
@@ -198,11 +194,14 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
 
 <script>
   function initTagShowMore() {
-    const btn = document.getElementById('tag-show-more-btn');
+    const btn = document.getElementById('tag-show-more-btn') as
+      | (HTMLButtonElement & { __tagShowMoreBound?: boolean })
+      | null;
     const list = document.getElementById('tag-posts-list');
     const wrap = document.getElementById('tag-show-more-wrap');
-    if (!btn || !list || !wrap) return;
+    if (!btn || !list || !wrap || btn.__tagShowMoreBound) return;
 
+    btn.__tagShowMoreBound = true;
     const tag = btn.dataset.tag!;
 
     btn.addEventListener('click', async () => {

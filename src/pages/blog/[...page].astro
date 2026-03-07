@@ -44,14 +44,14 @@ for (const post of page.data) {
 ---
 
 <Layout title={page.currentPage === 1 ? 'All Reviews' : `All Reviews — Page ${page.currentPage}`}>
-  <div class="min-h-full" style="background-color: var(--theme-bg-surface);">
+  <div class="min-h-full theme-surface">
     <PageHeader dateIndex={dateIndex} />
 
-    <div class="px-4 sm:px-6 pb-8" style="padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));">
+    <div class="px-4 sm:px-6 pb-8 safe-bottom-pad">
       <div class="mb-8">
         <div>
-          <h1 class="text-3xl font-bold mb-2" style="color: var(--theme-text-primary);">All Reviews</h1>
-          <p class="text-sm" style="color: var(--theme-text-muted);">
+          <h1 class="text-3xl font-bold mb-2 theme-text-primary">All Reviews</h1>
+          <p class="text-sm theme-text-muted">
             {page.total} releases
             {page.lastPage > 1 && <span> · Page {page.currentPage} of {page.lastPage}</span>}
           </p>
@@ -62,10 +62,7 @@ for (const post of page.data) {
         let globalIndex = 0;
         return monthGroups.map((group) => (
           <section id={`month-${group.key}`} class="mb-8 scroll-mt-4">
-            <h2
-              class="text-lg font-semibold mb-4 pb-2 border-b"
-              style="color: var(--theme-text-secondary); border-color: var(--theme-border);"
-            >
+            <h2 class="text-lg font-semibold mb-4 pb-2 border-b theme-text-secondary theme-border">
               {group.label}
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4">

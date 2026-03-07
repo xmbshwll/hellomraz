@@ -40,6 +40,54 @@
   transition: none;
 }
 
+@layer utilities {
+  .theme-base {
+    background-color: var(--theme-bg-base);
+  }
+
+  .theme-surface {
+    background-color: var(--theme-bg-surface);
+  }
+
+  .theme-elevated {
+    background-color: var(--theme-bg-elevated);
+  }
+
+  .theme-border {
+    border-color: var(--theme-border);
+  }
+
+  .theme-text-primary {
+    color: var(--theme-text-primary);
+  }
+
+  .theme-text-secondary {
+    color: var(--theme-text-secondary);
+  }
+
+  .theme-text-muted {
+    color: var(--theme-text-muted);
+  }
+
+  .theme-text-accent {
+    color: var(--theme-accent);
+  }
+
+  .theme-text-error {
+    color: var(--theme-error, #BF616A);
+  }
+
+  .touch-target-inline {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .safe-bottom-pad {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ── Mobile readability overrides ──
    Bump small text sizes on mobile so nothing is below 14px.
    These sit outside @layer so they beat Tailwind utilities. */
