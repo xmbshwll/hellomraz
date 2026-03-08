@@ -40,7 +40,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     />
   </div>
 
-  <!-- Right: BMC + Theme chooser + Telegram -->
+  <!-- Right: BMC + Theme chooser + RSS + Telegram -->
   <div class="header-actions">
     <a
       target="_blank"
@@ -57,9 +57,26 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     <LangSwitcher />
     <span class="header-sep">│</span>
     <a
+      aria-label="RSS feed"
+      title="RSS feed"
+      href={`${base}rss.xml`}
+      type="application/rss+xml"
+      class="header-icon-link"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M6.18 17.82a1.64 1.64 0 1 1 0 3.28 1.64 1.64 0 0 1 0-3.28ZM3 10.18v3.27A7.55 7.55 0 0 1 10.55 21h3.27C13.82 14.84 9.16 10.18 3 10.18Zm0-7.28v3.27C12.96 6.17 17.83 11.04 17.83 21h3.27C21.1 9.24 14.76 2.9 3 2.9Z"></path>
+      </svg>
+    </a>
+    <a
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Telegram channel"
+      title="Telegram channel"
       href="https://t.me/hellomraz"
       class="header-icon-link"
     >

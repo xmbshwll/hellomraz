@@ -9,6 +9,7 @@ import {
   getRecentPosts,
 } from '../lib/blog-data.mjs';
 import { SIDEBAR_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { SITE_TITLE } from '../consts';
 
 interface Props {
   title: string;
@@ -27,6 +28,7 @@ const {
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://poeba.lu';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const rssFeedUrl = new URL(`${base}rss.xml`, siteUrl).toString();
 const ogImage = image || `${siteUrl}${base}og-default.png`;
 const fullTitle = `${title} | poeba.lu`;
 
@@ -65,6 +67,12 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
       href={`${base}apple-touch-icon.png`}
     />
     <link rel="canonical" href={canonicalUrl} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${SITE_TITLE} RSS Feed`}
+      href={rssFeedUrl}
+    />
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
     <meta name="base-url" content={base} />
