@@ -718,6 +718,42 @@
       refresh(true);
     }
 
+    function resolveNextMode(
+      nextMode: 'inline' | 'floating' | undefined,
+      slug: string,
+    ) {
+      if (nextMode) {
+        return nextMode;
+      }
+
+      if (state?.slug === slug) {
+        return state.mode;
+      }
+
+      return 'inline';
+    }
+
+    function resolveFloatingFlag(
+      nextMode: 'inline' | 'floating',
+      slug: string,
+      explicitValue: boolean | undefined,
+      currentValue: boolean,
+    ) {
+      if (nextMode !== 'floating') {
+        return false;
+      }
+
+      if (typeof explicitValue === 'boolean') {
+        return explicitValue;
+      }
+
+      if (state?.slug === slug) {
+        return currentValue;
+      }
+
+      return true;
+    }
+
     function activate(payload: {
       slug: string;
       title: string;
@@ -742,23 +778,19 @@
         return false;
       }
 
-      const nextMode = payload.mode ?? (state?.slug === payload.slug ? state.mode : 'inline');
-      const nextPinned =
-        nextMode === 'floating'
-          ? typeof payload.pinned === 'boolean'
-            ? payload.pinned
-            : state?.slug === payload.slug
-              ? state.pinned
-              : true
-          : false;
-      const nextExpanded =
-        nextMode === 'floating'
-          ? typeof payload.expand === 'boolean'
-            ? payload.expand
-            : state?.slug === payload.slug
-              ? state.expanded
-              : true
-          : false;
+      const nextMode = resolveNextMode(payload.mode, payload.slug);
+      const nextPinned = resolveFloatingFlag(
+        nextMode,
+        payload.slug,
+        payload.pinned,
+        state?.pinned ?? false,
+      );
+      const nextExpanded = resolveFloatingFlag(
+        nextMode,
+        payload.slug,
+        payload.expand,
+        state?.expanded ?? false,
+      );
 
       const nextState: StreamingPlayerDockState = {
         slug: payload.slug,
