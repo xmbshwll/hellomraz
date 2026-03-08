@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import PageHeader from '../components/PageHeader.astro';
-import { getDateIndex } from '../lib/blog-data.mjs';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { getDateIndex } from "../lib/blog-data.mjs";
 
 const dateIndex = await getDateIndex();
 ---
@@ -67,8 +67,17 @@ const dateIndex = await getDateIndex();
           style="color: var(--theme-text-secondary);"
         >
           <li class="py-2">
-            → telegram: <a
+            → RSS: <a
+              href="https://poeba.lu/rss.xml"
+              rel="noopener noreferrer"
+              class="inline-flex items-center"
+              style="color: var(--theme-accent); min-height: 44px;">FEED</a
+            >
+          </li>
+          <li class="py-2">
+            → Telegram: <a
               href="https://t.me/hellomraz"
+              rel="noopener noreferrer"
               class="inline-flex items-center"
               style="color: var(--theme-accent); min-height: 44px;"
               >@hellomraz</a
@@ -160,18 +169,15 @@ const dateIndex = await getDateIndex();
 </style>
 
 <script>
-  import {
-    getCurrentSiteLang,
-    getSiteCopy,
-  } from '../lib/site-i18n.mjs';
+  import { getCurrentSiteLang, getSiteCopy } from "../lib/site-i18n.mjs";
 
   function updateAboutPage() {
-    const copy = getSiteCopy('aboutPage', getCurrentSiteLang());
+    const copy = getSiteCopy("aboutPage", getCurrentSiteLang());
 
-    const heading = document.getElementById('about-heading');
-    const text = document.getElementById('about-text');
-    const linksHeading = document.getElementById('links-heading');
-    const supportHeading = document.getElementById('support-heading');
+    const heading = document.getElementById("about-heading");
+    const text = document.getElementById("about-text");
+    const linksHeading = document.getElementById("links-heading");
+    const supportHeading = document.getElementById("support-heading");
 
     if (heading) heading.textContent = copy.about;
     if (text) text.innerHTML = copy.text;
@@ -179,7 +185,7 @@ const dateIndex = await getDateIndex();
     if (supportHeading) supportHeading.textContent = copy.support;
   }
 
-  document.addEventListener('astro:page-load', updateAboutPage);
-  window.addEventListener('lang-changed', updateAboutPage);
+  document.addEventListener("astro:page-load", updateAboutPage);
+  window.addEventListener("lang-changed", updateAboutPage);
   updateAboutPage();
 </script>
