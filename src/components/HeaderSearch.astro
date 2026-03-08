@@ -198,11 +198,6 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
         minHeight: 120,
         flipThreshold: 160,
       },
-      setPanelOpen(panel, open) {
-        panel.hidden = !open;
-        panel.style.opacity = open ? "1" : "0";
-        panel.style.pointerEvents = open ? "auto" : "none";
-      },
       onOpenChange(open) {
         root.classList.toggle("is-open", open);
       },

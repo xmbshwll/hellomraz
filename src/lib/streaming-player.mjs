@@ -51,6 +51,60 @@ export function buildStreamingPlayers(links, bandcampAlbumId) {
     .filter((link) => link.embedUrl);
 }
 
+export const FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT = 520;
+
+const FLOATING_STREAMING_PLAYER_CONTENT_HEIGHTS = {
+  Bandcamp: FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+  Spotify: 960,
+  'Apple Music': 840,
+  Tidal: 720,
+  Deezer: 900,
+  'YouTube Music': 760,
+  YouTube: 760,
+  SoundCloud: 960,
+  'Yandex Music': 820,
+};
+
+/**
+ * @param {string} service
+ */
+export function getFloatingStreamingPlayerContentHeight(service) {
+  return Math.max(
+    FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+    FLOATING_STREAMING_PLAYER_CONTENT_HEIGHTS[service] ??
+      FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+  );
+}
+
+/**
+ * @param {string} service
+ */
+export function supportsFloatingTracklistScroll(service) {
+  return (
+    getFloatingStreamingPlayerContentHeight(service) >
+    FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT
+  );
+}
+
+/**
+ * @param {string} service
+ * @param {'inline' | 'floating'} [mode]
+ * @param {string} [chromeStyle]
+ */
+export function buildStreamingPlayerFrameStyle(
+  service,
+  mode = 'floating',
+  chromeStyle = '',
+) {
+  const height =
+    mode === 'floating'
+      ? `${getFloatingStreamingPlayerContentHeight(service)}px`
+      : '100%';
+  const minHeight = mode === 'floating' ? height : '100%';
+
+  return `border:0; width:100%; height:${height}; min-height:${minHeight}; display:block; ${chromeStyle}`;
+}
+
 /**
  * @param {Array<{ service: string }>} players
  */

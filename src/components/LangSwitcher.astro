@@ -1,46 +1,27 @@
----
-/**
- * LangSwitcher.astro — dropdown language picker, matching ThemeChooser style.
- * Stores preference in localStorage. On blog posts, swaps .markdown-content via fetch.
- */
----
-
-<div class="relative" id="lang-chooser">
+<div id="lang-chooser">
   <button
     id="lang-chooser-btn"
-    class="lang-chooser-btn"
+    class="header-control-btn"
     aria-label="Choose language"
     aria-expanded="false"
     aria-haspopup="listbox"
   >
     <span id="lang-chooser-label">lang:ru</span>
-    <span id="lang-chooser-arrow" class="lang-arrow">▾</span>
+    <span id="lang-chooser-arrow" class="header-control-arrow">▾</span>
   </button>
 </div>
 
-<style>
-  .lang-chooser-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 44px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border: 1px solid var(--theme-border);
+<style is:global>
+  .lang-fallback-banner {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    border: 1px dashed var(--theme-border);
     color: var(--theme-text-muted);
-    background: var(--theme-bg-elevated);
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
   }
-  .lang-chooser-btn:hover {
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
-  }
-  .lang-arrow {
-    transition: transform 0.1s;
+
+  .markdown-content.is-translating {
+    opacity: 0.5;
   }
 </style>
 
@@ -52,19 +33,22 @@
     SITE_LANGS,
   } from '../lib/site-i18n.mjs';
 
+  const FALLBACK_MESSAGES = {
+    en: 'Translation not yet available — showing original Russian.',
+    de: 'Übersetzung noch nicht verfügbar — Original auf Russisch.',
+  };
+
   function getBase(): string {
     const meta = document.querySelector('meta[name="base-url"]');
-    return meta ? meta.getAttribute('content') || '/' : '/';
+    return meta?.getAttribute('content') || '/';
   }
 
   function getSlug(): string | null {
-    const el = document.querySelector('[data-post-slug]');
-    return el ? el.getAttribute('data-post-slug') : null;
+    return document.querySelector('[data-post-slug]')?.getAttribute('data-post-slug') || null;
   }
 
   function removeFallbackBanner() {
-    const banner = document.getElementById('lang-fallback-banner');
-    if (banner) banner.remove();
+    document.getElementById('lang-fallback-banner')?.remove();
   }
 
   function showFallbackBanner(lang: string) {
@@ -73,16 +57,10 @@
     const content = document.querySelector('.markdown-content');
     if (!content) return;
 
-    const messages = {
-      en: 'Translation not yet available — showing original Russian.',
-      de: 'Übersetzung noch nicht verfügbar — Original auf Russisch.',
-    };
-
     const banner = document.createElement('div');
     banner.id = 'lang-fallback-banner';
-    banner.style.cssText =
-      'padding:8px 12px;margin-bottom:12px;font-size:12px;border:1px dashed var(--theme-border);color:var(--theme-text-muted);';
-    banner.textContent = messages[lang] || messages.en;
+    banner.className = 'lang-fallback-banner';
+    banner.textContent = FALLBACK_MESSAGES[lang] || FALLBACK_MESSAGES.en;
     content.parentNode?.insertBefore(banner, content);
   }
 
@@ -96,6 +74,7 @@
     if (lang === 'ru') {
       const original = content.getAttribute('data-original-html');
       if (original) content.innerHTML = original;
+      content.classList.remove('is-translating');
       removeFallbackBanner();
       return;
     }
@@ -104,32 +83,27 @@
       content.setAttribute('data-original-html', content.innerHTML);
     }
 
-    const url = `${getBase()}i18n/${lang}/${slug}.txt`;
-    content.style.opacity = '0.5';
+    content.classList.add('is-translating');
 
-    fetch(url)
+    fetch(`${getBase()}i18n/${lang}/${slug}.txt`)
       .then((response) => {
         if (!response.ok) throw new Error('Translation not found');
         return response.text();
       })
       .then((markdown) => {
-        const html = markdown
+        content.innerHTML = markdown
           .trim()
           .split(/\n\n+/)
           .filter((paragraph) => paragraph.trim())
-          .map(
-            (paragraph) =>
-              `<p>${paragraph.trim().replace(/\n/g, '<br>')}</p>`,
-          )
+          .map((paragraph) => `<p>${paragraph.trim().replace(/\n/g, '<br>')}</p>`)
           .join('\n');
-
-        content.innerHTML = html;
-        content.style.opacity = '1';
         removeFallbackBanner();
       })
       .catch(() => {
-        content.style.opacity = '1';
         showFallbackBanner(lang);
+      })
+      .finally(() => {
+        content.classList.remove('is-translating');
       });
   }
 
@@ -140,9 +114,7 @@
 
   function initLangSwitcher() {
     const lang = getCurrentSiteLang();
-    if (lang !== 'ru') {
-      applyTranslation(lang);
-    }
+    if (lang !== 'ru') applyTranslation(lang);
   }
 
   mountSelectableDropdown({

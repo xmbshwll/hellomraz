@@ -24,6 +24,18 @@ if (players.length === 0) return;
 
 const initialIdx = getInitialStreamingPlayerIndex(players);
 
+function chunkPlayers<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    rows.push(items.slice(index, index + size));
+  }
+
+  return rows;
+}
+
+const playerRows = chunkPlayers(players, 4);
+
 function iframeChromeStyle(service: string): string {
   const radius: Record<string, string> = {
     Spotify: 'border-radius:12px;',
@@ -38,34 +50,76 @@ function iframeChromeStyle(service: string): string {
 ---
 
 <div
-  class="streaming-player flex-none w-full md:w-[480px]"
+  class="streaming-player flex-none w-full md:w-[520px] lg:w-[620px]"
   data-player-slug={slug}
   data-player-title={title}
   data-player-cover={coverUrl ?? ''}
   data-initial={initialIdx}
   data-active-index={initialIdx}
 >
-  <div class="player-toolbar">
-    <button type="button" class="player-pin-btn" data-player-pin>
-      keep playing ↗
-    </button>
-  </div>
-
   <div class="player-live">
-    <div class="tab-grid mb-3" data-player-tabs>
-      {players.map((player, index) => (
-        <button
-          type="button"
-          class:list={['player-tab px-3 py-2.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap', { 'is-active': index === initialIdx }]}
-          data-index={index}
-          data-service={player.service}
-          data-src={player.embedUrl}
-          data-chrome-style={iframeChromeStyle(player.service)}
-          aria-pressed={index === initialIdx ? 'true' : 'false'}
-        >
-          <span class="mr-1">{player.icon}</span>{player.service}
-        </button>
-      ))}
+    <div class="player-controls" data-player-tabs>
+      {playerRows.map((row, rowIndex) => {
+        const rowStartIndex = rowIndex * 4;
+        const isPrimaryRow = rowIndex === 0;
+
+        return (
+          <div class:list={['player-control-row', { 'player-control-row-primary': isPrimaryRow }]}>
+            <div class="player-service-row">
+              {row.map((player, columnIndex) => {
+                const index = rowStartIndex + columnIndex;
+
+                return (
+                  <button
+                    type="button"
+                    class:list={['player-tab', { 'is-active': index === initialIdx }]}
+                    data-index={index}
+                    data-service={player.service}
+                    data-src={player.embedUrl}
+                    data-chrome-style={iframeChromeStyle(player.service)}
+                    aria-label={player.service}
+                    aria-pressed={index === initialIdx ? 'true' : 'false'}
+                    title={player.service}
+                  >
+                    <span class="player-tab-icon" aria-hidden="true">{player.icon}</span>
+                    <span class="player-tab-label">{player.service}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {
+              isPrimaryRow && (
+                <button
+                  type="button"
+                  class="player-pin-btn"
+                  data-player-pin
+                  aria-label="Pin player to floating widget"
+                  aria-pressed="false"
+                  title="Pin player to floating widget"
+                >
+                  <svg
+                    class="player-pin-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 5h5v5"></path>
+                    <path d="M10 14 19 5"></path>
+                    <path d="M19 13v6H5V5h6"></path>
+                  </svg>
+                  <span class="player-pin-label" data-player-pin-label>pin</span>
+                </button>
+              )
+            }
+          </div>
+        );
+      })}
     </div>
 
     <div class="player-dock-note" hidden>
@@ -185,19 +239,49 @@ function iframeChromeStyle(service: string): string {
     container.classList.toggle('is-inline-session', uiState === 'inline');
 
     const note = container.querySelector<HTMLElement>('.player-dock-note');
+    const noteTitle = container.querySelector<HTMLElement>('.player-dock-note-title');
     const placeholder = container.querySelector<HTMLElement>('.player-stage-placeholder');
     const serviceEl = container.querySelector<HTMLElement>('[data-player-dock-service]');
+    const pinBtn = container.querySelector<HTMLButtonElement>('[data-player-pin]');
+    const pinLabel = container.querySelector<HTMLElement>('[data-player-pin-label]');
+    const isFloatingSession = uiState === 'floating';
+    const isPinnedSession = isFloatingSession && !!state?.pinned;
+
     if (placeholder) {
       placeholder.hidden = uiState === 'inline';
     }
     if (note) {
-      note.hidden = uiState !== 'floating';
+      note.hidden = !isFloatingSession;
+    }
+    if (noteTitle) {
+      noteTitle.textContent = isPinnedSession
+        ? 'player pinned in widget'
+        : 'playing in floating widget';
     }
     if (serviceEl) {
-      serviceEl.textContent =
-        uiState === 'floating'
-          ? `${state?.service || 'Streaming service'} · use the widget controls to hide or close it`
-          : '';
+      serviceEl.textContent = isFloatingSession
+        ? `${state?.service || 'Streaming service'} · use the widget controls to hide or close it`
+        : '';
+    }
+    if (pinBtn) {
+      const pinButtonLabel = isPinnedSession ? 'pinned' : 'pin';
+      let pinButtonTitle = 'Pin player to floating widget';
+
+      if (isPinnedSession) {
+        pinButtonTitle = 'Player pinned in floating widget';
+      } else if (isFloatingSession) {
+        pinButtonTitle = 'Pin this floating player so it stays in the widget';
+      }
+
+      pinBtn.classList.toggle('is-active', isFloatingSession);
+      pinBtn.classList.toggle('is-pinned', isPinnedSession);
+      pinBtn.setAttribute('aria-pressed', isFloatingSession ? 'true' : 'false');
+      pinBtn.setAttribute('aria-label', pinButtonTitle);
+      pinBtn.title = pinButtonTitle;
+
+      if (pinLabel) {
+        pinLabel.textContent = pinButtonLabel;
+      }
     }
 
     const stageMessage = container.querySelector<HTMLElement>('[data-player-stage-message]');
@@ -388,28 +472,69 @@ function iframeChromeStyle(service: string): string {
 </script>
 
 <style>
-  .player-toolbar {
+  .player-controls {
+    --player-control-gap: 0.625rem;
+    --player-pin-button-width: 5.25rem;
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .player-control-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--player-pin-button-width);
+    align-items: stretch;
+    gap: var(--player-control-gap);
+    min-width: 0;
+  }
+  .player-service-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    min-width: 0;
   }
   .player-pin-btn {
-    min-height: 36px;
-    padding: 0.5rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 0 0.625rem;
     border: 1px solid var(--theme-border);
-    background: var(--theme-bg-elevated);
+    border-radius: 0.375rem;
+    background: var(--theme-bg-hover);
     color: var(--theme-text-secondary);
     font: inherit;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       border-color 0.15s,
       color 0.15s,
       background-color 0.15s;
   }
-  .player-pin-btn:hover {
+  .player-pin-btn:hover,
+  .player-pin-btn:focus-visible {
     border-color: var(--theme-accent);
+    color: var(--theme-text-primary);
+    outline: none;
+  }
+  .player-pin-btn.is-active {
+    border-color: color-mix(in srgb, var(--theme-accent) 40%, var(--theme-border));
+    background: color-mix(in srgb, var(--theme-accent) 10%, var(--theme-bg-hover));
     color: var(--theme-accent);
+  }
+  .player-pin-btn.is-pinned {
+    border-color: var(--theme-accent);
+    background: color-mix(in srgb, var(--theme-accent) 15%, var(--theme-bg-hover));
+  }
+  .player-pin-icon {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    flex-shrink: 0;
   }
   .player-dock-note {
     display: none;
@@ -421,7 +546,6 @@ function iframeChromeStyle(service: string): string {
   .streaming-player.is-floating-session .player-dock-note {
     display: block;
   }
-  .streaming-player.is-floating-session .player-toolbar,
   .streaming-player.is-floating-session .player-stage {
     display: none;
   }
@@ -442,26 +566,53 @@ function iframeChromeStyle(service: string): string {
   .player-live {
     min-width: 0;
   }
-  .tab-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-  }
   .player-tab {
-    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 0.625rem 0.5rem;
     border: 1px solid var(--theme-border);
+    border-radius: 0.375rem;
     background-color: var(--theme-bg-hover);
     color: var(--theme-text-muted);
+    font: inherit;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
   }
-  .player-tab:hover {
+  .player-tab:hover,
+  .player-tab:focus-visible {
     border-color: var(--theme-accent);
     color: var(--theme-text-primary);
+    outline: none;
   }
   .player-tab.is-active,
   .player-tab[aria-pressed='true'] {
     border-color: var(--theme-accent);
     background-color: var(--theme-accent);
     color: #fff;
+  }
+  .player-tab-icon {
+    display: none;
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+  .player-tab-label {
+    min-width: 0;
+    line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
   }
   .player-stage {
     position: relative;
@@ -502,9 +653,39 @@ function iframeChromeStyle(service: string): string {
     color: var(--theme-text-secondary);
   }
 
+  @media (min-width: 1024px) {
+    .player-tab,
+    .player-pin-btn {
+      font-size: 0.75rem;
+      letter-spacing: 0;
+    }
+    .player-tab {
+      padding-inline: 0.625rem;
+    }
+    .player-tab-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   @media (max-width: 640px) {
-    .tab-grid {
-      grid-template-columns: repeat(3, 1fr);
+    .player-controls {
+      --player-control-gap: 0.5rem;
+      --player-pin-button-width: 44px;
+    }
+    .player-tab {
+      min-height: 44px;
+      padding-inline: 0.25rem;
+      font-size: 0.5625rem;
+      letter-spacing: -0.05em;
+    }
+    .player-pin-btn {
+      min-height: 44px;
+      padding: 0;
+    }
+    .player-pin-label {
+      display: none;
     }
     .player-stage {
       height: 70vh;

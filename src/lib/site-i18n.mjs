@@ -25,20 +25,38 @@ const SITE_COPY = {
   aboutPage: {
     ru: {
       about: '~ about',
-      text: '<p>Опусти Оружие, Мразь — самое лучшее во вселенной музыкально-критическое СМИ (возможно, после The Quietus).</p><p>Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются, восхищение музыкальным вкусом - напротив.</p><p>С любовью ПО ЕБАЛУ, из Берлина</p>',
+      paragraphs: [
+        'Опусти Оружие, Мразь — самое лучшее во вселенной музыкально-критическое СМИ (возможно, после The Quietus).',
+        'Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются, восхищение музыкальным вкусом — напротив.',
+        'С любовью, ПО ЕБАЛУ, из Берлина.',
+      ],
       links: '~ links',
+      blogLinks: 'blog related',
+      authorLinks: 'personal (author)',
       support: '~ support',
     },
     en: {
       about: '~ about',
-      text: '<p>Опусти Оружие, Мразь <i>(Drop Your Weapon, Scum)</i> — the best music criticism outlet in the universe (possibly after The Quietus).</p><p>A fast DIY freestyle blog. Complaints are not accepted; admiration for the musical taste, on the other hand, is welcome.</p><p>With love ПО ЕБАЛУ <i>(PUNCH IN THE FACE)</i>, from Berlin</p>',
+      paragraphs: [
+        'Опусти Оружие, Мразь (Drop Your Weapon, Scum) — the best music criticism outlet in the universe (possibly after The Quietus).',
+        'A fast DIY freestyle blog. Complaints are not accepted; admiration for the musical taste, on the other hand, is welcome.',
+        'With love, ПО ЕБАЛУ (PUNCH IN THE FACE), from Berlin.',
+      ],
       links: '~ links',
+      blogLinks: 'blog related',
+      authorLinks: 'personal (author)',
       support: '~ support',
     },
     de: {
       about: '~ about',
-      text: '<p>Опусти Оружие, Мразь <i>(Leg die Waffe nieder, Mistkerl)</i> — das beste Musikkritik-Medium im Universum (möglicherweise nach The Quietus).</p><p>Ein schneller DIY-Freestyle-Blog. Beschwerden werden nicht angenommen; Bewunderung für den Musikgeschmack hingegen schon.</p><p>Mit Liebe ПО ЕБАЛУ <i>(INS GESICHT PUNCHEN)</i>, aus Berlin</p>',
+      paragraphs: [
+        'Опусти Оружие, Мразь (Leg die Waffe nieder, Mistkerl) — das beste Musikkritik-Medium im Universum (möglicherweise nach The Quietus).',
+        'Ein schneller DIY-Freestyle-Blog. Beschwerden werden nicht angenommen; Bewunderung für den Musikgeschmack hingegen schon.',
+        'Mit Liebe, ПО ЕБАЛУ (INS GESICHT PUNCHEN), aus Berlin.',
+      ],
       links: '~ links',
+      blogLinks: 'blog related',
+      authorLinks: 'personal (author)',
       support: '~ support',
     },
   },

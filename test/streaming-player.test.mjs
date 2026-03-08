@@ -2,12 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
   buildBandcampEmbedUrl,
+  buildStreamingPlayerFrameStyle,
   buildStreamingPlayers,
+  getFloatingStreamingPlayerContentHeight,
   getInitialStreamingPlayerIndex,
   getStreamingPlayerUiState,
   resolveStreamingPlayerActivation,
   shouldAutoRestoreStreamingPlayer,
+  supportsFloatingTracklistScroll,
 } from '../src/lib/streaming-player.mjs';
 
 const links = [
@@ -138,4 +142,40 @@ test('shouldAutoRestoreStreamingPlayer only restores navigation-preserved sessio
     ),
     false,
   );
+});
+
+test('floating dock keeps one viewport size while allowing taller tracklist services', () => {
+  assert.equal(
+    getFloatingStreamingPlayerContentHeight('Bandcamp'),
+    FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+  );
+  assert.ok(
+    getFloatingStreamingPlayerContentHeight('Spotify') >
+      FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+  );
+  assert.ok(
+    getFloatingStreamingPlayerContentHeight('SoundCloud') >
+      FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+  );
+});
+
+test('supportsFloatingTracklistScroll only flags services that need external scrolling', () => {
+  assert.equal(supportsFloatingTracklistScroll('Bandcamp'), false);
+  assert.equal(supportsFloatingTracklistScroll('Spotify'), true);
+  assert.equal(supportsFloatingTracklistScroll('SoundCloud'), true);
+});
+
+test('buildStreamingPlayerFrameStyle makes floating widgets tall enough for tracklists', () => {
+  const style = buildStreamingPlayerFrameStyle('Spotify', 'floating', 'border-radius:12px;');
+
+  assert.match(style, /height:\s*960px/);
+  assert.match(style, /min-height:\s*960px/);
+  assert.match(style, /border-radius:12px/);
+});
+
+test('buildStreamingPlayerFrameStyle keeps inline players attached to the stage height', () => {
+  const style = buildStreamingPlayerFrameStyle('Spotify', 'inline');
+
+  assert.match(style, /height:\s*100%/);
+  assert.match(style, /min-height:\s*100%/);
 });

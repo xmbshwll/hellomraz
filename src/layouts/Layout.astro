@@ -10,6 +10,7 @@ import {
   getRecentPosts,
 } from '../lib/blog-data.mjs';
 import { SIDEBAR_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { SITE_TITLE } from '../consts';
 
 interface Props {
   title: string;
@@ -28,6 +29,7 @@ const {
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://poeba.lu';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const rssFeedUrl = new URL(`${base}rss.xml`, siteUrl).toString();
 const ogImage = image || `${siteUrl}${base}og-default.png`;
 const fullTitle = `${title} | poeba.lu`;
 
@@ -71,7 +73,23 @@ const lightThemeIds = [
       sizes="180x180"
       href={`${base}apple-touch-icon.png`}
     />
+    <link rel="manifest" href={`${base}manifest.webmanifest`} />
     <link rel="canonical" href={canonicalUrl} />
+    <meta name="application-name" content={SITE_TITLE} />
+    <meta name="theme-color" content="#2E3440" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content={SITE_TITLE} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${SITE_TITLE} RSS Feed`}
+      href={rssFeedUrl}
+    />
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
     <meta name="base-url" content={base} />
@@ -221,6 +239,50 @@ const lightThemeIds = [
     </script>
 
     <script>
+      interface BeforeInstallPromptEvent extends Event {
+        prompt(): Promise<void>;
+        userChoice: Promise<{
+          outcome: 'accepted' | 'dismissed';
+          platform: string;
+        }>;
+      }
+
+      type PwaWindow = Window & {
+        __deferredPwaPrompt?: BeforeInstallPromptEvent | null;
+        __pwaBound?: boolean;
+      };
+
+      const pwaWindow = window as PwaWindow;
+
+      if (!pwaWindow.__pwaBound) {
+        pwaWindow.__pwaBound = true;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          pwaWindow.__deferredPwaPrompt = event as BeforeInstallPromptEvent;
+          window.dispatchEvent(new CustomEvent('pwa-install-available'));
+        });
+
+        window.addEventListener('appinstalled', () => {
+          pwaWindow.__deferredPwaPrompt = null;
+          window.dispatchEvent(new CustomEvent('pwa-installed'));
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            const baseUrl =
+              document.querySelector('meta[name="base-url"]')?.getAttribute('content') ||
+              '/';
+
+            navigator.serviceWorker
+              .register(`${baseUrl}sw.js`, { scope: baseUrl })
+              .catch(() => undefined);
+          });
+        }
+      }
+    </script>
+
+    <script>
       type LayoutUiWindow = Window & {
         __layoutUiBound?: boolean;
       };
@@ -257,7 +319,7 @@ const lightThemeIds = [
 
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.body.classList.remove('mobile-sidebar-open');
       }
 
       function initMobileSidebar() {
@@ -267,7 +329,7 @@ const lightThemeIds = [
         function open() {
           overlay.classList.add('open');
           overlay.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
+          document.body.classList.add('mobile-sidebar-open');
         }
 
         // Always re-bind: the button may be persisted but overlay is fresh

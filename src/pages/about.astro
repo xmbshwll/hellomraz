@@ -1,159 +1,346 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import Layout from '../layouts/Layout.astro';
 import { getDateIndex } from '../lib/blog-data.mjs';
+import { getSiteCopy } from '../lib/site-i18n.mjs';
+import {
+  ABOUT_PAGE_AUTHOR_LINKS,
+  ABOUT_PAGE_BLOG_LINKS,
+  BUY_ME_A_COFFEE_LINK,
+  getSiteLinkHref,
+  isExternalSiteLink,
+  type SiteLink,
+} from '../lib/site-links';
 
 const dateIndex = await getDateIndex();
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+const defaultCopy = getSiteCopy('aboutPage');
+const supportHref = getSiteLinkHref(BUY_ME_A_COFFEE_LINK, base);
+
+const aboutLinkGroups = [
+  { id: 'blog', headingKey: 'blogLinks', links: ABOUT_PAGE_BLOG_LINKS },
+  { id: 'author', headingKey: 'authorLinks', links: ABOUT_PAGE_AUTHOR_LINKS },
+] as const;
+
+function getLinkProps(link: SiteLink) {
+  const isExternal = isExternalSiteLink(link);
+
+  return {
+    href: getSiteLinkHref(link, base),
+    target: isExternal ? '_blank' : undefined,
+    rel: isExternal ? 'noopener noreferrer' : undefined,
+    'aria-label': link.ariaLabel ?? `${link.label}: ${link.value}`,
+    title: link.title ?? link.label,
+  };
+}
+
 ---
 
 <Layout title="About" description="О блоге Опусти Оружие, Мразь">
-  <div class="min-h-full theme-surface">
+  <div class="about-page min-h-full theme-surface" data-about-page>
     <PageHeader dateIndex={dateIndex} />
 
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <!-- Header -->
-      <div class="mb-8 border-b pb-4 theme-border">
-        <h1 class="text-2xl font-bold theme-text-primary">
-          $ whoami
-        </h1>
-        <p class="text-sm mt-2 theme-text-muted">
+    <div class="about-page__content">
+      <div class="about-page__header">
+        <h1 class="about-page__title theme-text-primary">$ whoami</h1>
+        <p class="about-page__subtitle theme-text-muted">
           music · reviews · underground
         </p>
       </div>
 
-      <!-- About Section -->
-      <div class="mb-8">
-        <h2 id="about-heading" class="text-lg font-bold mb-4 theme-text-primary">
-          ~ about
+      <section class="about-panel" aria-labelledby="about-panel-heading">
+        <h2
+          id="about-panel-heading"
+          class="about-panel__title theme-text-primary"
+          data-copy-key="about"
+        >
+          {defaultCopy.about}
         </h2>
 
-        <div id="about-text" class="space-y-3 text-sm theme-text-secondary">
-          <p>
-            Опусти Оружие, Мразь — самое лучшее во вселенной
-            музыкально-критическое СМИ (возможно, после The Quietus).
-          </p>
-          <p>
-            Быстрый DIY авторский блог в фристайл режиме. Жалобы не принимаются,
-            восхищение музыкальным вкусом - напротив.
-          </p>
+        <div class="about-copy theme-text-secondary" data-copy-paragraphs>
+          {defaultCopy.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
         </div>
-      </div>
+      </section>
 
-      <!-- Contact -->
-      <div class="border-t pt-6 theme-border">
-        <h2 id="links-heading" class="text-lg font-bold mb-4 theme-text-primary">
-          ~ links
+      <section class="about-panel" aria-labelledby="about-links-heading">
+        <h2
+          id="about-links-heading"
+          class="about-panel__title theme-text-primary"
+          data-copy-key="links"
+        >
+          {defaultCopy.links}
         </h2>
-        <ul class="space-y-1 text-sm theme-text-secondary">
-          <li class="py-2">
-            → telegram: <a href="https://t.me/hellomraz" class="about-link theme-text-accent">@hellomraz</a>
-          </li>
-          <li class="py-2">
-            → BlueSky: <a
-              href="https://bsky.app/profile/xmbshwll.bsky.social"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="about-link theme-text-accent">@xmbshwll</a
-            >
-          </li>
-          <li class="py-2">
-            → Github: <a
-              href="https://github.com/xmbshwll/hellomraz"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="about-link theme-text-accent">@xmbshwll</a
-            >
-          </li>
-        </ul>
-      </div>
 
-      <!-- Support -->
-      <div class="border-t pt-6 mt-2 theme-border">
-        <h2 id="support-heading" class="text-lg font-bold mb-4 theme-text-primary">
-          ~ support
+        <div class="about-link-groups">
+          {
+            aboutLinkGroups.map((group) => (
+              <section
+                class="about-link-group"
+                aria-labelledby={`about-${group.id}-links-heading`}
+              >
+                <h3
+                  id={`about-${group.id}-links-heading`}
+                  class="about-link-group__title theme-text-muted"
+                  data-copy-key={group.headingKey}
+                >
+                  {defaultCopy[group.headingKey]}
+                </h3>
+
+                <ul class="about-links-list">
+                  {
+                    group.links.map((link) => {
+                      const linkProps = getLinkProps(link);
+
+                      return (
+                        <li>
+                          <a {...linkProps} class="about-action-card">
+                            <span class="about-action-card__label">{link.label}</span>
+                            <span class="about-action-card__value">{link.value}</span>
+                          </a>
+                        </li>
+                      );
+                    })
+                  }
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="about-panel" aria-labelledby="about-support-heading">
+        <h2
+          id="about-support-heading"
+          class="about-panel__title theme-text-primary"
+          data-copy-key="support"
+        >
+          {defaultCopy.support}
         </h2>
+
         <a
-          href="https://buymeacoffee.com/hellomraz"
+          href={supportHref}
           target="_blank"
           rel="noopener noreferrer"
-          class="bmc-card"
+          class="about-action-card about-action-card--support"
         >
-          <span class="bmc-icon">☕</span>
-          <div>
-            <div class="bmc-title">Buy Me a Coffee</div>
-            <div class="bmc-url">buymeacoffee.com/hellomraz</div>
-          </div>
+          <span class="about-support__icon" aria-hidden="true">☕</span>
+          <span class="about-support__body">
+            <span class="about-support__title">{BUY_ME_A_COFFEE_LINK.label}</span>
+            <span class="about-support__url">{BUY_ME_A_COFFEE_LINK.displayUrl}</span>
+          </span>
+          <span class="about-support__cta">{BUY_ME_A_COFFEE_LINK.value}</span>
         </a>
-      </div>
+      </section>
     </div>
   </div>
 </Layout>
 
 <style>
-  .about-link {
-    min-height: 44px;
-    text-decoration: none;
+  .about-page__content {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 2rem 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
   }
-  .bmc-card {
+
+  .about-page__header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--theme-border);
+  }
+
+  .about-page__title {
+    margin: 0;
+    font-size: clamp(1.75rem, 3vw, 2rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .about-page__subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+  }
+
+  .about-panel {
+    padding: 1rem;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-elevated);
+  }
+
+  .about-panel + .about-panel {
+    margin-top: 1rem;
+  }
+
+  .about-panel__title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .about-copy {
+    display: grid;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .about-copy p {
+    margin: 0;
+  }
+
+  .about-link-groups {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .about-link-group__title {
+    margin: 0 0 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .about-links-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .about-action-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    border: 1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent);
-    border-radius: 8px;
-    padding: 14px 18px;
+    justify-content: space-between;
+    gap: 0.75rem;
     min-height: 44px;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-surface);
+    color: inherit;
     text-decoration: none;
-    background: color-mix(in srgb, var(--theme-accent) 5%, transparent);
     transition:
-      border-color 0.2s,
-      background-color 0.2s;
+      border-color 0.15s,
+      background-color 0.15s,
+      color 0.15s;
   }
-  .bmc-card:hover {
+
+  .about-action-card:hover {
     border-color: var(--theme-accent);
-    background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--theme-accent) 8%,
+      var(--theme-bg-surface)
+    );
   }
-  .bmc-icon {
-    font-size: 22px;
+
+  .about-action-card__label {
+    color: var(--theme-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .about-action-card__value {
+    color: var(--theme-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .about-action-card--support {
+    gap: 1rem;
+  }
+
+  .about-support__icon {
     flex-shrink: 0;
+    font-size: 1.375rem;
+    line-height: 1;
   }
-  .bmc-title {
+
+  .about-support__body {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .about-support__title {
     color: var(--theme-text-primary);
-    font-size: 13px;
+    font-size: 0.875rem;
     font-weight: 600;
   }
-  .bmc-url {
+
+  .about-support__url {
+    margin-top: 0.25rem;
     color: var(--theme-text-muted);
-    font-size: 11px;
-    margin-top: 2px;
+    font-size: 0.75rem;
+  }
+
+  .about-support__cta {
+    color: var(--theme-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: right;
+  }
+
+  @media (min-width: 640px) {
+    .about-page__content {
+      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .about-action-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .about-action-card__value,
+    .about-support__cta {
+      text-align: left;
+    }
   }
 </style>
 
 <script>
-  import {
-    getCurrentSiteLang,
-    getSiteCopy,
-  } from '../lib/site-i18n.mjs';
+  import { getCurrentSiteLang, getSiteCopy } from '../lib/site-i18n.mjs';
 
   type AboutPageWindow = Window & {
     __aboutPageBindingsReady?: boolean;
   };
 
-  function updateAboutPage() {
-    const copy = getSiteCopy('aboutPage', getCurrentSiteLang());
-
-    const heading = document.getElementById('about-heading');
-    const text = document.getElementById('about-text');
-    const linksHeading = document.getElementById('links-heading');
-    const supportHeading = document.getElementById('support-heading');
-
-    if (heading) heading.textContent = copy.about;
-    if (text) text.innerHTML = copy.text;
-    if (linksHeading) linksHeading.textContent = copy.links;
-    if (supportHeading) supportHeading.textContent = copy.support;
+  function renderParagraphs(container: HTMLElement, paragraphs: string[]) {
+    container.replaceChildren(
+      ...paragraphs.map((paragraph) => {
+        const element = document.createElement('p');
+        element.textContent = paragraph;
+        return element;
+      }),
+    );
   }
 
-  if (!(window as AboutPageWindow).__aboutPageBindingsReady) {
-    (window as AboutPageWindow).__aboutPageBindingsReady = true;
+  function updateAboutPage() {
+    const root = document.querySelector<HTMLElement>('[data-about-page]');
+    if (!root) return;
+
+    const copy = getSiteCopy('aboutPage', getCurrentSiteLang());
+
+    root.querySelectorAll<HTMLElement>('[data-copy-key]').forEach((element) => {
+      const key = element.dataset.copyKey as keyof typeof copy | undefined;
+      const value = key ? copy[key] : undefined;
+      if (typeof value === 'string') {
+        element.textContent = value;
+      }
+    });
+
+    const paragraphs = root.querySelector<HTMLElement>('[data-copy-paragraphs]');
+    if (paragraphs) renderParagraphs(paragraphs, copy.paragraphs);
+  }
+
+  const aboutWindow = window as AboutPageWindow;
+  if (!aboutWindow.__aboutPageBindingsReady) {
+    aboutWindow.__aboutPageBindingsReady = true;
     document.addEventListener('astro:page-load', updateAboutPage);
     window.addEventListener('lang-changed', updateAboutPage);
   }

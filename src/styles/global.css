@@ -40,6 +40,11 @@
   transition: none;
 }
 
+.floating-dropdown-overlay {
+  position: fixed;
+  inset: 0;
+}
+
 @layer utilities {
   .theme-base {
     background-color: var(--theme-bg-base);

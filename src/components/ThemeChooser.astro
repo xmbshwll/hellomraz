@@ -1,45 +1,15 @@
----
-// ThemeChooser.astro — flat TUI-style theme picker
----
-
-<div class="relative" id="theme-chooser">
+<div id="theme-chooser">
   <button
     id="theme-chooser-btn"
-    class="theme-chooser-btn"
+    class="header-control-btn"
     aria-label="Choose theme"
     aria-expanded="false"
     aria-haspopup="listbox"
   >
     <span id="theme-chooser-label">theme:dark</span>
-    <span id="theme-chooser-arrow" class="theme-arrow">▾</span>
+    <span id="theme-chooser-arrow" class="header-control-arrow">▾</span>
   </button>
 </div>
-
-<style>
-  .theme-chooser-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 44px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border: 1px solid var(--theme-border);
-    color: var(--theme-text-muted);
-    background: var(--theme-bg-elevated);
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
-  }
-  .theme-chooser-btn:hover {
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
-  }
-  .theme-arrow {
-    transition: transform 0.1s;
-  }
-</style>
 
 <script>
   import { mountSelectableDropdown } from '../lib/selectable-dropdown.mjs';
@@ -49,82 +19,42 @@
     { id: 'light', label: 'light', bg: '#ECEFF4', accent: '#5E81AC' },
     { id: 'divider-1', divider: true },
     { id: 'nord', label: 'nord', bg: '#2E3440', accent: '#88C0D0' },
-    {
-      id: 'nord-light',
-      label: 'nord-light',
-      bg: '#ECEFF4',
-      accent: '#5E81AC',
-    },
+    { id: 'nord-light', label: 'nord-light', bg: '#ECEFF4', accent: '#5E81AC' },
     { id: 'divider-2', divider: true },
-    {
-      id: 'catppuccin-mocha',
-      label: 'catppuccin-mocha',
-      bg: '#1e1e2e',
-      accent: '#89b4fa',
-    },
-    {
-      id: 'catppuccin-macchiato',
-      label: 'catppuccin-macchiato',
-      bg: '#24273a',
-      accent: '#8aadf4',
-    },
-    {
-      id: 'catppuccin-frappe',
-      label: 'catppuccin-frappé',
-      bg: '#303446',
-      accent: '#8caaee',
-    },
-    {
-      id: 'catppuccin-latte',
-      label: 'catppuccin-latte',
-      bg: '#eff1f5',
-      accent: '#1e66f5',
-    },
+    { id: 'catppuccin-mocha', label: 'catppuccin-mocha', bg: '#1e1e2e', accent: '#89b4fa' },
+    { id: 'catppuccin-macchiato', label: 'catppuccin-macchiato', bg: '#24273a', accent: '#8aadf4' },
+    { id: 'catppuccin-frappe', label: 'catppuccin-frappé', bg: '#303446', accent: '#8caaee' },
+    { id: 'catppuccin-latte', label: 'catppuccin-latte', bg: '#eff1f5', accent: '#1e66f5' },
     { id: 'divider-3', divider: true },
-    {
-      id: 'rose-pine',
-      label: 'rose-pine',
-      bg: '#191724',
-      accent: '#31748f',
-    },
-    {
-      id: 'rose-pine-moon',
-      label: 'rose-pine-moon',
-      bg: '#232136',
-      accent: '#3e8fb0',
-    },
-    {
-      id: 'rose-pine-dawn',
-      label: 'rose-pine-dawn',
-      bg: '#faf4ed',
-      accent: '#286983',
-    },
+    { id: 'rose-pine', label: 'rose-pine', bg: '#191724', accent: '#31748f' },
+    { id: 'rose-pine-moon', label: 'rose-pine-moon', bg: '#232136', accent: '#3e8fb0' },
+    { id: 'rose-pine-dawn', label: 'rose-pine-dawn', bg: '#faf4ed', accent: '#286983' },
   ];
 
+  const lightThemes = new Set([
+    'light',
+    'nord-light',
+    'catppuccin-latte',
+    'rose-pine-dawn',
+  ]);
+
   function isLightTheme(theme: string): boolean {
-    return (
-      theme === 'light' ||
-      theme === 'nord-light' ||
-      theme === 'catppuccin-latte' ||
-      theme === 'rose-pine-dawn'
-    );
+    return lightThemes.has(theme);
   }
 
   function setColorTheme(theme: string) {
     const html = document.documentElement;
-    html.setAttribute('data-theme', theme);
+    const mode = isLightTheme(theme) ? 'light' : 'dark';
 
-    if (isLightTheme(theme)) {
-      html.classList.remove('dark');
-    } else {
-      html.classList.add('dark');
-    }
+    html.setAttribute('data-theme', theme);
+    html.classList.toggle('dark', mode === 'dark');
 
     localStorage.setItem('color-theme', theme);
-    localStorage.setItem('theme', isLightTheme(theme) ? 'light' : 'dark');
+    localStorage.setItem('theme', mode);
   }
 
   function renderThemeSwatch(theme: {
+    id: string;
     bg?: string;
     accent?: string;
     divider?: boolean;
@@ -133,17 +63,21 @@
 
     const swatch = document.createElement('span');
     swatch.className = 'chooser-swatch';
+    swatch.style.setProperty('--chooser-swatch-bg', theme.bg ?? 'transparent');
+    swatch.style.setProperty(
+      '--chooser-swatch-accent',
+      theme.accent ?? 'transparent',
+    );
 
-    const leftHalf = document.createElement('span');
-    leftHalf.className = 'chooser-swatch-half';
-    leftHalf.style.background = theme.bg || 'transparent';
+    swatch.append(
+      Object.assign(document.createElement('span'), {
+        className: 'chooser-swatch-half',
+      }),
+      Object.assign(document.createElement('span'), {
+        className: 'chooser-swatch-half',
+      }),
+    );
 
-    const rightHalf = document.createElement('span');
-    rightHalf.className = 'chooser-swatch-half';
-    rightHalf.style.background = theme.accent || 'transparent';
-
-    swatch.appendChild(leftHalf);
-    swatch.appendChild(rightHalf);
     return swatch;
   }
 

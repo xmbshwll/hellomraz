@@ -36,22 +36,18 @@ const hasPrev = currentPage > 1;
 const hasNext = currentPage < lastPage;
 ---
 
-<nav class="flex items-center justify-center gap-1 mt-10 mb-4 flex-wrap" aria-label="Pagination">
+<nav class="pagination" aria-label="Pagination">
   <!-- Previous -->
   {hasPrev ? (
     <a
       href={pageUrl(currentPage - 1)}
-      class="px-3 py-2 text-sm rounded-md transition-colors inline-flex items-center justify-center"
-      style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+      class="pagination-link"
       aria-label="Previous page"
     >
       ← Prev
     </a>
   ) : (
-    <span
-      class="px-3 py-2 text-sm rounded-md opacity-40 cursor-not-allowed inline-flex items-center justify-center"
-      style="color: var(--theme-text-muted); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
-    >
+    <span class="pagination-link pagination-link--disabled">
       ← Prev
     </span>
   )}
@@ -59,21 +55,13 @@ const hasNext = currentPage < lastPage;
   <!-- Page numbers -->
   {pageNumbers.map((p) =>
     p === '...' ? (
-      <span class="px-2 py-2 text-sm inline-flex items-center justify-center" style="color: var(--theme-text-muted); min-height: 44px;">…</span>
+      <span class="pagination-ellipsis">…</span>
     ) : p === currentPage ? (
-      <span
-        class="px-3 py-2 text-sm font-bold rounded-md inline-flex items-center justify-center"
-        style="color: var(--theme-text-primary); background-color: var(--theme-accent); color: #fff; min-height: 44px; min-width: 44px;"
-        aria-current="page"
-      >
+      <span class="pagination-current" aria-current="page">
         {p}
       </span>
     ) : (
-      <a
-        href={pageUrl(p)}
-        class="px-3 py-2 text-sm rounded-md transition-colors hover:opacity-80 inline-flex items-center justify-center"
-        style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
-      >
+      <a href={pageUrl(p)} class="pagination-link">
         {p}
       </a>
     )
@@ -83,18 +71,65 @@ const hasNext = currentPage < lastPage;
   {hasNext ? (
     <a
       href={pageUrl(currentPage + 1)}
-      class="px-3 py-2 text-sm rounded-md transition-colors inline-flex items-center justify-center"
-      style="color: var(--theme-text-secondary); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
+      class="pagination-link"
       aria-label="Next page"
     >
       Next →
     </a>
   ) : (
-    <span
-      class="px-3 py-2 text-sm rounded-md opacity-40 cursor-not-allowed inline-flex items-center justify-center"
-      style="color: var(--theme-text-muted); background-color: var(--theme-bg-elevated); min-height: 44px; min-width: 44px;"
-    >
+    <span class="pagination-link pagination-link--disabled">
       Next →
     </span>
   )}
 </nav>
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 2.5rem 0 1rem;
+  }
+
+  .pagination-link,
+  .pagination-current,
+  .pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+  }
+
+  .pagination-link {
+    color: var(--theme-text-secondary);
+    background-color: var(--theme-bg-elevated);
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .pagination-link:hover {
+    opacity: 0.8;
+  }
+
+  .pagination-link--disabled {
+    color: var(--theme-text-muted);
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-current {
+    color: #fff;
+    background-color: var(--theme-accent);
+    font-weight: 700;
+  }
+
+  .pagination-ellipsis {
+    color: var(--theme-text-muted);
+  }
+</style>

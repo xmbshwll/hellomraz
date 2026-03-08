@@ -1,0 +1,24 @@
+{
+  "id": "./",
+  "name": "ОПУСТИ ОРУЖИЕ, МРАЗЬ",
+  "short_name": "poeba.lu",
+  "description": "DIY freestyle music blog focused on punk, noise and experimental music",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#2E3440",
+  "theme_color": "#2E3440",
+  "icons": [
+    {
+      "src": "./pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

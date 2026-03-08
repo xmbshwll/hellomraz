@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import SideMenuItem from './SideMenuItem.astro';
 import SideItemCard from './SideItemCard.astro';
+import { getSiteCopy } from '../../lib/site-i18n.mjs';
 
 interface Props {
   initialPosts: CollectionEntry<'blog'>[];
@@ -11,64 +12,47 @@ interface Props {
 const { initialPosts, hasMore } = Astro.props;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const INITIAL_COUNT = initialPosts.length;
+const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 ---
 
 <div
-  class="side-menu flex flex-col flex-1 h-full"
+  class="side-menu theme-base flex flex-col flex-1 h-full"
   data-side-menu
   data-base={base}
   data-initial-count={INITIAL_COUNT}
   data-rendered={INITIAL_COUNT}
-  style="background-color: var(--theme-bg-base);"
 >
   <!-- Nav links -->
-  <div
-    class="flex-shrink-0 border-b"
-    style="border-color: var(--theme-border);"
-  >
+  <div class="flex-shrink-0 border-b theme-border">
     <ul class="py-1">
       <SideMenuItem href={base} icon="home">ОПУСТИ ОРУЖИЕ, МРАЗЬ</SideMenuItem>
     </ul>
   </div>
 
   <!-- About blurb -->
-  <div
-    class="flex-shrink-0 border-b px-4 py-3"
-    style="border-color: var(--theme-border);"
-  >
-    <h2
-      class="text-xs font-bold uppercase tracking-widest mb-2"
-      style="color: var(--theme-text-muted);"
-    >
+  <div class="flex-shrink-0 border-b px-4 py-3 theme-border">
+    <h2 class="text-xs font-bold uppercase tracking-widest mb-2 theme-text-muted">
       ~ about
     </h2>
     <p
-      class="text-xs leading-relaxed"
-      style="color: var(--theme-text-secondary);"
+      class="text-xs leading-relaxed theme-text-secondary"
       data-sidebar-about-text
     >
-      Лучшее музыкально-критическое СМИ в этой вселенной (возможно, после The
-      Quietus).
+      {defaultSidebarAboutCopy.text}
     </p>
     <a
       href={`${base}about`}
       class="sidebar-about-link"
       data-sidebar-about-link
     >
-      подробнее →
+      {defaultSidebarAboutCopy.link}
     </a>
   </div>
 
   <!-- Recent posts -->
   <div class="flex-1 overflow-y-auto min-h-0">
-    <div
-      class="sticky top-0 px-4 pt-3 pb-2 z-10 border-b"
-      style="background-color: var(--theme-bg-base); border-color: var(--theme-border);"
-    >
-      <h2
-        class="text-xs font-bold uppercase tracking-widest"
-        style="color: var(--theme-text-muted);"
-      >
+    <div class="sticky top-0 px-4 pt-3 pb-2 z-10 border-b theme-base theme-border">
+      <h2 class="text-xs font-bold uppercase tracking-widest theme-text-muted">
         ~ recent
       </h2>
     </div>
@@ -172,12 +156,7 @@ const INITIAL_COUNT = initialPosts.length;
   }
 
   function renderPost(post: SidebarPost, baseUrl: string): string {
-    return `<li><a href="${baseUrl}blog/${escapeHtml(post.slug)}"
-      class="side-item-card-dynamic"
-    ><div class="side-item-info-dynamic">
-        <div class="side-item-title-dynamic">${escapeHtml(post.title)}</div>
-        <div class="side-item-year-dynamic">${post.year}</div>
-      </div></a></li>`;
+    return `<li><a href="${baseUrl}blog/${escapeHtml(post.slug)}" class="side-item-card"><div class="side-item-info"><div class="side-item-title">${escapeHtml(post.title)}</div><div class="side-item-year">${post.year}</div></div></a></li>`;
   }
 
   function setRenderedCount(root: HTMLElement, count: number) {
@@ -227,7 +206,7 @@ const INITIAL_COUNT = initialPosts.length;
       );
 
       if (wrap) {
-        wrap.style.display = loaded >= allPosts.length ? 'none' : '';
+        wrap.hidden = loaded >= allPosts.length;
       }
       if (button && loaded < allPosts.length && !isLoadingMore) {
         button.textContent = 'Load more';
@@ -316,41 +295,3 @@ const INITIAL_COUNT = initialPosts.length;
   window.addEventListener('lang-changed', updateAboutBlurb);
   initSideMenus();
 </script>
-
-<style is:global>
-  /* Dynamic sidebar cards injected by JS load-more */
-  .side-item-card-dynamic {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    border-left: 2px solid transparent;
-    color: var(--theme-text-muted);
-    text-decoration: none;
-    transition: color 0.15s, background-color 0.15s, border-left-color 0.15s;
-  }
-  .side-item-card-dynamic:hover {
-    color: var(--theme-text-primary);
-    background-color: var(--theme-bg-hover);
-    border-left-color: var(--theme-accent);
-  }
-  .side-item-info-dynamic {
-    flex: 1;
-    min-width: 0;
-  }
-  .side-item-title-dynamic {
-    font-size: 0.875rem;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: inherit;
-  }
-  .side-item-year-dynamic {
-    font-size: 0.75rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--theme-text-muted);
-  }
-</style>

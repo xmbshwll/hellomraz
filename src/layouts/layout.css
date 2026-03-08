@@ -9,6 +9,10 @@ body {
   color: var(--theme-text-primary, #ECEFF4);
 }
 
+body.mobile-sidebar-open {
+  overflow: hidden;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--theme-scrollbar-thumb, #4C566A) var(--theme-scrollbar-track, transparent);
