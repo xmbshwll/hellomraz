@@ -4,6 +4,7 @@ import './layout.css';
 import '../styles/global.css';
 import '../styles/themes.css';
 import SideMenu from '../components/Side/SideMenu.astro';
+import FloatingPlayerDock from '../components/FloatingPlayerDock.astro';
 import {
   getPublishedPostCount,
   getRecentPosts,
@@ -37,6 +38,12 @@ const [recentPosts, totalPosts] = await Promise.all([
   getPublishedPostCount(),
 ]);
 const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
+const lightThemeIds = [
+  'light',
+  'nord-light',
+  'catppuccin-latte',
+  'rose-pine-dawn',
+];
 ---
 
 <!doctype html>
@@ -66,7 +73,17 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
       sizes="180x180"
       href={`${base}apple-touch-icon.png`}
     />
+    <link rel="manifest" href={`${base}manifest.webmanifest`} />
     <link rel="canonical" href={canonicalUrl} />
+    <meta name="application-name" content={SITE_TITLE} />
+    <meta name="theme-color" content="#2E3440" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content={SITE_TITLE} />
     <link
       rel="alternate"
       type="application/rss+xml"
@@ -104,18 +121,24 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
       media="print"
       onload="this.media='all'"
     />
-    <ViewTransitions fallback="none" />
+    <ViewTransitions fallback="swap" />
     <!-- Apply saved theme before first paint to prevent flash -->
-    <script is:inline>
+    <script is:inline define:vars={{ lightThemeIds }}>
       (function () {
-        var t = localStorage.getItem('color-theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', t);
+        var lightThemes = new Set(lightThemeIds || []);
+        window.__hellomrazApplyTheme = function (nextTheme) {
+          var theme = nextTheme || localStorage.getItem('color-theme') || 'dark';
+          var html = document.documentElement;
+          html.setAttribute('data-theme', theme);
+          if (lightThemes.has(theme)) {
+            html.classList.remove('dark');
+          } else {
+            html.classList.add('dark');
+          }
+        };
+
         document.documentElement.classList.add('no-transition');
-        if (t === 'light' || t === 'nord-light' || t === 'catppuccin-latte' || t === 'rose-pine-dawn') {
-          document.documentElement.classList.remove('dark');
-        } else {
-          document.documentElement.classList.add('dark');
-        }
+        window.__hellomrazApplyTheme();
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             document.documentElement.classList.remove('no-transition');
@@ -127,10 +150,7 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
     <script defer src="https://cloud.umami.is/script.js" data-website-id="c50bec21-a36c-4762-92ce-7335a35a4060"></script>
   </head>
   <body>
-    <div
-      class="app-shell flex items-stretch overflow-hidden"
-      style="background-color: var(--theme-bg-base);"
-    >
+    <div class="app-shell flex items-stretch overflow-hidden theme-base">
       <!-- Mobile sidebar overlay -->
       <div
         id="mobile-sidebar-overlay"
@@ -154,20 +174,18 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
 
       <!-- Sidebar — hidden on small screens -->
       <div
-        class="w-[280px] flex-col hidden lg:flex overflow-y-auto flex-shrink-0 border-r"
-        style="border-color: var(--theme-border);"
+        class="w-[280px] flex-col hidden lg:flex overflow-y-auto flex-shrink-0 border-r theme-border"
         transition:persist="sidebar"
       >
         <SideMenu initialPosts={recentPosts} hasMore={hasMoreRecentPosts} />
       </div>
       <!-- Main content -->
-      <div
-        class="flex-1 overflow-y-auto overflow-x-hidden"
-        style="background-color: var(--theme-bg-surface);"
-      >
+      <div class="flex-1 overflow-y-auto overflow-x-hidden theme-surface">
         <slot />
       </div>
     </div>
+
+    <FloatingPlayerDock />
 
     <!-- View-transitions support warning -->
     <div
@@ -178,25 +196,41 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
     </div>
 
     <script>
-      function applySavedTheme() {
-        const theme = localStorage.getItem('color-theme') || 'dark';
-        const html = document.documentElement;
+      import { navigate } from 'astro:transitions/client';
 
-        html.setAttribute('data-theme', theme);
-        if (
-          theme === 'light' ||
-          theme === 'nord-light' ||
-          theme === 'catppuccin-latte' ||
-          theme === 'rose-pine-dawn'
-        ) {
-          html.classList.remove('dark');
-        } else {
-          html.classList.add('dark');
+      type LayoutWindow = Window & {
+        __hellomrazApplyTheme?: (theme?: string | null) => void;
+        __hellomrazNavigate?: (href: string) => Promise<void> | void;
+        __themePersistenceBound?: boolean;
+      };
+
+      const layoutWindow = window as LayoutWindow;
+
+      function applySavedTheme() {
+        const applyTheme = layoutWindow.__hellomrazApplyTheme;
+        if (typeof applyTheme === 'function') {
+          applyTheme();
+          return;
         }
+
+        const fallbackTheme = localStorage.getItem('color-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', fallbackTheme);
       }
 
-      if (!(window as any).__themePersistenceBound) {
-        (window as any).__themePersistenceBound = true;
+      if (!layoutWindow.__hellomrazNavigate) {
+        layoutWindow.__hellomrazNavigate = async (href: string) => {
+          if (!href) return;
+
+          try {
+            await navigate(href);
+          } catch {
+            window.location.assign(href);
+          }
+        };
+      }
+
+      if (!layoutWindow.__themePersistenceBound) {
+        layoutWindow.__themePersistenceBound = true;
         document.addEventListener('astro:after-swap', applySavedTheme);
         document.addEventListener('astro:page-load', applySavedTheme);
       }
@@ -205,20 +239,79 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
     </script>
 
     <script>
+      interface BeforeInstallPromptEvent extends Event {
+        prompt(): Promise<void>;
+        userChoice: Promise<{
+          outcome: 'accepted' | 'dismissed';
+          platform: string;
+        }>;
+      }
+
+      type PwaWindow = Window & {
+        __deferredPwaPrompt?: BeforeInstallPromptEvent | null;
+        __pwaBound?: boolean;
+      };
+
+      const pwaWindow = window as PwaWindow;
+
+      if (!pwaWindow.__pwaBound) {
+        pwaWindow.__pwaBound = true;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          pwaWindow.__deferredPwaPrompt = event as BeforeInstallPromptEvent;
+          window.dispatchEvent(new CustomEvent('pwa-install-available'));
+        });
+
+        window.addEventListener('appinstalled', () => {
+          pwaWindow.__deferredPwaPrompt = null;
+          window.dispatchEvent(new CustomEvent('pwa-installed'));
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            const baseUrl =
+              document.querySelector('meta[name="base-url"]')?.getAttribute('content') ||
+              '/';
+
+            navigator.serviceWorker
+              .register(`${baseUrl}sw.js`, { scope: baseUrl })
+              .catch(() => undefined);
+          });
+        }
+      }
+    </script>
+
+    <script>
+      type LayoutUiWindow = Window & {
+        __layoutUiBound?: boolean;
+      };
+
+      function revealFadeTargets() {
+        for (const el of document.querySelectorAll('.el-to-fade')) {
+          el.classList.remove('scale-90');
+        }
+      }
+
       if (!document.startViewTransition) {
         const el = document.getElementById('not-support');
         if (el) el.classList.remove('hidden');
       }
-      document.addEventListener('astro:page-load', () => {
-        for (const el of document.querySelectorAll('.el-to-fade')) {
-          el.classList.remove('scale-90');
-        }
-      });
+
+      if (!(window as LayoutUiWindow).__layoutUiBound) {
+        (window as LayoutUiWindow).__layoutUiBound = true;
+        document.addEventListener('astro:page-load', revealFadeTargets);
+      }
+
+      revealFadeTargets();
     </script>
 
     <!-- Mobile sidebar toggle -->
     <script>
-      let mobileSidebarKeydownBound = false;
+      type MobileSidebarWindow = Window & {
+        __mobileSidebarKeydownBound?: boolean;
+        __mobileSidebarInitBound?: boolean;
+      };
 
       function closeMobileSidebar() {
         const overlay = document.getElementById('mobile-sidebar-overlay');
@@ -226,7 +319,7 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
 
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.body.classList.remove('mobile-sidebar-open');
       }
 
       function initMobileSidebar() {
@@ -236,7 +329,7 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
         function open() {
           overlay.classList.add('open');
           overlay.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
+          document.body.classList.add('mobile-sidebar-open');
         }
 
         // Always re-bind: the button may be persisted but overlay is fresh
@@ -250,7 +343,8 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
         if (closeBtn) closeBtn.onclick = closeMobileSidebar;
         if (backdrop) (backdrop as HTMLElement).onclick = closeMobileSidebar;
 
-        if (!mobileSidebarKeydownBound) {
+        if (!(window as MobileSidebarWindow).__mobileSidebarKeydownBound) {
+          (window as MobileSidebarWindow).__mobileSidebarKeydownBound = true;
           document.addEventListener('keydown', (event) => {
             const currentOverlay = document.getElementById('mobile-sidebar-overlay');
             if (
@@ -260,13 +354,16 @@ const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
               closeMobileSidebar();
             }
           });
-          mobileSidebarKeydownBound = true;
         }
 
         // Close on navigation (view transitions)
         closeMobileSidebar();
       }
-      document.addEventListener('astro:page-load', initMobileSidebar);
+
+      if (!(window as MobileSidebarWindow).__mobileSidebarInitBound) {
+        (window as MobileSidebarWindow).__mobileSidebarInitBound = true;
+        document.addEventListener('astro:page-load', initMobileSidebar);
+      }
       initMobileSidebar();
     </script>
   </body>

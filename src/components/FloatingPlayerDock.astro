@@ -1,0 +1,803 @@
+---
+/**
+ * Persistent floating dock + inline stage for the global streaming iframe.
+ * The live iframe always lives here so Astro page swaps never tear it down.
+ */
+---
+
+<div
+  id="floating-player-dock"
+  class="floating-player-dock"
+  hidden
+  aria-live="polite"
+  transition:persist="floating-player-dock"
+>
+  <div class="floating-player-dock-bar">
+    <div class="floating-player-dock-cover-shell" aria-hidden="true">
+      <img id="floating-player-dock-cover" class="floating-player-dock-cover" alt="" />
+    </div>
+
+    <div class="floating-player-dock-meta">
+      <div class="floating-player-dock-kicker">pinned player</div>
+      <div id="floating-player-dock-title" class="floating-player-dock-title"></div>
+      <div id="floating-player-dock-service" class="floating-player-dock-service"></div>
+    </div>
+
+    <div class="floating-player-dock-actions">
+      <button
+        id="floating-player-dock-toggle"
+        type="button"
+        class="floating-player-dock-btn"
+        aria-expanded="false"
+      >
+        open
+      </button>
+      <button
+        id="floating-player-dock-close"
+        type="button"
+        class="floating-player-dock-btn floating-player-dock-btn-close"
+        aria-label="Close pinned player"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <div id="floating-player-dock-panel" class="floating-player-dock-panel">
+    <div class="floating-player-dock-frame-scroll">
+      <div
+        id="floating-player-dock-frame-host"
+        class="floating-player-dock-frame-host"
+      ></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .floating-player-dock {
+    --floating-player-dock-width: min(25rem, calc(100vw - 1.5rem));
+    --floating-player-dock-panel-height: min(32.5rem, 72vh);
+    position: fixed;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100000;
+    width: var(--floating-player-dock-width);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .floating-player-dock[hidden] {
+    display: none;
+  }
+  .floating-player-dock-bar,
+  .floating-player-dock-panel {
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-surface);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  }
+  .floating-player-dock-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.75rem;
+  }
+  .floating-player-dock-cover-shell {
+    display: none;
+    flex-shrink: 0;
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 1px solid var(--theme-border);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent), var(--theme-bg-surface)),
+      radial-gradient(circle at top left, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 60%);
+    overflow: hidden;
+  }
+  .floating-player-dock-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .floating-player-dock[data-has-static-cover='true']:not(.is-expanded):not(.is-inline)
+    .floating-player-dock-cover-shell {
+    display: block;
+  }
+  .floating-player-dock-meta {
+    min-width: 0;
+    flex: 1;
+  }
+  .floating-player-dock-kicker {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--theme-text-muted);
+    margin-bottom: 0.25rem;
+  }
+  .floating-player-dock-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--theme-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .floating-player-dock-service {
+    font-size: 0.75rem;
+    color: var(--theme-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.125rem;
+  }
+  .floating-player-dock[data-scrollable='true']:not(.is-inline) .floating-player-dock-service {
+    color: var(--theme-accent);
+  }
+  .floating-player-dock-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
+  }
+  .floating-player-dock-btn {
+    min-height: 36px;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-elevated);
+    color: var(--theme-text-secondary);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .floating-player-dock-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
+  .floating-player-dock-btn-close {
+    min-width: 36px;
+    padding-inline: 0;
+  }
+  .floating-player-dock-panel {
+    display: flex;
+    flex-direction: column;
+    height: var(--floating-player-dock-panel-height);
+    min-height: var(--floating-player-dock-panel-height);
+    max-height: var(--floating-player-dock-panel-height);
+    overflow: hidden;
+  }
+  .floating-player-dock-frame-scroll {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .floating-player-dock-frame-host {
+    height: 100%;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable both-edges;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--theme-accent) 35%, var(--theme-border)) transparent;
+  }
+  .floating-player-dock-frame-host::-webkit-scrollbar {
+    width: 0.625rem;
+  }
+  .floating-player-dock-frame-host::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .floating-player-dock-frame-host::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--theme-accent) 35%, var(--theme-border));
+    border-radius: 999px;
+  }
+  .floating-player-dock-frame-host iframe {
+    display: block;
+    width: 100%;
+    min-height: 100%;
+  }
+  .floating-player-dock:not(.is-expanded):not(.is-inline) .floating-player-dock-panel {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    width: var(--floating-player-dock-width);
+  }
+  .floating-player-dock.is-inline {
+    right: auto;
+    bottom: auto;
+    width: auto;
+    gap: 0;
+  }
+  .floating-player-dock.is-inline .floating-player-dock-bar {
+    display: none;
+  }
+  .floating-player-dock.is-inline .floating-player-dock-panel {
+    min-height: 0;
+    max-height: none;
+    height: 100%;
+  }
+  .floating-player-dock.is-inline .floating-player-dock-frame-scroll {
+    height: 100%;
+    padding: 0;
+  }
+  .floating-player-dock.is-inline .floating-player-dock-frame-host {
+    height: 100%;
+    overflow: hidden;
+    scrollbar-gutter: auto;
+  }
+  @media (max-width: 640px) {
+    .floating-player-dock {
+      --floating-player-dock-panel-height: min(28rem, 72vh);
+      right: 0.5rem;
+      left: 0.5rem;
+      width: auto;
+      bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    .floating-player-dock-bar {
+      padding: 0.625rem;
+    }
+    .floating-player-dock.is-inline .floating-player-dock-frame-scroll {
+      padding: 0;
+    }
+  }
+</style>
+
+<script>
+  import {
+    buildStreamingPlayerFrameStyle,
+    resolveStreamingPlayerActivation,
+    shouldAutoRestoreStreamingPlayer,
+    supportsFloatingTracklistScroll,
+  } from '../lib/streaming-player.mjs';
+
+  interface StreamingPlayerDockState {
+    slug: string;
+    title: string;
+    service: string;
+    index: number;
+    mode: 'inline' | 'floating';
+    pinned: boolean;
+    expanded: boolean;
+    embedUrl: string;
+    coverUrl?: string;
+    chromeStyle: string;
+  }
+
+  interface StreamingPlayerDockApi {
+    activate: (payload: {
+      slug: string;
+      title: string;
+      service: string;
+      index: number;
+      embedUrl: string;
+      coverUrl?: string;
+      chromeStyle: string;
+      mode?: 'inline' | 'floating';
+      allowReplace?: boolean;
+      expand?: boolean;
+      pinned?: boolean;
+    }) => boolean;
+    close: () => void;
+    showInline: (slug?: string) => boolean;
+    showFloating: (options?: {
+      expand?: boolean;
+      pinned?: boolean;
+    }) => boolean;
+    toggleExpanded: (force?: boolean) => void;
+    refresh: () => void;
+    getState: () => StreamingPlayerDockState | null;
+  }
+
+  type DockWindow = Window & {
+    __floatingPlayerDockReady?: boolean;
+    __streamingPlayerDock?: StreamingPlayerDockApi;
+    __floatingPlayerDockRoot?: HTMLElement | null;
+  };
+
+  (function initFloatingPlayerDock() {
+    const win = window as DockWindow;
+
+    function pruneDuplicateRoots(root: HTMLElement) {
+      document.querySelectorAll<HTMLElement>('#floating-player-dock').forEach((candidate) => {
+        if (candidate !== root) {
+          candidate.remove();
+        }
+      });
+    }
+
+    function parkDockRoot(root: HTMLElement) {
+      if (root.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(root);
+      }
+
+      pruneDuplicateRoots(root);
+      win.__floatingPlayerDockRoot = root;
+      return root;
+    }
+
+    function resolveDockRoot() {
+      const existing = win.__floatingPlayerDockRoot;
+      if (existing?.isConnected) {
+        return parkDockRoot(existing);
+      }
+
+      const candidate = document.querySelector<HTMLElement>('#floating-player-dock');
+      if (!candidate) {
+        win.__floatingPlayerDockRoot = null;
+        return null;
+      }
+
+      return parkDockRoot(candidate);
+    }
+
+    if (win.__floatingPlayerDockReady) {
+      resolveDockRoot();
+      win.__streamingPlayerDock?.refresh();
+      return;
+    }
+    win.__floatingPlayerDockReady = true;
+
+    let state: StreamingPlayerDockState | null = null;
+    let activeIframe: HTMLIFrameElement | null = null;
+    let refreshQueued = false;
+    let dockRoot = resolveDockRoot();
+
+    function ensureDockRoot(): HTMLElement | null {
+      if (dockRoot?.isConnected) {
+        return parkDockRoot(dockRoot);
+      }
+
+      dockRoot = resolveDockRoot();
+      return dockRoot;
+    }
+
+    function getRoot(): HTMLElement | null {
+      return ensureDockRoot();
+    }
+
+    function getTitleEl(): HTMLElement | null {
+      return getRoot()?.querySelector('#floating-player-dock-title') ?? null;
+    }
+
+    function getServiceEl(): HTMLElement | null {
+      return getRoot()?.querySelector('#floating-player-dock-service') ?? null;
+    }
+
+    function getToggleBtn(): HTMLButtonElement | null {
+      return getRoot()?.querySelector<HTMLButtonElement>('#floating-player-dock-toggle') ?? null;
+    }
+
+    function getCloseBtn(): HTMLButtonElement | null {
+      return getRoot()?.querySelector<HTMLButtonElement>('#floating-player-dock-close') ?? null;
+    }
+
+    function getFrameHost(): HTMLElement | null {
+      return getRoot()?.querySelector('#floating-player-dock-frame-host') ?? null;
+    }
+
+    function getCoverImg(): HTMLImageElement | null {
+      return getRoot()?.querySelector<HTMLImageElement>('#floating-player-dock-cover') ?? null;
+    }
+
+    function getInlineAnchor(slug = state?.slug || ''): HTMLElement | null {
+      if (!slug) return null;
+      return document.querySelector(
+        `[data-streaming-player-anchor="${slug}"]`,
+      ) as HTMLElement | null;
+    }
+
+    function snapshotState() {
+      return state ? JSON.stringify(state) : 'null';
+    }
+
+    function getServiceKey(service = '') {
+      return service
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function normalizeUrl(url: string) {
+      try {
+        return new URL(url, window.location.href).href;
+      } catch {
+        return url;
+      }
+    }
+
+    function ensureActiveIframe(nextState: StreamingPlayerDockState | null) {
+      const embedUrl = nextState?.embedUrl;
+      if (!embedUrl) return;
+
+      const chromeStyle = nextState?.chromeStyle || '';
+      const currentUrl = activeIframe ? normalizeUrl(activeIframe.src) : '';
+      const nextUrl = normalizeUrl(embedUrl);
+      const currentChromeStyle = activeIframe?.dataset.chromeStyle || '';
+
+      if (
+        activeIframe &&
+        currentUrl === nextUrl &&
+        currentChromeStyle === chromeStyle
+      ) {
+        return;
+      }
+
+      if (activeIframe) {
+        activeIframe.remove();
+      }
+
+      activeIframe = createIframe(nextState);
+      activeIframe.dataset.chromeStyle = chromeStyle;
+    }
+
+    function emitChange() {
+      window.dispatchEvent(
+        new CustomEvent('streaming-player-dock-change', {
+          detail: {
+            state: state ? { ...state } : null,
+          },
+        }),
+      );
+    }
+
+    function clearInlinePosition() {
+      const root = getRoot();
+      if (!root) return;
+
+      root.style.top = '';
+      root.style.left = '';
+      root.style.width = '';
+      root.style.height = '';
+    }
+
+    function applyInlinePosition(anchor: HTMLElement) {
+      const root = getRoot();
+      if (!root) return false;
+
+      const rect = anchor.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) {
+        return false;
+      }
+
+      root.style.top = `${rect.top}px`;
+      root.style.left = `${rect.left}px`;
+      root.style.width = `${rect.width}px`;
+      root.style.height = `${rect.height}px`;
+      return true;
+    }
+
+    function applyIframeStyle(
+      iframe: HTMLIFrameElement,
+      nextState: StreamingPlayerDockState,
+    ) {
+      iframe.style.cssText = buildStreamingPlayerFrameStyle(
+        nextState.service,
+        nextState.mode,
+        nextState.chromeStyle,
+      );
+    }
+
+    function applyActiveIframeStyle(nextState: StreamingPlayerDockState | null) {
+      if (!activeIframe || !nextState) return;
+      applyIframeStyle(activeIframe, nextState);
+    }
+
+    function createIframe(nextState: StreamingPlayerDockState) {
+      const iframe = document.createElement('iframe');
+      iframe.src = nextState.embedUrl;
+      iframe.allow =
+        'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      iframe.loading = 'eager';
+      iframe.setAttribute('seamless', '');
+      applyIframeStyle(iframe, nextState);
+      return iframe;
+    }
+
+    function bindControls() {
+      const toggleBtn = getToggleBtn();
+      const closeBtn = getCloseBtn();
+
+      if (toggleBtn) {
+        toggleBtn.onclick = () => toggleExpanded();
+      }
+
+      if (closeBtn) {
+        closeBtn.onclick = () => close();
+      }
+    }
+
+    function resetDockUi(
+      root: HTMLElement,
+      titleEl: HTMLElement,
+      serviceEl: HTMLElement,
+      coverImg: HTMLImageElement,
+      toggleBtn: HTMLButtonElement,
+    ) {
+      root.hidden = true;
+      root.classList.remove('is-expanded', 'is-inline');
+      delete root.dataset.service;
+      delete root.dataset.hasStaticCover;
+      delete root.dataset.scrollable;
+      clearInlinePosition();
+      titleEl.textContent = '';
+      serviceEl.textContent = '';
+      coverImg.removeAttribute('src');
+      coverImg.alt = '';
+      toggleBtn.textContent = 'open';
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function syncUi() {
+      bindControls();
+
+      const root = getRoot();
+      const titleEl = getTitleEl();
+      const serviceEl = getServiceEl();
+      const toggleBtn = getToggleBtn();
+      const host = getFrameHost();
+      const coverImg = getCoverImg();
+
+      if (!root || !titleEl || !serviceEl || !toggleBtn || !host || !coverImg) {
+        return;
+      }
+
+      if (!state || !activeIframe) {
+        resetDockUi(root, titleEl, serviceEl, coverImg, toggleBtn);
+        return;
+      }
+
+      if (shouldAutoRestoreStreamingPlayer(state, state.slug) && getInlineAnchor(state.slug)) {
+        state.mode = 'inline';
+        state.expanded = false;
+      }
+
+      const anchor = state.mode === 'inline' ? getInlineAnchor(state.slug) : null;
+      if (state.mode === 'inline' && !anchor) {
+        if (activeIframe) {
+          activeIframe.remove();
+        }
+        activeIframe = null;
+        state = null;
+        resetDockUi(root, titleEl, serviceEl, coverImg, toggleBtn);
+        return;
+      }
+
+      const isScrollableFloatingPlayer =
+        state.mode === 'floating' && supportsFloatingTracklistScroll(state.service);
+
+      root.hidden = false;
+      root.dataset.service = getServiceKey(state.service);
+      titleEl.textContent = state.title;
+      serviceEl.textContent = isScrollableFloatingPlayer
+        ? `${state.service} · scroll for full tracklist`
+        : state.service;
+
+      if (isScrollableFloatingPlayer) {
+        root.dataset.scrollable = 'true';
+      } else {
+        delete root.dataset.scrollable;
+      }
+
+      if (state.coverUrl) {
+        coverImg.src = state.coverUrl;
+        coverImg.alt = `${state.title} cover art`;
+      } else {
+        coverImg.removeAttribute('src');
+        coverImg.alt = '';
+      }
+
+      const showStaticCover =
+        state.service === 'Bandcamp' &&
+        !!state.coverUrl &&
+        state.mode === 'floating' &&
+        !state.expanded;
+      if (showStaticCover) {
+        root.dataset.hasStaticCover = 'true';
+      } else {
+        delete root.dataset.hasStaticCover;
+      }
+
+      if (activeIframe.parentElement !== host) {
+        host.appendChild(activeIframe);
+      }
+      applyActiveIframeStyle(state);
+
+      if (state.mode === 'inline') {
+        root.classList.add('is-inline');
+        root.classList.remove('is-expanded');
+        toggleBtn.textContent = 'open';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+
+        if (!applyInlinePosition(anchor)) {
+          root.hidden = true;
+          clearInlinePosition();
+          queueRefresh();
+          return;
+        }
+
+        return;
+      }
+
+      root.classList.remove('is-inline');
+      clearInlinePosition();
+      root.classList.toggle('is-expanded', state.expanded);
+      toggleBtn.textContent = state.expanded ? 'hide' : 'open';
+      toggleBtn.setAttribute('aria-expanded', state.expanded ? 'true' : 'false');
+    }
+
+    function refresh(emit = false) {
+      const before = snapshotState();
+      syncUi();
+      if (emit || snapshotState() !== before) {
+        emitChange();
+      }
+    }
+
+    function queueRefresh() {
+      if (refreshQueued) return;
+      refreshQueued = true;
+      requestAnimationFrame(() => {
+        refreshQueued = false;
+        refresh();
+      });
+    }
+
+    function getCurrentPagePlayerSlug() {
+      return document.querySelector<HTMLElement>('.streaming-player[data-player-slug]')?.dataset
+        .playerSlug || '';
+    }
+
+    function requestInlineReset(slug: string) {
+      window.dispatchEvent(
+        new CustomEvent('streaming-player-inline-reset-request', {
+          detail: { slug },
+        }),
+      );
+    }
+
+    function close() {
+      const targetSlug = getCurrentPagePlayerSlug();
+
+      if (activeIframe) {
+        activeIframe.remove();
+      }
+      activeIframe = null;
+      state = null;
+      refresh(true);
+
+      if (targetSlug) {
+        requestInlineReset(targetSlug);
+      }
+    }
+
+    function showInline(slug = state?.slug) {
+      if (!state || !activeIframe) return false;
+      if (slug && state.slug !== slug) return false;
+      if (!getInlineAnchor(state.slug)) return false;
+
+      state.mode = 'inline';
+      state.pinned = false;
+      state.expanded = false;
+      refresh(true);
+      return true;
+    }
+
+    function showFloating(
+      options: {
+        expand?: boolean;
+        pinned?: boolean;
+      } = {},
+    ) {
+      if (!state || !activeIframe) return false;
+
+      const wasInline = state.mode === 'inline';
+      state.mode = 'floating';
+      if (typeof options.pinned === 'boolean') {
+        state.pinned = options.pinned;
+      }
+      if (typeof options.expand === 'boolean') {
+        state.expanded = options.expand;
+      } else if (wasInline) {
+        state.expanded = true;
+      }
+
+      refresh(true);
+      return true;
+    }
+
+    function toggleExpanded(force?: boolean) {
+      if (!state || state.mode !== 'floating') return;
+      state.expanded = typeof force === 'boolean' ? force : !state.expanded;
+      refresh(true);
+    }
+
+    function activate(payload: {
+      slug: string;
+      title: string;
+      service: string;
+      index: number;
+      embedUrl: string;
+      coverUrl?: string;
+      chromeStyle: string;
+      mode?: 'inline' | 'floating';
+      allowReplace?: boolean;
+      expand?: boolean;
+      pinned?: boolean;
+    }) {
+      const action = resolveStreamingPlayerActivation(
+        state,
+        { slug: payload.slug, index: payload.index },
+        { allowReplace: payload.allowReplace },
+      );
+
+      if (action === 'preserve') {
+        refresh(false);
+        return false;
+      }
+
+      const nextMode = payload.mode ?? (state?.slug === payload.slug ? state.mode : 'inline');
+      const nextPinned =
+        nextMode === 'floating'
+          ? typeof payload.pinned === 'boolean'
+            ? payload.pinned
+            : state?.slug === payload.slug
+              ? state.pinned
+              : true
+          : false;
+      const nextExpanded =
+        nextMode === 'floating'
+          ? typeof payload.expand === 'boolean'
+            ? payload.expand
+            : state?.slug === payload.slug
+              ? state.expanded
+              : true
+          : false;
+
+      const nextState: StreamingPlayerDockState = {
+        slug: payload.slug,
+        title: payload.title,
+        service: payload.service,
+        index: payload.index,
+        mode: nextMode,
+        pinned: nextPinned,
+        expanded: nextExpanded,
+        embedUrl: payload.embedUrl,
+        coverUrl: payload.coverUrl,
+        chromeStyle: payload.chromeStyle,
+      };
+
+      ensureActiveIframe(nextState);
+      state = nextState;
+
+      refresh(true);
+      return true;
+    }
+
+    bindControls();
+
+    document.addEventListener('astro:after-swap', queueRefresh);
+    document.addEventListener('astro:page-load', queueRefresh);
+    window.addEventListener('resize', queueRefresh);
+    document.addEventListener('scroll', queueRefresh, true);
+
+    win.__streamingPlayerDock = {
+      activate,
+      close,
+      showInline,
+      showFloating,
+      toggleExpanded,
+      refresh: () => refresh(true),
+      getState: () => (state ? { ...state } : null),
+    };
+
+    window.dispatchEvent(new CustomEvent('streaming-player-dock-ready'));
+    refresh(true);
+  })();
+</script>

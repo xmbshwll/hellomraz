@@ -5,8 +5,8 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 <Layout title="404">
   <div class="flex flex-col items-center justify-center min-h-[60vh] py-20 text-center px-6">
-    <pre class="text-6xl font-bold mb-4" style="color: var(--theme-error, #BF616A);">404</pre>
-    <p class="text-sm mb-6" style="color: var(--theme-text-muted);">
+    <pre class="text-6xl font-bold mb-4 theme-text-error">404</pre>
+    <p class="text-sm mb-6 theme-text-muted">
       error: page not found
     </p>
     
@@ -40,5 +40,12 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 </style>
 
 <script>
-  document.getElementById('back-btn')?.addEventListener('click', () => history.back());
+  const backButton = document.getElementById('back-btn') as
+    | (HTMLButtonElement & { __backBound?: boolean })
+    | null;
+
+  if (backButton && !backButton.__backBound) {
+    backButton.__backBound = true;
+    backButton.addEventListener('click', () => history.back());
+  }
 </script>

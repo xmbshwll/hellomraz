@@ -1,63 +1,48 @@
 ---
-/**
- * "Listen On" service link grid — direct links to streaming platforms.
- * Complements the embedded player by offering quick access to user's preferred service.
- */
 import type { StreamingLink } from '../lib/streaming';
 
 interface Props {
   links: StreamingLink[];
-  bandcampUrl?: string;
 }
 
-const { links, bandcampUrl } = Astro.props;
+const { links } = Astro.props;
 
-// Build display list
-interface ServiceEntry {
-  service: string;
-  url: string;
-  icon: string;
-  color: string;
-}
-
-const serviceColors: Record<string, string> = {
-  Bandcamp: 'var(--theme-accent)',
-  Spotify: '#1db954',
-  'Apple Music': '#fc3c44',
-  Tidal: '#00ffff',
-  Deezer: '#a238ff',
-  YouTube: '#ff0000',
-  'YouTube Music': '#ff0000',
-  SoundCloud: '#ff5500',
-  'Yandex Music': '#ffcc00',
+const SERVICE_TONE_CLASSES: Record<string, string> = {
+  Bandcamp: 'service-btn--bandcamp',
+  Spotify: 'service-btn--spotify',
+  'Apple Music': 'service-btn--apple-music',
+  Tidal: 'service-btn--tidal',
+  Deezer: 'service-btn--deezer',
+  YouTube: 'service-btn--youtube',
+  'YouTube Music': 'service-btn--youtube-music',
+  SoundCloud: 'service-btn--soundcloud',
+  'Yandex Music': 'service-btn--yandex-music',
 };
 
-const entries: ServiceEntry[] = links.map((link) => ({
-  service: link.service,
-  url: link.url,
-  icon: link.icon,
-  color: serviceColors[link.service] ?? 'var(--theme-text-primary)',
-}));
+function getToneClass(service: string): string {
+  return SERVICE_TONE_CLASSES[service] ?? 'service-btn--default';
+}
 
-if (entries.length === 0) return;
+if (!links.length) return;
 ---
 
 <div class="listen-on">
   <h3 class="section-heading">Listen on</h3>
 
   <div class="service-list">
-    {entries.map((entry) => (
-      <a
-        href={entry.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="service-btn"
-        style={`--service-color: ${entry.color};`}
-      >
-        <span class="service-icon">{entry.icon}</span>
-        {entry.service}
-      </a>
-    ))}
+    {
+      links.map(({ service, url, icon }) => (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class:list={['service-btn', getToneClass(service)]}
+        >
+          <span class="service-icon">{icon}</span>
+          {service}
+        </a>
+      ))
+    }
   </div>
 </div>
 
@@ -67,6 +52,7 @@ if (entries.length === 0) return;
     padding-top: 20px;
     margin-top: 24px;
   }
+
   .section-heading {
     color: var(--theme-accent);
     font-size: 11px;
@@ -75,11 +61,13 @@ if (entries.length === 0) return;
     margin-bottom: 14px;
     font-weight: 600;
   }
+
   .service-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
+
   .service-btn {
     display: inline-flex;
     align-items: center;
@@ -90,13 +78,48 @@ if (entries.length === 0) return;
     border-radius: 8px;
     text-decoration: none;
     font-size: 13px;
-    color: var(--service-color);
+    color: var(--theme-text-primary);
     transition: background-color 0.2s, transform 0.15s;
   }
+
   .service-btn:hover {
     background-color: var(--theme-bg-elevated);
     transform: translateY(-1px);
   }
+
+  .service-btn--bandcamp {
+    color: var(--theme-accent);
+  }
+
+  .service-btn--spotify {
+    color: #1db954;
+  }
+
+  .service-btn--apple-music {
+    color: #fc3c44;
+  }
+
+  .service-btn--tidal {
+    color: #00ffff;
+  }
+
+  .service-btn--deezer {
+    color: #a238ff;
+  }
+
+  .service-btn--youtube,
+  .service-btn--youtube-music {
+    color: #ff0000;
+  }
+
+  .service-btn--soundcloud {
+    color: #ff5500;
+  }
+
+  .service-btn--yandex-music {
+    color: #ffcc00;
+  }
+
   .service-icon {
     font-size: 15px;
   }

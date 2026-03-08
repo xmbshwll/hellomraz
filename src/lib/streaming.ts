@@ -105,8 +105,8 @@ function toEmbedUrl(service: string, url: string): string | null {
       }
 
       case 'SoundCloud':
-        // SoundCloud embeds require oEmbed resolution; use their widget with URL param
-        return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`;
+        // Prefer the classic widget so playlist/set embeds can expose their tracklists in taller docks.
+        return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&show_artwork=false&visual=false`;
 
       case 'Yandex Music': {
         // music.yandex.ru/album/ID → music.yandex.ru/iframe/album/ID

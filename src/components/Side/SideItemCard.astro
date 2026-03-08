@@ -1,25 +1,22 @@
 ---
-import type { CollectionEntry } from "astro:content";
+import type { CollectionEntry } from 'astro:content';
 
 interface Props {
-  post: CollectionEntry<"blog">;
+  post: CollectionEntry<'blog'>;
 }
 
 const { post } = Astro.props;
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 ---
 
-<a
-  href={`${base}blog/${post.slug}`}
-  class="side-item-card"
->
+<a href={`${base}blog/${post.slug}`} class="side-item-card">
   <div class="side-item-info">
     <div class="side-item-title">{post.data.title}</div>
     <div class="side-item-year">{post.data.pubDate.getFullYear()}</div>
   </div>
 </a>
 
-<style>
+<style is:global>
   .side-item-card {
     display: flex;
     align-items: center;
@@ -30,15 +27,18 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     text-decoration: none;
     transition: color 0.15s, background-color 0.15s, border-left-color 0.15s;
   }
+
   .side-item-card:hover {
     color: var(--theme-text-primary);
     background-color: var(--theme-bg-hover);
     border-left-color: var(--theme-accent);
   }
+
   .side-item-info {
     flex: 1;
     min-width: 0;
   }
+
   .side-item-title {
     font-size: 0.875rem;
     font-weight: 500;
@@ -47,6 +47,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     white-space: nowrap;
     color: inherit;
   }
+
   .side-item-year {
     font-size: 0.75rem;
     overflow: hidden;

@@ -45,6 +45,7 @@ export function mountSelectableDropdown(config) {
     const nextPanel = document.createElement('div');
     nextPanel.id = config.panelId;
     nextPanel.className = 'chooser-dropdown';
+    nextPanel.hidden = true;
 
     for (const option of config.getOptions()) {
       if (option.divider) {
@@ -126,7 +127,7 @@ export function mountSelectableDropdown(config) {
 
     const arrow = getArrow();
     if (arrow) {
-      arrow.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+      arrow.classList.toggle('is-open', open);
     }
 
     if (open) {
@@ -148,10 +149,6 @@ export function mountSelectableDropdown(config) {
       offset: 4,
       viewportPadding: 4,
       maxHeight: config.maxHeight ?? 320,
-    },
-    setPanelOpen(currentPanel, open) {
-      currentPanel.style.opacity = open ? '1' : '0';
-      currentPanel.style.pointerEvents = open ? 'auto' : 'none';
     },
     onOpenChange(open) {
       syncOpenState(open);

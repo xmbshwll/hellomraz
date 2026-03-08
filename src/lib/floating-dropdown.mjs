@@ -118,6 +118,12 @@ export function createFloatingDropdown(options) {
     if (!resolved) return null;
     panel = resolved;
 
+    if (!panel.dataset.floatingDropdownReady) {
+      panel.dataset.floatingDropdownReady = 'true';
+      panel.hidden = !isOpen;
+      panel.classList.toggle('is-open', isOpen);
+    }
+
     if (!panel.isConnected || panel.parentNode !== document.body) {
       document.body.appendChild(panel);
     }
@@ -128,9 +134,11 @@ export function createFloatingDropdown(options) {
   function ensureOverlay() {
     if (!options.useOverlay) return null;
     if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.style.cssText = `position:fixed;inset:0;z-index:${zIndex - 1};display:none;`;
-      overlay.addEventListener("click", close);
+      overlay = document.createElement('div');
+      overlay.className = 'floating-dropdown-overlay';
+      overlay.hidden = true;
+      overlay.style.zIndex = String(zIndex - 1);
+      overlay.addEventListener('click', close);
       document.body.appendChild(overlay);
     } else if (!overlay.isConnected) {
       document.body.appendChild(overlay);
@@ -142,14 +150,9 @@ export function createFloatingDropdown(options) {
     const currentPanel = panel || ensurePanel();
     if (!currentPanel) return;
 
-    if (options.setPanelOpen) {
-      options.setPanelOpen(currentPanel, open);
-      return;
-    }
-
     currentPanel.hidden = !open;
-    currentPanel.style.opacity = open ? "1" : "0";
-    currentPanel.style.pointerEvents = open ? "auto" : "none";
+    currentPanel.classList.toggle('is-open', open);
+    options.setPanelOpen?.(currentPanel, open);
   }
 
   function updatePosition() {
@@ -186,7 +189,7 @@ export function createFloatingDropdown(options) {
     if (!anchor || !currentPanel) return;
 
     const currentOverlay = ensureOverlay();
-    if (currentOverlay) currentOverlay.style.display = "block";
+    if (currentOverlay) currentOverlay.hidden = false;
 
     isOpen = true;
     setPanelOpen(true);
@@ -205,7 +208,7 @@ export function createFloatingDropdown(options) {
     }
 
     setPanelOpen(false);
-    if (overlay) overlay.style.display = "none";
+    if (overlay) overlay.hidden = true;
     options.onOpenChange?.(false, panel);
   }
 

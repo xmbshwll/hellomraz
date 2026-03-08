@@ -1,9 +1,15 @@
 ---
 import '../styles/selectable-dropdown.css';
-import ThemeChooser from './ThemeChooser.astro';
-import LangSwitcher from './LangSwitcher.astro';
-import HeaderSearch from './HeaderSearch.astro';
 import DateSelector from './DateSelector.astro';
+import HeaderSearch from './HeaderSearch.astro';
+import LangSwitcher from './LangSwitcher.astro';
+import ThemeChooser from './ThemeChooser.astro';
+import {
+  BUY_ME_A_COFFEE_LINK,
+  RSS_LINK,
+  TELEGRAM_LINK,
+  getSiteLinkHref,
+} from '../lib/site-links';
 
 interface Props {
   dateIndex: Record<string, number>;
@@ -13,12 +19,18 @@ interface Props {
 
 const { dateIndex, currentYear, currentMonth } = Astro.props;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+const buyMeACoffeeHref = getSiteLinkHref(BUY_ME_A_COFFEE_LINK, base);
+const rssHref = getSiteLinkHref(RSS_LINK, base);
+const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
 ---
 
 <div class="page-header" transition:name="page-header" transition:persist>
-  <!-- Left: Hamburger (mobile) + Search + Date picker -->
   <div class="header-left">
-    <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Open menu">
+    <button
+      id="mobile-menu-btn"
+      class="header-control-btn mobile-menu-btn"
+      aria-label="Open menu"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="h-5 w-5"
@@ -28,7 +40,8 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
         <path
           fill-rule="evenodd"
           d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-          clip-rule="evenodd"></path>
+          clip-rule="evenodd"
+        ></path>
       </svg>
     </button>
     <HeaderSearch />
@@ -40,26 +53,22 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     />
   </div>
 
-  <!-- Right: BMC + Theme chooser + RSS + Telegram -->
   <div class="header-actions">
     <a
       target="_blank"
       rel="noopener noreferrer"
-      href="https://buymeacoffee.com/hellomraz"
-      class="header-btn"
+      href={buyMeACoffeeHref}
+      class="header-control-btn"
     >
       <span class="bmc-icon">☕</span>
-      <span class="bmc-label">BUY ME A COFFEE</span>
+      <span class="bmc-label">{BUY_ME_A_COFFEE_LINK.value}</span>
     </a>
-    <span class="header-sep">│</span>
     <ThemeChooser />
-    <span class="header-sep">│</span>
     <LangSwitcher />
-    <span class="header-sep">│</span>
     <a
-      aria-label="RSS feed"
-      title="RSS feed"
-      href={`${base}rss.xml`}
+      aria-label={RSS_LINK.ariaLabel}
+      title={RSS_LINK.title}
+      href={rssHref}
       type="application/rss+xml"
       class="header-icon-link"
     >
@@ -75,9 +84,9 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     <a
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Telegram channel"
-      title="Telegram channel"
-      href="https://t.me/hellomraz"
+      aria-label={TELEGRAM_LINK.ariaLabel}
+      title={TELEGRAM_LINK.title}
+      href={telegramHref}
       class="header-icon-link"
     >
       <svg
@@ -91,6 +100,30 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
         ></path>
       </svg>
     </a>
+    <button
+      type="button"
+      class="header-icon-link pwa-install-btn"
+      aria-label="Install app"
+      title="Install app"
+      data-pwa-install-btn
+      hidden
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3v10"></path>
+        <path d="m8 9 4 4 4-4"></path>
+        <path d="M5 21h14"></path>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -104,6 +137,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     border-bottom: 1px solid var(--theme-border);
     background-color: var(--theme-bg-surface);
   }
+
   .header-actions {
     display: flex;
     align-items: center;
@@ -111,29 +145,21 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     flex-shrink: 0;
     flex-wrap: wrap;
   }
-  .header-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 44px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border: 1px solid var(--theme-border);
-    color: var(--theme-text-muted);
-    background: var(--theme-bg-elevated);
-    text-decoration: none;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
+
+  .header-actions > * + * {
+    position: relative;
   }
-  .header-btn:hover {
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
-  }
-  .header-sep {
+
+  .header-actions > * + *::before {
+    content: '│';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
     color: var(--theme-border);
+    pointer-events: none;
   }
+
   .header-icon-link {
     display: inline-flex;
     align-items: center;
@@ -143,11 +169,25 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     color: var(--theme-text-muted);
     transition: color 0.15s;
   }
+
   .header-icon-link:hover {
     color: var(--theme-accent);
   }
 
-  /* Mobile: stack date picker above actions */
+  .pwa-install-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .mobile-menu-btn {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
   @media (max-width: 640px) {
     .page-header {
       flex-direction: column;
@@ -155,24 +195,29 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
       gap: 0.5rem;
       padding: 0.5rem 0.75rem;
     }
+
     .header-left {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       flex-wrap: wrap;
     }
+
     .header-actions {
       justify-content: flex-start;
       gap: 0.5rem;
     }
-    .header-sep {
+
+    .header-actions > * + *::before {
       display: none;
     }
-    .bmc-label {
+
+    .bmc-label,
+    .pwa-install-btn {
       display: none;
     }
   }
-  /* Tablet and up: header-left inline */
+
   @media (min-width: 641px) {
     .header-left {
       flex: 1;
@@ -182,28 +227,79 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
       gap: 0.5rem;
     }
   }
-  .mobile-menu-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    color: var(--theme-text-muted);
-    background: var(--theme-bg-elevated);
-    border: 1px solid var(--theme-border);
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
-  }
-  .mobile-menu-btn:hover {
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
-  }
+
   @media (min-width: 1024px) {
     .mobile-menu-btn {
       display: none;
     }
   }
 </style>
+
+<script>
+  interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{
+      outcome: 'accepted' | 'dismissed';
+      platform: string;
+    }>;
+  }
+
+  type PwaWindow = Window & {
+    __deferredPwaPrompt?: BeforeInstallPromptEvent | null;
+    __pwaInstallButtonBound?: boolean;
+  };
+
+  const pwaWindow = window as PwaWindow;
+
+  function isStandalone() {
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+    );
+  }
+
+  function syncInstallButtons() {
+    const canInstall = !isStandalone() && !!pwaWindow.__deferredPwaPrompt;
+
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-pwa-install-btn]')
+      .forEach((button) => {
+        button.hidden = !canInstall;
+      });
+  }
+
+  function bindInstallButtons() {
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-pwa-install-btn]')
+      .forEach((button) => {
+        if (button.dataset.pwaInstallBound === 'true') return;
+        button.dataset.pwaInstallBound = 'true';
+
+        button.addEventListener('click', async () => {
+          const promptEvent = pwaWindow.__deferredPwaPrompt;
+          if (!promptEvent) return;
+
+          pwaWindow.__deferredPwaPrompt = null;
+          syncInstallButtons();
+
+          await promptEvent.prompt();
+          await promptEvent.userChoice.catch(() => undefined);
+          syncInstallButtons();
+        });
+      });
+  }
+
+  function initPwaInstallButtons() {
+    bindInstallButtons();
+    syncInstallButtons();
+  }
+
+  if (!pwaWindow.__pwaInstallButtonBound) {
+    pwaWindow.__pwaInstallButtonBound = true;
+    document.addEventListener('astro:page-load', initPwaInstallButtons);
+    window.addEventListener('pwa-install-available', syncInstallButtons);
+    window.addEventListener('pwa-installed', syncInstallButtons);
+  }
+
+  initPwaInstallButtons();
+</script>
