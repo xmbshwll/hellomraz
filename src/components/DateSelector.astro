@@ -284,7 +284,7 @@ const MONTH_NAMES = [
 
       for (const tag of items) {
         const link = document.createElement('a');
-        link.href = `${getBase(root)}tags/${tag.name}`;
+        link.href = `${getBase(root)}tags/${encodeURIComponent(tag.name)}`;
         link.className = 'ds-tag-item';
 
         const name = document.createElement('span');

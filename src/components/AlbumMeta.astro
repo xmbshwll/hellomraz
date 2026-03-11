@@ -61,7 +61,7 @@ if (!hasContent) return;
     <div class="tag-list">
       {tags.map((tag) =>
         hasPage(tag) ? (
-          <a href={`${base}tags/${tag}`} class="tag-chip tag-chip-link">
+          <a href={`${base}tags/${encodeURIComponent(tag)}`} class="tag-chip tag-chip-link">
             {tag}
           </a>
         ) : (

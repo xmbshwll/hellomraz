@@ -18,18 +18,19 @@ export async function getStaticPaths() {
   ]);
 
   return tagPages.map(({ name, posts }) => ({
-    params: { tag: name },
-    props: { posts, linkedTagNames },
+    params: { tag: encodeURIComponent(name) },
+    props: { posts, linkedTagNames, tagName: name },
   }));
 }
 
 interface Props {
   posts: CollectionEntry<'blog'>[];
   linkedTagNames: string[];
+  tagName: string;
 }
 
-const { tag } = Astro.params;
-const { posts = [], linkedTagNames = [] } = Astro.props as Props;
+const { posts = [], linkedTagNames = [], tagName } = Astro.props as Props;
+const tag = tagName;
 const linkedTags = new Set<string>(linkedTagNames);
 const dateIndex = await getDateIndex();
 const sortedPosts = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
@@ -68,7 +69,7 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
           <div class="flex flex-wrap gap-1.5">
             {relatedTags.map((relatedTag) => (
               <a
-                href={`${base}tags/${relatedTag}`}
+                href={`${base}tags/${encodeURIComponent(relatedTag)}`}
                 class="related-tag-chip"
               >
                 #{relatedTag}

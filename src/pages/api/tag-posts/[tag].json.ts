@@ -8,12 +8,21 @@ import { toTagPost } from '../../../lib/post-payloads.mjs';
 
 export const getStaticPaths = (async () => {
   return (await getLinkedTagNames()).map((tag) => ({
-    params: { tag },
+    params: { tag: encodeURIComponent(tag) },
   }));
 }) satisfies GetStaticPaths;
 
+function decodeTagParam(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export const GET: APIRoute = async ({ params }) => {
-  const posts = (await getPostsForTag(params.tag ?? ''))
+  const tag = decodeTagParam(params.tag ?? '');
+  const posts = (await getPostsForTag(tag))
     .slice(TAG_PAGE_POST_CAP)
     .map(toTagPost);
 
