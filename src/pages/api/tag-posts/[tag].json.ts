@@ -5,20 +5,16 @@ import {
 } from '../../../lib/blog-data.mjs';
 import { TAG_PAGE_POST_CAP } from '../../../lib/feed-limits.mjs';
 import { toTagPost } from '../../../lib/post-payloads.mjs';
+import { decodeTagParam, encodeTagParam } from '../../../lib/tag-path';
 
 export const getStaticPaths = (async () => {
-  return (await getLinkedTagNames()).map((tag) => ({
-    params: { tag: encodeURIComponent(tag) },
-  }));
+  return (await getLinkedTagNames()).flatMap((tag) => {
+    const params = new Set([encodeTagParam(tag), encodeURIComponent(tag)]);
+    return [...params].map((tagParam) => ({
+      params: { tag: tagParam },
+    }));
+  });
 }) satisfies GetStaticPaths;
-
-function decodeTagParam(value: string): string {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
-}
 
 export const GET: APIRoute = async ({ params }) => {
   const tag = decodeTagParam(params.tag ?? '');

@@ -4,6 +4,8 @@
  * Data comes from albums.json (artist, album, bcTags, bandcampUrl),
  * falling back to title-parsed data when Bandcamp metadata is missing.
  */
+import { encodeTagParam } from '../lib/tag-path';
+
 interface Props {
   artist?: string;
   album?: string;
@@ -61,7 +63,7 @@ if (!hasContent) return;
     <div class="tag-list">
       {tags.map((tag) =>
         hasPage(tag) ? (
-          <a href={`${base}tags/${encodeURIComponent(tag)}`} class="tag-chip tag-chip-link">
+          <a href={`${base}tags/${encodeTagParam(tag)}`} class="tag-chip tag-chip-link">
             {tag}
           </a>
         ) : (

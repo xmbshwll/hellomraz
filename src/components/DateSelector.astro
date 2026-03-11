@@ -172,6 +172,7 @@ const MONTH_NAMES = [
 
 <script>
   import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
+  import { encodeTagParam } from '../lib/tag-path';
 
   interface TagSummary {
     name: string;
@@ -284,7 +285,7 @@ const MONTH_NAMES = [
 
       for (const tag of items) {
         const link = document.createElement('a');
-        link.href = `${getBase(root)}tags/${encodeURIComponent(tag.name)}`;
+        link.href = `${getBase(root)}tags/${encodeTagParam(tag.name)}`;
         link.className = 'ds-tag-item';
 
         const name = document.createElement('span');

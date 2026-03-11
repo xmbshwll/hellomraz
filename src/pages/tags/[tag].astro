@@ -8,6 +8,7 @@ import {
   getQualifiedTagPages,
 } from '../../lib/blog-data.mjs';
 import { TAG_PAGE_POST_CAP } from '../../lib/feed-limits.mjs';
+import { encodeTagParam } from '../../lib/tag-path';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
@@ -17,10 +18,14 @@ export async function getStaticPaths() {
     getLinkedTagNames(),
   ]);
 
-  return tagPages.map(({ name, posts }) => ({
-    params: { tag: encodeURIComponent(name) },
-    props: { posts, linkedTagNames, tagName: name },
-  }));
+  return tagPages.flatMap(({ name, posts }) => {
+    const params = new Set([encodeTagParam(name), encodeURIComponent(name)]);
+
+    return [...params].map((tagParam) => ({
+      params: { tag: tagParam },
+      props: { posts, linkedTagNames, tagName: name },
+    }));
+  });
 }
 
 interface Props {
@@ -42,6 +47,7 @@ const relatedTags = [...new Set(
 
 const visiblePosts = sortedPosts.slice(0, TAG_PAGE_POST_CAP);
 const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
+const encodedTag = encodeTagParam(tag);
 ---
 
 <Layout title={`#${tag}`}>
@@ -69,7 +75,7 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
           <div class="flex flex-wrap gap-1.5">
             {relatedTags.map((relatedTag) => (
               <a
-                href={`${base}tags/${encodeURIComponent(relatedTag)}`}
+                href={`${base}tags/${encodeTagParam(relatedTag)}`}
                 class="related-tag-chip"
               >
                 #{relatedTag}
@@ -102,7 +108,7 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
           <button
             id="tag-show-more-btn"
             class="show-more-btn"
-            data-tag={tag}
+            data-tag-param={encodedTag}
           >
             show all {sortedPosts.length} posts
           </button>
@@ -203,13 +209,13 @@ const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
     if (!btn || !list || !wrap || btn.__tagShowMoreBound) return;
 
     btn.__tagShowMoreBound = true;
-    const tag = btn.dataset.tag!;
+    const tagParam = btn.dataset.tagParam!;
 
     btn.addEventListener('click', async () => {
       btn.textContent = 'loading…';
       try {
         const base = document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
-        const res = await fetch(`${base}api/tag-posts/${encodeURIComponent(tag)}.json`);
+        const res = await fetch(`${base}api/tag-posts/${tagParam}.json`);
         const remainingPosts: { slug: string; title: string; date: string }[] = await res.json();
 
         for (const post of remainingPosts) {

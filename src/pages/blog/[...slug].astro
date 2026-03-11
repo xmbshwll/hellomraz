@@ -16,6 +16,7 @@ import {
   getLinkedTagNames,
   getPublishedPosts,
 } from '../../lib/blog-data.mjs';
+import { encodeTagParam } from '../../lib/tag-path';
 import '../../layouts/styles/markdown.css';
 
 export async function getStaticPaths() {
@@ -140,7 +141,7 @@ const postDescription = post.data.description || `${post.data.title} — music r
             post.data.tags?.map((tag, i) => (
               <span>
                 {linkedTags.has(tag) ? (
-                  <a href={`${base}tags/${encodeURIComponent(tag)}`} class="post-tag-link hover:underline inline-block">
+                  <a href={`${base}tags/${encodeTagParam(tag)}`} class="post-tag-link hover:underline inline-block">
                     {tag}
                   </a>
                 ) : (
