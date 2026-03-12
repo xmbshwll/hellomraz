@@ -1,18 +1,17 @@
-import { defineConfig } from "astro/config";
-import tailwind from "@astrojs/tailwind";
-import sitemap from "@astrojs/sitemap";
+import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://poeba.lu",
-  base: "/",
-  output: "static",
-  integrations: [tailwind(), sitemap()],
+  site: 'https://poeba.lu',
+  base: '/',
+  output: 'static',
+  integrations: [sitemap()],
   image: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**.bcbits.com",
+        protocol: 'https',
+        hostname: '**.bcbits.com',
       },
     ],
   },

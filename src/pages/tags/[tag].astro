@@ -18,14 +18,10 @@ export async function getStaticPaths() {
     getLinkedTagNames(),
   ]);
 
-  return tagPages.flatMap(({ name, posts }) => {
-    const params = new Set([encodeTagParam(name), encodeURIComponent(name)]);
-
-    return [...params].map((tagParam) => ({
-      params: { tag: tagParam },
-      props: { posts, linkedTagNames, tagName: name },
-    }));
-  });
+  return tagPages.map(({ name, posts }) => ({
+    params: { tag: encodeTagParam(name) },
+    props: { posts, linkedTagNames, tagName: name },
+  }));
 }
 
 interface Props {
@@ -36,17 +32,24 @@ interface Props {
 
 const { posts = [], linkedTagNames = [], tagName } = Astro.props as Props;
 const tag = tagName;
-const linkedTags = new Set<string>(linkedTagNames);
+const linkedTagSet = new Set<string>(linkedTagNames);
 const dateIndex = await getDateIndex();
-const sortedPosts = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const sortedPosts = [...posts].sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const postCount = sortedPosts.length;
+const postCountLabel = postCount === 1 ? 'post' : 'posts';
 
-const relatedTags = [...new Set(
-  sortedPosts.flatMap((post) => post.data.tags || [])
-    .filter((value) => value !== tag && linkedTags.has(value))
-)].slice(0, 5);
+const relatedTags = [
+  ...new Set(
+    sortedPosts
+      .flatMap((post) => post.data.tags || [])
+      .filter((value) => value !== tag && linkedTagSet.has(value)),
+  ),
+].slice(0, 5);
 
 const visiblePosts = sortedPosts.slice(0, TAG_PAGE_POST_CAP);
-const hasMore = sortedPosts.length > TAG_PAGE_POST_CAP;
+const hasMore = postCount > TAG_PAGE_POST_CAP;
 const encodedTag = encodeTagParam(tag);
 ---
 
@@ -65,7 +68,7 @@ const encodedTag = encodeTagParam(tag);
           #{tag}
         </h1>
         <p class="text-sm mt-1 theme-text-muted">
-          {sortedPosts.length} {sortedPosts.length === 1 ? 'post' : 'posts'}
+          {postCount} {postCountLabel}
         </p>
       </div>
 
@@ -89,7 +92,7 @@ const encodedTag = encodeTagParam(tag);
       <div class="space-y-0" id="tag-posts-list">
         {visiblePosts.map((post) => (
           <a
-            href={`${base}blog/${post.slug}`}
+            href={`${base}blog/${post.id}`}
             class="tag-post-row"
           >
             <span class="tag-post-date">
@@ -110,12 +113,12 @@ const encodedTag = encodeTagParam(tag);
             class="show-more-btn"
             data-tag-param={encodedTag}
           >
-            show all {sortedPosts.length} posts
+            show all {postCount} posts
           </button>
         </div>
       )}
 
-      {sortedPosts.length === 0 && (
+      {postCount === 0 && (
         <div class="py-8">
           <p class="text-sm theme-text-muted">no posts found.</p>
         </div>

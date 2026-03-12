@@ -1,26 +1,22 @@
+import type { APIRoute } from 'astro';
 import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getPublishedPosts } from '../lib/blog-data.mjs';
 
-export async function GET(context) {
+export const GET: APIRoute = async ({ site }) => {
   const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-  const posts = await getCollection('blog');
-  
-  // Sort posts by date
-  const sortedPosts = posts
-    .filter(post => !post.data.draft)
-    .sort((a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf());
-  
+  const posts = await getPublishedPosts();
+
   return rss({
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    site: context.site,
-    items: sortedPosts.map((post) => ({
+    site,
+    items: posts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.pubDate,
       description: post.data.description,
-      link: `${base}blog/${post.slug}/`,
-      categories: post.data.tags || [],
+      link: `${base}blog/${post.id}/`,
+      categories: post.data.tags ?? [],
     })),
   });
-}
+};

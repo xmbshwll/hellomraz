@@ -11,19 +11,20 @@ interface Props {
 }
 
 const { post, index = 99 } = Astro.props;
-const color = getPostColor(post.slug);
+const slug = post.id;
+const color = getPostColor(slug);
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-const bc = getBandcampData(post.slug);
+const bc = getBandcampData(slug);
 const initials = post.data.title
   .split(/[\s\-–—]+/)
   .slice(0, 2)
   .map((w: string) => w[0]?.toUpperCase() ?? '')
   .join('');
-const placeholderGradientId = `post-card-gradient-${post.slug}`;
+const placeholderGradientId = `post-card-gradient-${slug}`;
 ---
 
 <a
-  href={`${base}blog/${post.slug}`}
+  href={`${base}blog/${slug}`}
   class="post-card playlist-item"
   data-color={color.dark}
 >

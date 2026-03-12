@@ -17,7 +17,7 @@ export function getTitleInitials(title) {
  */
 export function toSidebarPost(post) {
   return {
-    slug: post.slug,
+    slug: post.id,
     title: post.data.title,
     year: post.data.pubDate.getFullYear(),
   };
@@ -28,7 +28,7 @@ export function toSidebarPost(post) {
  */
 export function toTagPost(post) {
   return {
-    slug: post.slug,
+    slug: post.id,
     title: post.data.title,
     date: post.data.pubDate.toISOString(),
   };
@@ -40,7 +40,7 @@ export function toTagPost(post) {
  */
 export function toReviewCardPost(post, media) {
   return {
-    slug: post.slug,
+    slug: post.id,
     title: post.data.title,
     tags: post.data.tags ?? [],
     initials: getTitleInitials(post.data.title),

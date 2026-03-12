@@ -16,9 +16,10 @@ export const colors = {
 const colorKeys = Object.keys(colors) as (keyof typeof colors)[];
 
 export function getPostColor(slug: string): (typeof colors)[keyof typeof colors] {
+  const safeSlug = slug || 'post';
   let hash = 0;
-  for (let i = 0; i < slug.length; i++) {
-    hash = ((hash << 5) - hash) + slug.charCodeAt(i);
+  for (let i = 0; i < safeSlug.length; i++) {
+    hash = ((hash << 5) - hash) + safeSlug.charCodeAt(i);
     hash |= 0;
   }
   const index = Math.abs(hash) % colorKeys.length;

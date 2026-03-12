@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import { render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
@@ -26,7 +27,7 @@ export async function getStaticPaths() {
   ]);
 
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post, linkedTagNames },
   }));
 }
@@ -37,67 +38,79 @@ interface Props {
 }
 
 const { post, linkedTagNames = [] } = Astro.props as Props;
+const slug = post.id;
+const postTitle = post.data.title;
+const postTags = post.data.tags ?? [];
 const linkedTags = new Set(linkedTagNames);
-const { Content } = await post.render();
-const color = getPostColor(post.slug);
+const { Content } = await render(post);
+const color = getPostColor(slug);
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const dateIndex = await getDateIndex();
 
-// Build "cover art" initials
-const initials = post.data.title
+const initials = postTitle
   .split(/[\s\-–—]+/)
   .slice(0, 2)
-  .map((w: string) => w[0]?.toUpperCase() ?? '')
+  .map((word: string) => word[0]?.toUpperCase() ?? '')
   .join('');
 
-// Format date
 const formattedDate = post.data.pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
 
-// Bandcamp embed
-const bc = getBandcampData(post.slug);
+const bc = getBandcampData(slug);
 const bcAlbumId = bc?.albumId;
 const bcUrl = bc?.url;
 const bcCover = bc?.coverUrl;
-const playerCover = getCoverThumb(post.slug, 'md') ?? bcCover;
+const playerCover = getCoverThumb(slug, 'md') ?? bcCover;
 
-// Album metadata from albums.json
-const albumEntry = getAlbum(post.slug);
+const albumEntry = getAlbum(slug);
 const albumTags = albumEntry?.bcTags;
-
-// Artist/album: prefer albums.json, fall back to parsing the post title
-const parsed = parseArtistAlbum(post.data.title);
+const parsed = parseArtistAlbum(postTitle);
 const albumArtist = albumEntry?.artist || parsed?.artist;
 const albumName = albumEntry?.album || parsed?.album;
 
-// Get all streaming links from pre-extracted data
-const streamingLinks = getStreamingLinks(post.slug);
+const streamingLinks = getStreamingLinks(slug);
+const hasStreamingLinks = streamingLinks.length > 0;
+const displayTags = albumTags ?? postTags;
+const contentClassList = ['post-page-content flex-1 py-2 min-w-0'];
 
-// Best available "buy/listen" link when no Bandcamp URL
-const primaryLink = !bcUrl && streamingLinks.length > 0
-  ? { service: streamingLinks[0].service, url: streamingLinks[0].url }
-  : undefined;
+if (hasStreamingLinks) {
+  contentClassList.push(
+    'post-page-content-with-player border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-2',
+  );
+}
 
-// Social preview image — use cover (large version) or fallback
+let primaryLink:
+  | {
+      service: string;
+      url: string;
+    }
+  | undefined;
+
+if (!bcUrl && hasStreamingLinks) {
+  primaryLink = {
+    service: streamingLinks[0].service,
+    url: streamingLinks[0].url,
+  };
+}
+
 let ogImage: string | undefined;
 if (bcCover) {
-  if (bcCover.includes('bcbits.com')) {
-    ogImage = bcCover.replace(/_5\.jpg$/, '_2.jpg');
-  } else {
-    ogImage = bcCover;
-  }
+  ogImage = bcCover.includes('bcbits.com')
+    ? bcCover.replace(/_5\.jpg$/, '_2.jpg')
+    : bcCover;
 }
-const postDescription = post.data.description || `${post.data.title} — music review on poeba.lu`;
+
+const postDescription = post.data.description || `${postTitle} — music review on poeba.lu`;
 ---
 
-<Layout title={post.data.title} description={postDescription} image={ogImage} type="article">
+<Layout title={postTitle} description={postDescription} image={ogImage} type="article">
   <div
     class="post-page relative min-h-full flex flex-col overflow-x-hidden rounded-lg theme-surface"
-    transition:name={`post-${post.slug}-box`}
-    data-post-slug={post.slug}
+    transition:name={`post-${slug}-box`}
+    data-post-slug={slug}
   >
     <PageHeader dateIndex={dateIndex} />
 
@@ -110,17 +123,17 @@ const postDescription = post.data.description || `${post.data.title} — music r
         bcCover ? (
           <Image
             src={bcCover}
-            alt={post.data.title}
+            alt={postTitle}
             width={208}
             height={208}
             class="h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52 flex-none rounded-md object-cover shadow-2xl"
             loading="lazy"
-            transition:name={`post-${post.slug}-image`}
+            transition:name={`post-${slug}-image`}
           />
         ) : (
           <div
             class="post-cover-placeholder h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52 flex-none rounded-md flex items-center justify-center text-5xl font-bold text-white shadow-2xl"
-            transition:name={`post-${post.slug}-image`}
+            transition:name={`post-${slug}-image`}
           >
             {initials}
           </div>
@@ -132,13 +145,13 @@ const postDescription = post.data.description || `${post.data.title} — music r
         <span class="text-xs font-semibold uppercase tracking-wider theme-text-secondary">Review</span>
         <h1
           class="title-clamp font-extrabold leading-none theme-text-primary"
-          transition:name={`post-${post.slug}-title`}
+          transition:name={`post-${slug}-title`}
         >
-          {post.data.title}
+          {postTitle}
         </h1>
         <div class="post-tag-list flex flex-wrap gap-1 mt-1 theme-text-secondary">
           {
-            post.data.tags?.map((tag, i) => (
+            postTags.map((tag, i) => (
               <span>
                 {linkedTags.has(tag) ? (
                   <a href={`${base}tags/${encodeTagParam(tag)}`} class="post-tag-link hover:underline inline-block">
@@ -149,7 +162,7 @@ const postDescription = post.data.description || `${post.data.title} — music r
                     {tag}
                   </span>
                 )}
-                {i < (post.data.tags?.length ?? 0) - 1 ? <span class="post-tag-separator">| </span> : ''}
+                {i < postTags.length - 1 ? <span class="post-tag-separator">| </span> : ''}
               </span>
             ))
           }
@@ -164,14 +177,14 @@ const postDescription = post.data.description || `${post.data.title} — music r
     <div class="post-page-body flex flex-col md:flex-row px-4 sm:px-6 py-6 gap-0 overflow-x-hidden">
       <!-- Streaming player (left) -->
       {
-        streamingLinks.length > 0 && (
+        hasStreamingLinks && (
           <div class="post-page-player-slot flex-none pb-4 md:pb-0 md:pr-6">
             <StreamingPlayer
               links={streamingLinks}
               bandcampAlbumId={bcAlbumId}
               coverUrl={playerCover}
-              slug={post.slug}
-              title={post.data.title}
+              slug={slug}
+              title={postTitle}
             />
           </div>
         )
@@ -179,12 +192,7 @@ const postDescription = post.data.description || `${post.data.title} — music r
 
       <!-- Content area (right) -->
       <div
-        class:list={[
-          'post-page-content flex-1 py-2 min-w-0',
-          streamingLinks.length > 0
-            ? 'post-page-content-with-player border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-2'
-            : ''
-        ]}
+        class:list={contentClassList}
       >
         <div class="max-w-2xl markdown-content leading-relaxed theme-text-secondary">
           <Content />
@@ -194,7 +202,7 @@ const postDescription = post.data.description || `${post.data.title} — music r
         <AlbumMeta
           artist={albumArtist}
           album={albumName}
-          tags={albumTags ?? post.data.tags ?? []}
+          tags={displayTags}
           date={post.data.pubDate}
           releaseDate={albumEntry?.releaseDate}
           bandcampUrl={bcUrl ?? undefined}
@@ -205,8 +213,8 @@ const postDescription = post.data.description || `${post.data.title} — music r
         <ListenOn links={streamingLinks} />
 
         <RelatedPosts
-          currentSlug={post.slug}
-          tags={post.data.tags ?? []}
+          currentSlug={slug}
+          tags={postTags}
         />
       </div>
     </div>

@@ -7,10 +7,12 @@ import { HOME_REVIEW_INITIAL_POSTS } from '../../lib/feed-limits.mjs';
 import { toReviewCardPost } from '../../lib/post-payloads.mjs';
 
 export const GET: APIRoute = async () => {
+  const publishedPosts = await getPublishedPosts();
+  const remainingPosts = publishedPosts.slice(HOME_REVIEW_INITIAL_POSTS);
   const posts = await Promise.all(
-    (await getPublishedPosts()).slice(HOME_REVIEW_INITIAL_POSTS).map(async (post) => {
-      const bandcamp = getBandcampData(post.slug);
-      const color = getPostColor(post.slug);
+    remainingPosts.map(async (post) => {
+      const bandcamp = getBandcampData(post.id);
+      const color = getPostColor(post.id);
 
       let coverLg = null;
       if (bandcamp?.coverUrl) {

@@ -8,12 +8,9 @@ import { toTagPost } from '../../../lib/post-payloads.mjs';
 import { decodeTagParam, encodeTagParam } from '../../../lib/tag-path';
 
 export const getStaticPaths = (async () => {
-  return (await getLinkedTagNames()).flatMap((tag) => {
-    const params = new Set([encodeTagParam(tag), encodeURIComponent(tag)]);
-    return [...params].map((tagParam) => ({
-      params: { tag: tagParam },
-    }));
-  });
+  return (await getLinkedTagNames()).map((tag) => ({
+    params: { tag: encodeTagParam(tag) },
+  }));
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ params }) => {

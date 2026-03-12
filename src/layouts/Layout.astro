@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import './layout.css';
 import '../styles/global.css';
 import '../styles/themes.css';
@@ -121,7 +121,7 @@ const lightThemeIds = [
       media="print"
       onload="this.media='all'"
     />
-    <ViewTransitions fallback="swap" />
+    <ClientRouter fallback="swap" />
     <!-- Apply saved theme before first paint to prevent flash -->
     <script is:inline define:vars={{ lightThemeIds }}>
       (function () {

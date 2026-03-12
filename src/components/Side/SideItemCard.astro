@@ -6,10 +6,11 @@ interface Props {
 }
 
 const { post } = Astro.props;
+const slug = post.id;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 ---
 
-<a href={`${base}blog/${post.slug}`} class="side-item-card">
+<a href={`${base}blog/${slug}`} class="side-item-card">
   <div class="side-item-info">
     <div class="side-item-title">{post.data.title}</div>
     <div class="side-item-year">{post.data.pubDate.getFullYear()}</div>
