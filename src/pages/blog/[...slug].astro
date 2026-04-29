@@ -149,21 +149,10 @@ const postDescription = post.data.description || `${postTitle} — music review 
         >
           {postTitle}
         </h1>
-        <div class="post-tag-list flex flex-wrap gap-1 mt-1 theme-text-secondary">
+        <div class="post-tag-list flex flex-wrap gap-x-0 gap-y-1 mt-1 theme-text-secondary">
           {
             postTags.map((tag, i) => (
-              <span>
-                {linkedTags.has(tag) ? (
-                  <a href={`${base}tags/${encodeTagParam(tag)}`} class="post-tag-link hover:underline inline-block">
-                    {tag}
-                  </a>
-                ) : (
-                  <span class="post-tag-text inline-block">
-                    {tag}
-                  </span>
-                )}
-                {i < postTags.length - 1 ? <span class="post-tag-separator">| </span> : ''}
-              </span>
+              <span>{linkedTags.has(tag) ? (<a href={`${base}tags/${encodeTagParam(tag)}`} class="post-tag-link hover:underline inline-block">{tag}</a>) : (<span class="post-tag-text inline-block">{tag}</span>)}{i < postTags.length - 1 ? <span class="post-tag-separator">|</span> : null}</span>
             ))
           }
         </div>
