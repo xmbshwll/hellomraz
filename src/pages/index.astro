@@ -26,7 +26,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
       <div class="videos-strip theme-border" id="home-videos-strip">
         <!-- Collapsible header -->
         <div class="videos-strip-header" id="videos-strip-toggle" aria-expanded="true">
-          <span class="videos-strip-title">~ videos</span>
+          <span class="text-lg font-bold theme-text-primary">~ videos</span>
           <div class="flex items-center gap-2">
             <a href={`${base}videos`} class="videos-strip-link text-sm font-medium touch-target-inline theme-text-accent">see all →</a>
             <span class="videos-strip-chevron" aria-hidden="true">▾</span>
@@ -230,9 +230,10 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
   /* ── Videos horizontal strip (Netflix-style, collapsible) ── */
   .videos-strip {
     border-bottom: 1px solid var(--theme-border);
+    padding: 2rem 1rem 1rem;
   }
   @media (min-width: 640px) {
-    .videos-strip { padding: 0.75rem 1.5rem 1rem; }
+    .videos-strip { padding: 2rem 2rem 1rem; }
   }
 
   /* Header — always visible */
@@ -240,11 +241,11 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--theme-border);
+    cursor: pointer;
     transition: background-color 0.15s;
-  }
-  @media (min-width: 640px) {
-    .videos-strip-header { padding: 0.75rem 1.5rem; }
   }
   .videos-strip-header:hover {
     background-color: var(--theme-bg-hover);
@@ -266,20 +267,9 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     opacity: 0;
   }
 
-  /* Toggle header */
+  /* Toggle header (legacy duplicate — keep selectors for chevron rotation) */
   #videos-strip-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
     cursor: pointer;
-    transition: background-color 0.15s;
-  }
-  @media (min-width: 640px) {
-    #videos-strip-toggle { padding: 0.75rem 1.5rem; }
-  }
-  #videos-strip-toggle:hover {
-    background-color: var(--theme-bg-hover);
   }
 
   /* Chevron */
