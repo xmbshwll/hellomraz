@@ -20,7 +20,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 ---
 
 <Layout title={video.title}>
-  <div class="video-page theme-surface">
+  <div class="video-page theme-surface" data-post-slug={video.youtubeId}>
     <!-- YouTube embed (responsive 16:9) -->
     <div class="video-embed-wrapper">
       <iframe
@@ -45,7 +45,10 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
     <!-- Optional description/review text -->
     {video.description && (
-      <div class="video-description prose theme-text-secondary mt-4">
+      <div
+        class="video-description prose theme-text-secondary mt-4 markdown-content"
+        data-original-html={video.description.split('\n').map(p => `<p>${p}</p>`).join('\n')}
+      >
         {video.description.split('\n').map(p => <p>{p}</p>)}
       </div>
     )}
@@ -56,6 +59,28 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     </div>
   </div>
 </Layout>
+
+<script>
+  import { getCurrentSiteLang, SITE_LANGS } from '../../lib/site-i18n.mjs';
+  import { applyTranslationToElement, setupTranslationListener } from '../../lib/translation.mjs';
+
+  function initVideoTranslation() {
+    const content = document.querySelector('.markdown-content');
+    const slug = content?.closest('[data-post-slug]')?.getAttribute('data-post-slug');
+    if (content && slug) {
+      const lang = getCurrentSiteLang();
+      if (lang !== 'ru') applyTranslationToElement(content, slug);
+    }
+  }
+
+  setupTranslationListener(() => {
+    const content = document.querySelector('.markdown-content');
+    return content?.closest('[data-post-slug]')?.getAttribute('data-post-slug') || null;
+  });
+
+  document.addEventListener('astro:page-load', initVideoTranslation);
+  initVideoTranslation();
+</script>
 
 <style is:global>
   .video-page {
@@ -89,5 +114,17 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     font-size: 0.75rem;
     border-radius: 0.25rem;
     color: var(--theme-text-muted);
+  }
+
+  .lang-fallback-banner {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    border: 1px dashed var(--theme-border);
+    color: var(--theme-text-muted);
+  }
+
+  .markdown-content.is-translating {
+    opacity: 0.5;
   }
 </style>

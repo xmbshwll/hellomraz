@@ -32,89 +32,19 @@
     setCurrentSiteLang,
     SITE_LANGS,
   } from '../lib/site-i18n.mjs';
-
-  const FALLBACK_MESSAGES = {
-    en: 'Translation not yet available — showing original Russian.',
-    de: 'Übersetzung noch nicht verfügbar — Original auf Russisch.',
-  };
-
-  function getBase(): string {
-    const meta = document.querySelector('meta[name="base-url"]');
-    return meta?.getAttribute('content') || '/';
-  }
+  import { applyTranslationToElement, setupTranslationListener } from '../lib/translation.mjs';
 
   function getSlug(): string | null {
     return document.querySelector('[data-post-slug]')?.getAttribute('data-post-slug') || null;
   }
 
-  function removeFallbackBanner() {
-    document.getElementById('lang-fallback-banner')?.remove();
-  }
-
-  function showFallbackBanner(lang: string) {
-    removeFallbackBanner();
-
-    const content = document.querySelector('.markdown-content');
-    if (!content) return;
-
-    const banner = document.createElement('div');
-    banner.id = 'lang-fallback-banner';
-    banner.className = 'lang-fallback-banner';
-    banner.textContent = FALLBACK_MESSAGES[lang] || FALLBACK_MESSAGES.en;
-    content.parentNode?.insertBefore(banner, content);
-  }
-
-  function applyTranslation(lang: string) {
-    const content = document.querySelector('.markdown-content') as HTMLElement | null;
-    if (!content) return;
-
-    const slug = getSlug();
-    if (!slug) return;
-
-    if (lang === 'ru') {
-      const original = content.getAttribute('data-original-html');
-      if (original) content.innerHTML = original;
-      content.classList.remove('is-translating');
-      removeFallbackBanner();
-      return;
-    }
-
-    if (!content.getAttribute('data-original-html')) {
-      content.setAttribute('data-original-html', content.innerHTML);
-    }
-
-    content.classList.add('is-translating');
-
-    fetch(`${getBase()}i18n/${lang}/${slug}.txt`)
-      .then((response) => {
-        if (!response.ok) throw new Error('Translation not found');
-        return response.text();
-      })
-      .then((markdown) => {
-        content.innerHTML = markdown
-          .trim()
-          .split(/\n\n+/)
-          .filter((paragraph) => paragraph.trim())
-          .map((paragraph) => `<p>${paragraph.trim().replace(/\n/g, '<br>')}</p>`)
-          .join('\n');
-        removeFallbackBanner();
-      })
-      .catch(() => {
-        showFallbackBanner(lang);
-      })
-      .finally(() => {
-        content.classList.remove('is-translating');
-      });
-  }
-
-  function setLang(lang: 'ru' | 'en' | 'de') {
-    setCurrentSiteLang(lang);
-    applyTranslation(lang);
-  }
-
   function initLangSwitcher() {
     const lang = getCurrentSiteLang();
-    if (lang !== 'ru') applyTranslation(lang);
+    if (lang !== 'ru') {
+      const content = document.querySelector('.markdown-content');
+      const slug = getSlug();
+      if (content && slug) applyTranslationToElement(content, slug);
+    }
   }
 
   mountSelectableDropdown({
@@ -129,10 +59,16 @@
     maxHeight: 220,
     getOptions: () => SITE_LANGS,
     getCurrent: getCurrentSiteLang,
-    setCurrent: setLang,
+    setCurrent: (lang) => {
+      setCurrentSiteLang(lang);
+      const content = document.querySelector('.markdown-content');
+      const slug = getSlug();
+      if (content && slug) applyTranslationToElement(content, slug);
+    },
     formatLabel: (lang) => `lang:${lang}`,
   });
 
+  setupTranslationListener(getSlug);
   document.addEventListener('astro:page-load', initLangSwitcher);
   initLangSwitcher();
 </script>
