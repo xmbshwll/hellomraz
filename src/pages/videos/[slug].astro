@@ -1,0 +1,93 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getVideo, getAllVideos } from '../../lib/videos';
+
+export async function getStaticPaths() {
+  const videos = getAllVideos();
+  return videos.map((video) => ({
+    params: { slug: video.youtubeId },
+    props: { video },
+  }));
+}
+
+interface Props {
+  video: Awaited<ReturnType<typeof getAllVideos>>[number];
+}
+
+const { video } = Astro.props;
+
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+---
+
+<Layout title={video.title}>
+  <div class="video-page theme-surface">
+    <!-- YouTube embed (responsive 16:9) -->
+    <div class="video-embed-wrapper">
+      <iframe
+        src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`}
+        title={video.title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <!-- Video metadata -->
+    <div class="video-meta theme-border">
+      <h1 class="text-xl font-bold theme-text-primary">{video.title}</h1>
+      {video.tags && video.tags.length > 0 && (
+        <div class="video-tags mt-2">
+          {video.tags.map(tag => (
+            <span class="tag-chip theme-bg-hover">{tag}</span>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <!-- Optional description/review text -->
+    {video.description && (
+      <div class="video-description prose theme-text-secondary mt-4">
+        {video.description.split('\n').map(p => <p>{p}</p>)}
+      </div>
+    )}
+
+    <!-- Back to videos list -->
+    <div class="mt-6">
+      <a href={`${base}videos`} class="text-sm theme-text-accent">&larr; back to all videos</a>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  .video-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+  .video-embed-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--theme-border);
+    overflow: hidden;
+  }
+  .video-embed-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .video-meta {
+    border-bottom: 1px solid var(--theme-border);
+    padding-bottom: 1rem;
+  }
+  .tag-chip {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    color: var(--theme-text-muted);
+  }
+</style>

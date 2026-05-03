@@ -2,15 +2,19 @@
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import PostCard from '../components/PostCard.astro';
+import VideoCard from '../components/VideoCard.astro';
 import { getDateIndex, getRecentPosts } from '../lib/blog-data.mjs';
-import { HOME_REVIEW_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { getAllVideos } from '../lib/videos';
+import { HOME_REVIEW_INITIAL_POSTS, HOME_VIDEO_INITIAL_POSTS } from '../lib/feed-limits.mjs';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
-const [dateIndex, morePosts] = await Promise.all([
+const [dateIndex, morePosts, allVideos] = await Promise.all([
   getDateIndex(),
   getRecentPosts(HOME_REVIEW_INITIAL_POSTS),
+  Promise.resolve(getAllVideos()),
 ]);
+const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
 ---
 
 <Layout title="Home">
@@ -45,6 +49,26 @@ const [dateIndex, morePosts] = await Promise.all([
       >
         load more
       </button>
+    </div>
+  </div>
+
+  <div class="videos-section theme-surface">
+    <div class="flex items-center justify-between mb-4 border-b pb-2 theme-border">
+      <h2 class="text-lg font-bold theme-text-primary">~ videos</h2>
+      <a
+        href={`${base}videos`}
+        class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
+      >
+        see all →
+      </a>
+    </div>
+    <div
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
+      id="home-videos-grid"
+    >
+      {initialVideos.map((v, i) => (
+        <VideoCard title={v.title} youtubeId={v.youtubeId} tags={v.tags} index={i} />
+      ))}
     </div>
   </div>
 </Layout>

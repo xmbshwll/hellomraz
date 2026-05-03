@@ -25,6 +25,19 @@ const SERVICE_PRIORITY = [
   'Yandex Music',
 ];
 
+const SERVICE_ALIASES: Record<string, string> = {
+  bandcamp: 'Bandcamp',
+  spotify: 'Spotify',
+  'apple music': 'Apple Music',
+  tidal: 'Tidal',
+  deezer: 'Deezer',
+  'youtube music': 'YouTube Music',
+  youtube: 'YouTube',
+  soundcloud: 'SoundCloud',
+  'sound cloud': 'SoundCloud',
+  'yandex music': 'Yandex Music',
+};
+
 /**
  * Get streaming links for a post by slug.
  * Reads from the unified src/data/albums.json.
@@ -49,13 +62,14 @@ export function getStreamingLinks(slug: string): StreamingLink[] {
   // Other services from the streaming array
   const raw = entry.streaming || [];
   for (const link of raw) {
-    if (link.service === 'Bandcamp') continue; // skip if somehow still present
-    if (!SERVICE_PRIORITY.includes(link.service)) continue;
+    const service = canonicalServiceName(link.service);
+    if (service === 'Bandcamp') continue; // skip if somehow still present
+    if (!SERVICE_PRIORITY.includes(service)) continue;
     found.push({
-      service: link.service,
+      service,
       url: link.url,
-      embedUrl: toEmbedUrl(link.service, link.url),
-      icon: serviceIcon(link.service),
+      embedUrl: toEmbedUrl(service, link.url),
+      icon: serviceIcon(service),
     });
   }
 
@@ -64,6 +78,12 @@ export function getStreamingLinks(slug: string): StreamingLink[] {
   );
 
   return found;
+}
+
+function canonicalServiceName(service: string): string {
+  const raw = service.trim();
+  const key = raw.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  return SERVICE_ALIASES[key] ?? raw;
 }
 
 function toEmbedUrl(service: string, url: string): string | null {
@@ -82,9 +102,11 @@ function toEmbedUrl(service: string, url: string): string | null {
       }
 
       case 'Tidal': {
-        // listen.tidal.com/album/ID → embed.tidal.com/albums/ID
-        const m = url.match(/listen\.tidal\.com\/album\/(\d+)/);
-        return m ? `https://embed.tidal.com/albums/${m[1]}` : null;
+        // tidal.com/album/ID or listen.tidal.com/album/ID → embed.tidal.com/albums/ID
+        const u = new URL(url);
+        const validHost = ['tidal.com', 'www.tidal.com', 'listen.tidal.com'].includes(u.hostname);
+        const m = u.pathname.match(/^\/(?:browse\/)?album\/(\d+)/);
+        return validHost && m ? `https://embed.tidal.com/albums/${m[1]}` : null;
       }
 
       case 'Deezer': {

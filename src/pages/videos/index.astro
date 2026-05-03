@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import { getAllVideos } from '../../lib/videos';
+import { HOME_VIDEO_INITIAL_POSTS } from '../../lib/feed-limits.mjs';
+
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+const allVideos = getAllVideos();
+const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
+---
+
+<Layout title="Videos">
+  <div class="videos-section theme-surface">
+    <div class="flex items-center justify-between mb-4 border-b pb-2 theme-border">
+      <h2 class="text-lg font-bold theme-text-primary">~ videos</h2>
+    </div>
+    <div
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
+      id="videos-grid"
+      data-base={base}
+    >
+      {initialVideos.map((v, i) => (
+        <VideoCard title={v.title} youtubeId={v.youtubeId} tags={v.tags} index={i} />
+      ))}
+    </div>
+
+    {allVideos.length > HOME_VIDEO_INITIAL_POSTS && (
+      <div class="flex justify-center mt-6" id="load-more-videos-wrap">
+        <button
+          id="load-more-videos-btn"
+          class="load-more-reviews-btn"
+        >
+          load more
+        </button>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<script>
+  interface VideoItem {
+    slug: string;
+    title: string;
+    youtubeId: string;
+    tags?: string[];
+  }
+
+  const BATCH = 12;
+  const INITIAL_COUNT = Number(document.getElementById('videos-grid')?.children.length ?? 0);
+  let allVideos: VideoItem[] | null = null;
+  let loaded = INITIAL_COUNT;
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderCard(video: VideoItem, base: string): string {
+    const safeTitle = escapeHtml(video.title);
+    const thumbUrl = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+    const tags = (video.tags ?? []).slice(0, 3).join(' \u00b7 ');
+
+    return `<a href="${base}videos/${video.youtubeId}" class="post-card video-item" data-youtube-id="${video.youtubeId}">
+      <div class="post-card-cover">
+        <img src="${thumbUrl}" alt="${safeTitle}" width="300" height="300"
+             class="post-card-img" loading="lazy" decoding="async">
+        <div class="play-overlay">&#9654;</div>
+      </div>
+      <div class="post-card-title">${safeTitle}</div>
+      ${tags ? `<div class="post-card-tags">${tags}</div>` : ''}
+    </a>`;
+  }
+
+  async function fetchVideos(): Promise<VideoItem[]> {
+    if (allVideos) return allVideos;
+    const grid = document.getElementById('videos-grid');
+    const base = grid?.dataset.base || '/';
+    const res = await fetch(`${base}videos/api/video-cards.json`);
+    allVideos = await res.json();
+    return allVideos;
+  }
+
+  function appendCards(videos: VideoItem[], base: string) {
+    const grid = document.getElementById('videos-grid');
+    if (!grid) return;
+    videos.forEach(video => {
+      const card = renderCard(video, base);
+      grid.insertAdjacentHTML('beforeend', card);
+    });
+  }
+
+  function bindLoadMore() {
+    const btn = document.getElementById('load-more-videos-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+      const remaining = (allVideos ?? []).slice(loaded, loaded + BATCH);
+      if (remaining.length === 0) {
+        btn.remove();
+        return;
+      }
+
+      appendCards(remaining, btn.closest('#videos-grid')?.dataset.base || '/');
+      loaded += remaining.length;
+
+      if (loaded >= (allVideos ?? []).length) {
+        btn.remove();
+      }
+    });
+  }
+
+  function initVideos() {
+    bindLoadMore();
+  }
+
+  document.addEventListener('astro:page-load', initVideos);
+</script>
+
+<style is:global>
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 2rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
+  .post-card:hover .play-overlay {
+    opacity: 1;
+  }
+</style>
