@@ -25,7 +25,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     {initialVideos.length > 0 && (
       <div class="videos-strip theme-border" id="home-videos-strip">
         <!-- Collapsible header -->
-        <div class="videos-strip-header" id="videos-strip-toggle" data-state="expanded">
+        <div class="videos-strip-header" id="videos-strip-toggle" aria-expanded="true">
           <span class="videos-strip-title">~ videos</span>
           <div class="flex items-center gap-2">
             <a href={`${base}videos`} class="videos-strip-link text-sm font-medium touch-target-inline theme-text-accent">see all →</a>
@@ -283,7 +283,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     color: var(--theme-text-muted);
     transition: transform 0.2s ease, color 0.15s;
   }
-  #videos-strip-toggle[data-state="collapsed"] .videos-strip-chevron {
+  #videos-strip-toggle[aria-expanded="false"] .videos-strip-chevron {
     transform: rotate(-90deg);
   }
 
