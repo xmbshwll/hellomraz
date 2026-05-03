@@ -412,17 +412,21 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     const body = strip.querySelector('.videos-strip-body') as HTMLElement | null;
     if (!toggle || !body) return;
 
-    // Restore state from localStorage
+    // Restore state from localStorage every init (DOM may have been swapped)
     const collapsed = localStorage.getItem('hellomraz-videos-collapsed') === '1';
-    if (collapsed) {
-      body.classList.add('videos-collapsed');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
+    body.classList.toggle('videos-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 
-    // Toggle on click
+    // Idempotent click binding — guard against double init (module eval + astro:page-load)
+    if (toggle.dataset.bound === '1') return;
+    toggle.dataset.bound = '1';
+
     toggle.addEventListener('click', () => {
-      const isCollapsed = body.classList.toggle('videos-collapsed');
-      toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      const t = document.querySelector('#videos-strip-toggle') as HTMLElement | null;
+      const b = document.querySelector('.videos-strip-body') as HTMLElement | null;
+      if (!t || !b) return;
+      const isCollapsed = b.classList.toggle('videos-collapsed');
+      t.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
       localStorage.setItem('hellomraz-videos-collapsed', isCollapsed ? '1' : '0');
     });
   }
