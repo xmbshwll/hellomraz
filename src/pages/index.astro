@@ -25,18 +25,11 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     {initialVideos.length > 0 && (
       <div class="videos-strip theme-border" id="home-videos-strip">
         <!-- Collapsible header -->
-        <div class="videos-strip-header">
+        <div class="videos-strip-header" id="videos-strip-toggle" data-state="expanded">
           <span class="videos-strip-title">~ videos</span>
           <div class="flex items-center gap-2">
             <a href={`${base}videos`} class="videos-strip-link text-sm font-medium touch-target-inline theme-text-accent">see all →</a>
-            <button
-              type="button"
-              class="videos-strip-toggle"
-              aria-expanded="true"
-              aria-label="Toggle videos strip"
-            >
-              <span class="videos-strip-chevron" aria-hidden="true">▾</span>
-            </button>
+            <span class="videos-strip-chevron" aria-hidden="true">▾</span>
           </div>
         </div>
         <!-- Collapsible body -->
@@ -268,16 +261,20 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     opacity: 0;
   }
 
-  /* Toggle button */
-  .videos-strip-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
+  /* Toggle header */
+  #videos-strip-toggle {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  @media (min-width: 640px) {
+    #videos-strip-toggle { padding: 0.75rem 1.5rem; }
+  }
+  #videos-strip-toggle:hover {
+    background-color: var(--theme-bg-hover);
   }
 
   /* Chevron */
@@ -286,7 +283,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     color: var(--theme-text-muted);
     transition: transform 0.2s ease, color 0.15s;
   }
-  .videos-strip-toggle[aria-expanded="false"] .videos-strip-chevron {
+  #videos-strip-toggle[data-state="collapsed"] .videos-strip-chevron {
     transform: rotate(-90deg);
   }
 
@@ -411,7 +408,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     const strip = document.getElementById('home-videos-strip');
     if (!strip) return;
 
-    const toggle = strip.querySelector('.videos-strip-toggle') as HTMLButtonElement | null;
+    const toggle = strip.querySelector('#videos-strip-toggle') as HTMLElement | null;
     const body = strip.querySelector('.videos-strip-body') as HTMLElement | null;
     if (!toggle || !body) return;
 
