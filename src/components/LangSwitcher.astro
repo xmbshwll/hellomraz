@@ -63,7 +63,7 @@
       setCurrentSiteLang(lang);
       const content = document.querySelector('.markdown-content');
       const slug = getSlug();
-      if (content && slug) applyTranslationToElement(content, slug);
+      if (content && slug) applyTranslationToElement(content, slug, { type: 'posts' });
     },
     formatLabel: (lang) => `lang:${lang}`,
   });

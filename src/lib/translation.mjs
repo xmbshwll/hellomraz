@@ -39,6 +39,7 @@ function showFallbackBanner(lang, customMessages = {}) {
  * @param {HTMLElement} contentEl - element with .markdown-content
  * @param {string} slug - post slug or youtubeId
  * @param {object} [opts]
+ * @param {'post' | 'video'} [opts.type] - translation subfolder (default: 'post')
  * @param {Record<string,string>} [opts.fallbackMessages] - per-caller fallback messages
  */
 export async function applyTranslationToElement(contentEl, slug, opts = {}) {
@@ -65,7 +66,8 @@ export async function applyTranslationToElement(contentEl, slug, opts = {}) {
   try {
     const meta = document.querySelector('meta[name="base-url"]');
     const base = meta?.getAttribute('content') || '/';
-    const response = await fetch(`${base}i18n/${lang}/${slug}.txt`);
+    const type = opts.type || 'posts';
+    const response = await fetch(`${base}i18n/${lang}/${type}/${slug}.txt`);
 
     if (!response.ok) throw new Error('Translation not found');
 
