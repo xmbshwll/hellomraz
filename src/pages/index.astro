@@ -22,9 +22,21 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     <PageHeader dateIndex={dateIndex} />
 
     {initialVideos.length > 0 && (
-      <div class="videos-strip theme-border">
-        <h2 class="videos-strip-title">~ videos</h2>
-        <a href={`${base}videos`} class="videos-strip-link">see all →</a>
+      <div class="videos-strip theme-border" id="home-videos-strip">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="videos-strip-title">~ videos</h2>
+          <div class="flex gap-2 items-center">
+            <a href={`${base}videos`} class="videos-strip-link">see all →</a>
+            <button
+              id="videos-strip-close"
+              class="videos-strip-close-btn"
+              type="button"
+              aria-label="Close videos strip"
+            >
+              ×
+            </button>
+          </div>
+        </div>
         <div class="videos-scroll" id="home-videos-scroll">
           {initialVideos.map((v, i) => (
             <a
@@ -223,6 +235,16 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     position: relative;
     padding: 0.75rem 1rem 1rem;
     border-bottom: 1px solid var(--theme-border);
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+    overflow: hidden;
+  }
+  .videos-strip.videos-closed {
+    max-height: 0 !important;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    border-bottom: none;
+    pointer-events: none;
   }
   @media (min-width: 640px) {
     .videos-strip { padding: 0.75rem 1.5rem 1rem; }
@@ -234,16 +256,23 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     margin-bottom: 0.5rem;
   }
   .videos-strip-link {
-    position: absolute;
-    top: 0.75rem;
-    right: 1rem;
     font-size: 0.75rem;
     color: var(--theme-text-accent);
     text-decoration: none;
     padding: 8px 0;
   }
-  @media (min-width: 640px) {
-    .videos-strip-link { right: 1.5rem; }
+  .videos-strip-close-btn {
+    background: none;
+    border: none;
+    color: var(--theme-text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.15s;
+  }
+  .videos-strip-close-btn:hover {
+    color: var(--theme-text-primary);
   }
   .videos-scroll {
     display: flex;
@@ -369,4 +398,25 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
 
   document.addEventListener('astro:page-load', bindColorCards);
   bindColorCards();
+
+  /* ── Videos strip close/open ── */
+  function initVideosStrip() {
+    const strip = document.getElementById('home-videos-strip');
+    const btn = document.getElementById('videos-strip-close');
+    if (!strip || !btn) return;
+
+    const closed = localStorage.getItem('hellomraz-videos-closed') === '1';
+    if (closed) {
+      strip.classList.add('videos-closed');
+    }
+
+    btn.addEventListener('click', () => {
+      strip.classList.toggle('videos-closed');
+      const isClosed = strip.classList.contains('videos-closed');
+      localStorage.setItem('hellomraz-videos-closed', isClosed ? '1' : '0');
+    });
+  }
+
+  document.addEventListener('astro:page-load', initVideosStrip);
+  initVideosStrip();
 </script>
