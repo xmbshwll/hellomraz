@@ -60,15 +60,19 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
   </div>
 
   <div class="reviews-section theme-surface">
-    <div class="flex items-center justify-between mb-4 border-b pb-2 theme-border">
+    <div class="reviews-header" id="reviews-header-toggle" aria-expanded="true">
       <h2 class="text-lg font-bold theme-text-primary">~ reviews</h2>
-      <a
-        href={`${base}blog`}
-        class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
-      >
-        see all →
-      </a>
+      <div class="flex items-center gap-2">
+        <a
+          href={`${base}blog`}
+          class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
+        >
+          see all →
+        </a>
+        <span class="reviews-chevron" aria-hidden="true">▾</span>
+      </div>
     </div>
+    <div class="reviews-body" id="reviews-body">
     <div
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
       id="more-reviews-grid"
@@ -86,6 +90,7 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
       >
         load more
       </button>
+    </div>
     </div>
   </div>
 
@@ -287,6 +292,40 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
     transform: rotate(-90deg);
   }
 
+  /* Reviews collapsible header */
+  #reviews-header-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--theme-border);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  #reviews-header-toggle:hover {
+    background-color: var(--theme-bg-hover);
+  }
+  .reviews-chevron {
+    font-size: 1.25rem;
+    color: var(--theme-text-muted);
+    transition: transform 0.2s ease, color 0.15s;
+  }
+  #reviews-header-toggle[aria-expanded="false"] .reviews-chevron {
+    transform: rotate(-90deg);
+  }
+  .reviews-body {
+    overflow: hidden;
+    max-height: 100000px;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+    opacity: 1;
+  }
+  .reviews-body.reviews-collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .video-strip-card {
     flex: 0 0 auto;
     min-width: 280px;
@@ -433,4 +472,29 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
 
   document.addEventListener('astro:page-load', initVideosStrip);
   initVideosStrip();
+
+  /* ── Reviews section collapsible ── */
+  function initReviewsToggle() {
+    const toggle = document.getElementById('reviews-header-toggle');
+    const body = document.getElementById('reviews-body');
+    if (!toggle || !body) return;
+
+    const collapsed = localStorage.getItem('hellomraz-reviews-collapsed') === '1';
+    body.classList.toggle('reviews-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+
+    if (toggle.dataset.bound === '1') return;
+    toggle.dataset.bound = '1';
+
+    toggle.addEventListener('click', (e) => {
+      // Don't toggle if user clicked the "see all" link
+      if ((e.target as HTMLElement).closest('a')) return;
+      const isCollapsed = body.classList.toggle('reviews-collapsed');
+      toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      localStorage.setItem('hellomraz-reviews-collapsed', isCollapsed ? '1' : '0');
+    });
+  }
+
+  document.addEventListener('astro:page-load', initReviewsToggle);
+  initReviewsToggle();
 </script>
