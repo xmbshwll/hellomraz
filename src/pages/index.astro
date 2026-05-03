@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import PostCard from '../components/PostCard.astro';
-import VideoCard from '../components/VideoCard.astro';
+
 import { getDateIndex, getRecentPosts } from '../lib/blog-data.mjs';
 import { getAllVideos } from '../lib/videos';
 import { HOME_REVIEW_INITIAL_POSTS, HOME_VIDEO_INITIAL_POSTS } from '../lib/feed-limits.mjs';
@@ -20,6 +20,35 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
 <Layout title="Home">
   <div id="playlist-container" class="theme-surface">
     <PageHeader dateIndex={dateIndex} />
+
+    {initialVideos.length > 0 && (
+      <div class="videos-strip theme-border">
+        <h2 class="videos-strip-title">~ videos</h2>
+        <a href={`${base}videos`} class="videos-strip-link">see all →</a>
+        <div class="videos-scroll" id="home-videos-scroll">
+          {initialVideos.map((v, i) => (
+            <a
+              href={`${base}videos/${v.youtubeId}`}
+              class="video-strip-card"
+              data-youtube-id={v.youtubeId}
+            >
+              <div class="video-strip-thumb">
+                <img
+                  src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
+                  alt={v.title}
+                  width={320}
+                  height={180}
+                  loading={i < 4 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+                <div class="video-strip-play">▶</div>
+              </div>
+              <span class="video-strip-title">{v.title}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
   </div>
 
   <div class="reviews-section theme-surface">
@@ -52,25 +81,6 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     </div>
   </div>
 
-  <div class="videos-section theme-surface">
-    <div class="flex items-center justify-between mb-4 border-b pb-2 theme-border">
-      <h2 class="text-lg font-bold theme-text-primary">~ videos</h2>
-      <a
-        href={`${base}videos`}
-        class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
-      >
-        see all →
-      </a>
-    </div>
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
-      id="home-videos-grid"
-    >
-      {initialVideos.map((v, i) => (
-        <VideoCard title={v.title} youtubeId={v.youtubeId} tags={v.tags} index={i} />
-      ))}
-    </div>
-  </div>
 </Layout>
 
 <script>
@@ -206,6 +216,97 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
   .load-more-reviews-btn:hover {
     border-color: var(--theme-accent);
     color: var(--theme-accent);
+  }
+
+  /* ── Videos horizontal strip (Netflix-style) ── */
+  .videos-strip {
+    position: relative;
+    padding: 0.75rem 1rem 1rem;
+    border-bottom: 1px solid var(--theme-border);
+  }
+  @media (min-width: 640px) {
+    .videos-strip { padding: 0.75rem 1.5rem 1rem; }
+  }
+  .videos-strip-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--theme-text-primary);
+    margin-bottom: 0.5rem;
+  }
+  .videos-strip-link {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    color: var(--theme-text-accent);
+    text-decoration: none;
+    padding: 8px 0;
+  }
+  @media (min-width: 640px) {
+    .videos-strip-link { right: 1.5rem; }
+  }
+  .videos-scroll {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .videos-scroll::-webkit-scrollbar { display: none; }
+  .video-strip-card {
+    flex: 0 0 auto;
+    width: 280px;
+    scroll-snap-align: start;
+    text-decoration: none;
+    transition: transform 0.15s;
+  }
+  @media (min-width: 640px) {
+    .video-strip-card { width: 320px; }
+  }
+  .video-strip-card:hover {
+    transform: scale(1.03);
+  }
+  .video-strip-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-elevated);
+  }
+  .video-strip-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .video-strip-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font-size: 1.75rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
+  .video-strip-card:hover .video-strip-play {
+    opacity: 1;
+  }
+  .video-strip-title {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--theme-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
 
