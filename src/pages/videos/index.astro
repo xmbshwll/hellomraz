@@ -262,7 +262,7 @@ function fmtDate(d: string): string {
   }
 
   document.addEventListener('astro:page-load', applyListTranslations);
-  document.addEventListener('lang-changed', applyListTranslations);
+  window.addEventListener('lang-changed', applyListTranslations);
   applyListTranslations();
 </script>
 

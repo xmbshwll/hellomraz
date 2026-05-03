@@ -109,7 +109,7 @@ export function initTranslation() {
  * Call once per page load.
  */
 export function setupTranslationListener(getSlug) {
-  document.addEventListener('lang-changed', (e) => {
+  window.addEventListener('lang-changed', (e) => {
     const contentEl = document.querySelector('.markdown-content');
     if (!contentEl) return;
 
