@@ -148,27 +148,37 @@ function fmtDate(d: string): string {
   }
 
   function bindLoadMore() {
-    const btn = document.getElementById('load-more-videos-btn');
-    const list = document.getElementById('videos-list');
-    if (!btn || !list) return;
+    const btn = document.getElementById('load-more-videos-btn') as HTMLButtonElement | null;
+    const wrap = document.getElementById('load-more-videos-wrap') as HTMLElement | null;
+    const list = document.getElementById('videos-list') as HTMLElement | null;
+    if (!btn || !wrap || !list) return;
 
+    if ((btn as any).__bound) return;
+    (btn as any).__bound = true;
+
+    // Reset — SSR rendered VIDEO_STRIP_INITIAL items
     loaded = list.children.length;
+    wrap.hidden = false;
+    btn.textContent = 'load more';
 
     btn.addEventListener('click', async () => {
+      btn.textContent = 'loading…';
       const videos = await fetchVideos();
       const base = list.dataset.base || '/';
-      const remaining = videos.slice(loaded, loaded + BATCH);
+      const end = Math.min(loaded + BATCH, videos.length);
 
-      if (remaining.length === 0) {
-        btn.remove();
+      if (loaded >= videos.length) {
+        wrap.hidden = true;
         return;
       }
 
-      appendRows(remaining, base);
-      loaded += remaining.length;
+      appendRows(videos.slice(loaded, end), base);
+      loaded = end;
 
       if (loaded >= videos.length) {
-        btn.remove();
+        wrap.hidden = true;
+      } else {
+        btn.textContent = 'load more';
       }
     });
   }
