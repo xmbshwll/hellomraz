@@ -1,7 +1,7 @@
 ---
 interface Props {
   href: string;
-  icon?: "home" | "search" | "library" | "video";
+  icon?: "home" | "search" | "library";
 }
 
 const { href, icon = "home" } = Astro.props;
@@ -10,7 +10,6 @@ const icons = {
   home: `<span class="text-sm">⌂</span>`,
   search: `<span class="text-sm">⌕</span>`,
   library: `<span class="text-sm">☰</span>`,
-  video: `<span class="text-sm">▶</span>`,
 };
 ---
 
