@@ -33,18 +33,18 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
     <!-- Video metadata -->
     <div class="video-meta theme-border">
-      <h1 class="text-xl font-bold theme-text-primary">{video.title}</h1>
+      <h1 class="video-title text-xl font-bold theme-text-primary" data-orig-title={video.title}>{video.title}</h1>
     </div>
 
     <!-- Optional description/review text -->
-    {video.description && (
-      <div
-        class="video-description prose theme-text-secondary mt-4 markdown-content"
-        data-original-html={video.description.split('\n').map(p => `<p>${p}</p>`).join('\n')}
-      >
-        {video.description.split('\n').map(p => <p>{p}</p>)}
-      </div>
-    )}
+    <div
+      class="video-description prose theme-text-secondary mt-4 markdown-content"
+      data-orig-desc={video.description || ''}
+      data-original-html={(video.description || '').split('\n').map(p => `<p>${p}</p>`).join('\n')}
+      style={!video.description ? 'display:none' : ''}
+    >
+      {(video.description || '').split('\n').map(p => <p>{p}</p>)}
+    </div>
 
     <!-- Back to videos list -->
     <div class="mt-6">
@@ -54,25 +54,71 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 </Layout>
 
 <script>
-  import { getCurrentSiteLang, SITE_LANGS } from '../../lib/site-i18n.mjs';
-  import { applyTranslationToElement, setupTranslationListener } from '../../lib/translation.mjs';
+  import { fetchTitledTranslation, getCurrentSiteLang } from '../../lib/translation.mjs';
 
-  function initVideoTranslation() {
-    const content = document.querySelector('.markdown-content');
-    const slug = content?.closest('[data-post-slug]')?.getAttribute('data-post-slug');
-    if (content && slug) {
-      const lang = getCurrentSiteLang();
-      if (lang !== 'ru') applyTranslationToElement(content, slug, { type: 'videos' });
+  function renderDescriptionHtml(text: string): string {
+    return text
+      .trim()
+      .split(/\n\s*\n/)
+      .filter((p) => p.trim())
+      .map((p) => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
+      .join('\n');
+  }
+
+  async function applyVideoTranslation() {
+    const root = document.querySelector<HTMLElement>('[data-post-slug]');
+    if (!root) return;
+    const slug = root.dataset.postSlug || '';
+    const titleEl = root.querySelector<HTMLElement>('.video-title');
+    const descEl = root.querySelector<HTMLElement>('.markdown-content');
+    if (!titleEl) return;
+
+    const lang = getCurrentSiteLang();
+    const origTitle = titleEl.dataset.origTitle || titleEl.textContent || '';
+    const origDesc = descEl?.dataset.origDesc || '';
+
+    if (lang === 'ru') {
+      titleEl.textContent = origTitle;
+      if (descEl) {
+        if (origDesc) {
+          descEl.style.display = '';
+          descEl.innerHTML = renderDescriptionHtml(origDesc);
+        } else {
+          descEl.style.display = 'none';
+        }
+      }
+      return;
+    }
+
+    const parsed = await fetchTitledTranslation(slug, 'videos', lang);
+    if (!parsed) {
+      // No translation available — fall back to original
+      titleEl.textContent = origTitle;
+      if (descEl) {
+        if (origDesc) {
+          descEl.style.display = '';
+          descEl.innerHTML = renderDescriptionHtml(origDesc);
+        } else {
+          descEl.style.display = 'none';
+        }
+      }
+      return;
+    }
+
+    titleEl.textContent = parsed.title || origTitle;
+    if (descEl) {
+      if (parsed.description) {
+        descEl.style.display = '';
+        descEl.innerHTML = renderDescriptionHtml(parsed.description);
+      } else {
+        descEl.style.display = 'none';
+      }
     }
   }
 
-  setupTranslationListener(() => {
-    const content = document.querySelector('.markdown-content');
-    return content?.closest('[data-post-slug]')?.getAttribute('data-post-slug') || null;
-  });
-
-  document.addEventListener('astro:page-load', initVideoTranslation);
-  initVideoTranslation();
+  document.addEventListener('astro:page-load', applyVideoTranslation);
+  document.addEventListener('lang-changed', applyVideoTranslation);
+  applyVideoTranslation();
 </script>
 
 <style is:global>

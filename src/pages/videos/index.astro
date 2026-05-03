@@ -178,21 +178,36 @@ function fmtDate(d: string): string {
   document.addEventListener('astro:page-load', bindLoadMore);
   bindLoadMore();
 
-  /* ── List i18n: translate row title + description from manifest ── */
-  let listManifestCache: Record<string, Record<string, { title?: string; description?: string }>> = {};
+  /* ── List i18n: per-slug .txt translations (matches album/post pattern) ── */
+  const txtCache = new Map<string, { title: string; description: string } | null>();
 
-  async function fetchListManifest(lang: string): Promise<Record<string, { title?: string; description?: string }>> {
-    if (listManifestCache[lang]) return listManifestCache[lang];
+  async function fetchVideoTxt(slug: string, lang: string) {
+    if (lang === 'ru') return null;
+    const key = `${lang}:${slug}`;
+    if (txtCache.has(key)) return txtCache.get(key);
     try {
       const meta = document.querySelector('meta[name="base-url"]');
       const base = meta?.getAttribute('content') || '/';
-      const res = await fetch(`${base}i18n/${lang}/videos.json`);
-      if (!res.ok) throw new Error('manifest missing');
-      listManifestCache[lang] = await res.json();
+      const res = await fetch(`${base}i18n/${lang}/videos/${slug}.txt`);
+      if (!res.ok) {
+        txtCache.set(key, null);
+        return null;
+      }
+      const text = (await res.text()).trim();
+      if (!text) {
+        txtCache.set(key, null);
+        return null;
+      }
+      const parts = text.split(/\n\s*\n/);
+      const title = (parts.shift() || '').trim();
+      const description = parts.join('\n\n').trim();
+      const parsed = { title, description };
+      txtCache.set(key, parsed);
+      return parsed;
     } catch {
-      listManifestCache[lang] = {};
+      txtCache.set(key, null);
+      return null;
     }
-    return listManifestCache[lang];
   }
 
   function stashOriginals(row: HTMLElement) {
@@ -204,7 +219,7 @@ function fmtDate(d: string): string {
     row.dataset.origStashed = '1';
   }
 
-  function applyRowTranslation(row: HTMLElement, entry?: { title?: string; description?: string }) {
+  function applyRowTranslation(row: HTMLElement, entry: { title: string; description: string } | null) {
     stashOriginals(row);
     const titleEl = row.querySelector('.video-row-title') as HTMLElement | null;
     const descEl = row.querySelector('.video-row-desc') as HTMLElement | null;
@@ -212,16 +227,11 @@ function fmtDate(d: string): string {
 
     if (titleEl) titleEl.textContent = entry?.title || orig.title;
 
-    // Description: insert if missing and translation exists; remove if was empty originally
     const newDesc = entry?.description || '';
     if (descEl) {
-      if (newDesc) {
-        descEl.textContent = newDesc;
-      } else if (orig.desc) {
-        descEl.textContent = orig.desc;
-      } else {
-        descEl.remove();
-      }
+      if (newDesc) descEl.textContent = newDesc;
+      else if (orig.desc) descEl.textContent = orig.desc;
+      else descEl.remove();
     } else if (newDesc) {
       const body = row.querySelector('.video-row-body');
       if (body) {
@@ -240,15 +250,15 @@ function fmtDate(d: string): string {
     const rows = Array.from(list.querySelectorAll<HTMLElement>('.video-row'));
 
     if (lang === 'ru') {
-      rows.forEach(r => applyRowTranslation(r, undefined));
+      rows.forEach(r => applyRowTranslation(r, null));
       return;
     }
 
-    const manifest = await fetchListManifest(lang);
-    rows.forEach(r => {
-      const id = r.dataset.youtubeId || '';
-      applyRowTranslation(r, manifest[id]);
-    });
+    // Fetch all visible row translations in parallel
+    const results = await Promise.all(
+      rows.map(r => fetchVideoTxt(r.dataset.youtubeId || '', lang).then(t => ({ row: r, t })))
+    );
+    results.forEach(({ row, t }) => applyRowTranslation(row, t || null));
   }
 
   document.addEventListener('astro:page-load', applyListTranslations);

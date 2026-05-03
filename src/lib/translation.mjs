@@ -122,3 +122,32 @@ export function setupTranslationListener(getSlug) {
 }
 
 export { getCurrentSiteLang, setCurrentSiteLang, SITE_LANGS };
+
+/**
+ * Fetch a per-slug translation file and parse "title\n\ndescription" format.
+ * First non-empty line = title, everything after the first blank line = description.
+ * Returns null if not found / fetch fails.
+ *
+ * @param {string} slug
+ * @param {'posts' | 'videos'} type
+ * @param {string} lang - 'en' | 'de' | 'ru'
+ * @returns {Promise<{ title: string, description: string } | null>}
+ */
+export async function fetchTitledTranslation(slug, type, lang) {
+  if (!slug || lang === 'ru') return null;
+  try {
+    const meta = document.querySelector('meta[name="base-url"]');
+    const base = meta?.getAttribute('content') || '/';
+    const res = await fetch(`${base}i18n/${lang}/${type}/${slug}.txt`);
+    if (!res.ok) return null;
+    const text = (await res.text()).trim();
+    if (!text) return null;
+    // Split on first blank line. Title = everything before, description = everything after.
+    const parts = text.split(/\n\s*\n/);
+    const title = (parts.shift() || '').trim();
+    const description = parts.join('\n\n').trim();
+    return { title, description };
+  } catch {
+    return null;
+  }
+}
