@@ -24,18 +24,20 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     {initialVideos.length > 0 && (
       <div class="videos-strip theme-border" id="home-videos-strip">
         <!-- Collapsible header -->
-        <button
-          type="button"
-          class="videos-strip-header"
-          aria-expanded="true"
-          data-action="toggle-videos-strip"
-        >
+        <div class="videos-strip-header">
           <span class="videos-strip-title">~ videos</span>
           <div class="flex items-center gap-2">
             <a href={`${base}videos`} class="videos-strip-link">see all →</a>
-            <span class="videos-strip-chevron" aria-hidden="true">▾</span>
+            <button
+              type="button"
+              class="videos-strip-toggle"
+              aria-expanded="true"
+              aria-label="Toggle videos strip"
+            >
+              <span class="videos-strip-chevron" aria-hidden="true">▾</span>
+            </button>
           </div>
-        </button>
+        </div>
         <!-- Collapsible body -->
         <div class="videos-strip-body" id="home-videos-scroll">
           {initialVideos.map((v, i) => (
@@ -238,17 +240,12 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     .videos-strip { padding: 0.75rem 1.5rem 1rem; }
   }
 
-  /* Header — always visible, clickable */
+  /* Header — always visible */
   .videos-strip-header {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: none;
-    border: none;
     padding: 0.75rem 1rem;
-    cursor: pointer;
-    text-align: left;
     transition: background-color 0.15s;
   }
   @media (min-width: 640px) {
@@ -258,16 +255,32 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     background-color: var(--theme-bg-hover);
   }
 
-  /* Body — collapsible */
+  /* Body — collapsible flex scroll */
   .videos-strip-body {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
     max-height: 600px;
-    overflow: hidden;
     transition: max-height 0.25s ease, opacity 0.2s ease;
     opacity: 1;
+    scrollbar-width: none;
   }
+  .videos-strip-body::-webkit-scrollbar { display: none; }
   .videos-strip-body.videos-collapsed {
     max-height: 0 !important;
     opacity: 0;
+  }
+
+  /* Toggle button */
+  .videos-strip-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
   }
 
   /* Chevron */
@@ -276,19 +289,10 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     color: var(--theme-text-muted);
     transition: transform 0.2s ease, color 0.15s;
   }
-  .videos-strip-header[aria-expanded="false"] .videos-strip-chevron {
+  .videos-strip-toggle[aria-expanded="false"] .videos-strip-chevron {
     transform: rotate(-90deg);
   }
-  .videos-scroll {
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 4px;
-  }
-  .videos-scroll::-webkit-scrollbar { display: none; }
+
   .video-strip-card {
     flex: 0 0 auto;
     min-width: 280px;
@@ -410,21 +414,21 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     const strip = document.getElementById('home-videos-strip');
     if (!strip) return;
 
-    const header = strip.querySelector('.videos-strip-header') as HTMLButtonElement | null;
+    const toggle = strip.querySelector('.videos-strip-toggle') as HTMLButtonElement | null;
     const body = strip.querySelector('.videos-strip-body') as HTMLElement | null;
-    if (!header || !body) return;
+    if (!toggle || !body) return;
 
     // Restore state from localStorage
     const collapsed = localStorage.getItem('hellomraz-videos-collapsed') === '1';
     if (collapsed) {
       body.classList.add('videos-collapsed');
-      header.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
     }
 
     // Toggle on click
-    header.addEventListener('click', () => {
+    toggle.addEventListener('click', () => {
       const isCollapsed = body.classList.toggle('videos-collapsed');
-      header.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
       localStorage.setItem('hellomraz-videos-collapsed', isCollapsed ? '1' : '0');
     });
   }
