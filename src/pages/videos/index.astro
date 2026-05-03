@@ -165,6 +165,7 @@ function fmtDate(d: string): string {
 
       appendRows(videos.slice(loaded, end), base);
       loaded = end;
+      applyListTranslations();
 
       if (loaded >= videos.length) {
         wrap.hidden = true;
@@ -176,6 +177,83 @@ function fmtDate(d: string): string {
 
   document.addEventListener('astro:page-load', bindLoadMore);
   bindLoadMore();
+
+  /* ── List i18n: translate row title + description from manifest ── */
+  let listManifestCache: Record<string, Record<string, { title?: string; description?: string }>> = {};
+
+  async function fetchListManifest(lang: string): Promise<Record<string, { title?: string; description?: string }>> {
+    if (listManifestCache[lang]) return listManifestCache[lang];
+    try {
+      const meta = document.querySelector('meta[name="base-url"]');
+      const base = meta?.getAttribute('content') || '/';
+      const res = await fetch(`${base}i18n/${lang}/videos.json`);
+      if (!res.ok) throw new Error('manifest missing');
+      listManifestCache[lang] = await res.json();
+    } catch {
+      listManifestCache[lang] = {};
+    }
+    return listManifestCache[lang];
+  }
+
+  function stashOriginals(row: HTMLElement) {
+    if (row.dataset.origStashed === '1') return;
+    const titleEl = row.querySelector('.video-row-title');
+    const descEl = row.querySelector('.video-row-desc');
+    if (titleEl) row.dataset.origTitle = titleEl.textContent || '';
+    if (descEl) row.dataset.origDesc = descEl.textContent || '';
+    row.dataset.origStashed = '1';
+  }
+
+  function applyRowTranslation(row: HTMLElement, entry?: { title?: string; description?: string }) {
+    stashOriginals(row);
+    const titleEl = row.querySelector('.video-row-title') as HTMLElement | null;
+    const descEl = row.querySelector('.video-row-desc') as HTMLElement | null;
+    const orig = { title: row.dataset.origTitle || '', desc: row.dataset.origDesc || '' };
+
+    if (titleEl) titleEl.textContent = entry?.title || orig.title;
+
+    // Description: insert if missing and translation exists; remove if was empty originally
+    const newDesc = entry?.description || '';
+    if (descEl) {
+      if (newDesc) {
+        descEl.textContent = newDesc;
+      } else if (orig.desc) {
+        descEl.textContent = orig.desc;
+      } else {
+        descEl.remove();
+      }
+    } else if (newDesc) {
+      const body = row.querySelector('.video-row-body');
+      if (body) {
+        const d = document.createElement('div');
+        d.className = 'video-row-desc';
+        d.textContent = newDesc;
+        body.appendChild(d);
+      }
+    }
+  }
+
+  async function applyListTranslations() {
+    const lang = (localStorage.getItem('site-lang') || 'ru');
+    const list = document.getElementById('videos-list');
+    if (!list) return;
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('.video-row'));
+
+    if (lang === 'ru') {
+      rows.forEach(r => applyRowTranslation(r, undefined));
+      return;
+    }
+
+    const manifest = await fetchListManifest(lang);
+    rows.forEach(r => {
+      const id = r.dataset.youtubeId || '';
+      applyRowTranslation(r, manifest[id]);
+    });
+  }
+
+  document.addEventListener('astro:page-load', applyListTranslations);
+  document.addEventListener('lang-changed', applyListTranslations);
+  applyListTranslations();
 </script>
 
 <style is:global>
