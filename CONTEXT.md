@@ -11,5 +11,6 @@
 ## Patterns
 
 - **Centralized data access** — All data modules (`albums.ts`, `videos.ts`) export helpers; components import from them, not JSON directly.
+- **Centralized config** — Feature-specific config in dedicated modules (`feed-limits.mjs` for posts, `video-config.mjs` for videos).
 - **Theme system** — CSS custom properties (`--theme-*`) in `src/styles/themes.css`. Switched via `data-theme` attribute.
 - **Translation Service** — Fetch translation text from `public/i18n/{lang}/{slug}.txt`, replace `.markdown-content` innerHTML. Listen for `lang-changed` custom event. Fallback banner if translation missing.

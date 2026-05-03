@@ -5,7 +5,8 @@ import PostCard from '../components/PostCard.astro';
 
 import { getDateIndex, getRecentPosts } from '../lib/blog-data.mjs';
 import { getAllVideos } from '../lib/videos';
-import { HOME_REVIEW_INITIAL_POSTS, HOME_VIDEO_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { HOME_REVIEW_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { VIDEO_STRIP_INITIAL } from '../lib/video-config.mjs';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
@@ -14,7 +15,7 @@ const [dateIndex, morePosts, allVideos] = await Promise.all([
   getRecentPosts(HOME_REVIEW_INITIAL_POSTS),
   Promise.resolve(getAllVideos()),
 ]);
-const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
+const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
 ---
 
 <Layout title="Home">

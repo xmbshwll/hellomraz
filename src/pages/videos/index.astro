@@ -2,11 +2,11 @@
 import Layout from '../../layouts/Layout.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import { getAllVideos } from '../../lib/videos';
-import { HOME_VIDEO_INITIAL_POSTS } from '../../lib/feed-limits.mjs';
+import { VIDEO_STRIP_INITIAL, VIDEO_PAGE_LOAD_MORE } from '../../lib/video-config.mjs';
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const allVideos = getAllVideos();
-const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
+const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
 ---
 
 <Layout title="Videos">
@@ -24,7 +24,7 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
       ))}
     </div>
 
-    {allVideos.length > HOME_VIDEO_INITIAL_POSTS && (
+    {allVideos.length > VIDEO_STRIP_INITIAL && (
       <div class="flex justify-center mt-6" id="load-more-videos-wrap">
         <button
           id="load-more-videos-btn"
@@ -45,7 +45,7 @@ const initialVideos = allVideos.slice(0, HOME_VIDEO_INITIAL_POSTS);
     tags?: string[];
   }
 
-  const BATCH = 12;
+  const BATCH = VIDEO_PAGE_LOAD_MORE;
   const INITIAL_COUNT = Number(document.getElementById('videos-grid')?.children.length ?? 0);
   let allVideos: VideoItem[] | null = null;
   let loaded = INITIAL_COUNT;
