@@ -7,7 +7,6 @@ export interface VideoEntry {
   title: string;
   youtubeId: string;
   pubDate: string;
-  tags?: string[];
   description?: string;
 }
 
@@ -29,15 +28,9 @@ export function getVideoThumb(youtubeId: string, quality: 'max' | 'hq' | 'mq' = 
 /**
  * Get all videos sorted by pubDate descending.
  */
-export function getAllVideos(): VideoEntry & { slug: string }[] {
+export function getAllVideos(): (VideoEntry & { slug: string })[] {
   return Object.entries(videos)
     .map(([slug, entry]) => ({ ...entry, slug }))
     .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 }
 
-/**
- * Get videos filtered by tags.
- */
-export function getVideosByTags(tags: string[]): (VideoEntry & { slug: string })[] {
-  return getAllVideos().filter(v => v.tags?.some(t => tags.includes(t)));
-}

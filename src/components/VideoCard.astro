@@ -4,11 +4,10 @@ import { getVideoThumb } from '../lib/videos';
 interface Props {
   title: string;
   youtubeId: string;
-  tags?: string[];
   index?: number;
 }
 
-const { title, youtubeId, tags = [], index = 99 } = Astro.props;
+const { title, youtubeId, index = 99 } = Astro.props;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const thumbUrl = getVideoThumb(youtubeId);
 const safeTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -21,9 +20,6 @@ const safeTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
     <div class="play-overlay" aria-hidden="true">&#9654;</div>
   </div>
   <div class="post-card-title">{safeTitle}</div>
-  {tags.length > 0 && (
-    <div class="post-card-tags">{tags.slice(0, 3).join(' \u00b7 ')}</div>
-  )}
 </a>
 
 <style>

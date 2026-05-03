@@ -49,12 +49,6 @@ function fmtDate(d: string): string {
             <div class="video-row-title">{v.title}</div>
             <div class="video-row-meta">
               <span class="video-row-date">{fmtDate(v.pubDate)}</span>
-              {v.tags && v.tags.length > 0 && (
-                <>
-                  <span class="video-row-sep">·</span>
-                  <span class="video-row-tags">{v.tags.slice(0, 4).join(' · ')}</span>
-                </>
-              )}
             </div>
             {v.description && (
               <div class="video-row-desc">{v.description}</div>
@@ -83,7 +77,6 @@ function fmtDate(d: string): string {
     title: string;
     youtubeId: string;
     pubDate: string;
-    tags?: string[];
     description?: string;
   }
 
@@ -110,7 +103,6 @@ function fmtDate(d: string): string {
   function renderRow(video: VideoItem, base: string): string {
     const safeTitle = escapeHtml(video.title);
     const thumbUrl = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
-    const tags = (video.tags ?? []).slice(0, 4).map(escapeHtml).join(' · ');
     const date = escapeHtml(fmtDate(video.pubDate));
     const desc = video.description ? escapeHtml(video.description) : '';
 
@@ -123,7 +115,6 @@ function fmtDate(d: string): string {
         <div class="video-row-title">${safeTitle}</div>
         <div class="video-row-meta">
           <span class="video-row-date">${date}</span>
-          ${tags ? `<span class="video-row-sep">·</span><span class="video-row-tags">${tags}</span>` : ''}
         </div>
         ${desc ? `<div class="video-row-desc">${desc}</div>` : ''}
       </div>
@@ -275,10 +266,6 @@ function fmtDate(d: string): string {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
-  }
-
-  .video-row-sep {
-    opacity: 0.5;
   }
 
   .video-row-desc {

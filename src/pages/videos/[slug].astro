@@ -34,13 +34,6 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     <!-- Video metadata -->
     <div class="video-meta theme-border">
       <h1 class="text-xl font-bold theme-text-primary">{video.title}</h1>
-      {video.tags && video.tags.length > 0 && (
-        <div class="video-tags mt-2">
-          {video.tags.map(tag => (
-            <span class="tag-chip theme-bg-hover">{tag}</span>
-          ))}
-        </div>
-      )}
     </div>
 
     <!-- Optional description/review text -->
