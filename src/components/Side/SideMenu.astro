@@ -78,6 +78,35 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
         </div>
       )
     }
+    <div class="px-4 pb-3">
+      <button
+        type="button"
+        class="load-more-btn random-review-btn"
+        data-random-review
+        data-base={base}
+      >
+        <svg
+          class="random-review-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="4.6" y="4.6" width="10.8" height="10.8" rx="2" transform="rotate(45 10 10)"></rect>
+          <circle cx="8.6" cy="8.6" r="0.9" fill="currentColor" stroke="none"></circle>
+          <circle cx="11.4" cy="11.4" r="0.9" fill="currentColor" stroke="none"></circle>
+          <rect x="12" y="12" width="9" height="9" rx="1.6"></rect>
+          <circle cx="14.6" cy="14.6" r="0.8" fill="currentColor" stroke="none"></circle>
+          <circle cx="18.4" cy="14.6" r="0.8" fill="currentColor" stroke="none"></circle>
+          <circle cx="14.6" cy="18.4" r="0.8" fill="currentColor" stroke="none"></circle>
+          <circle cx="18.4" cy="18.4" r="0.8" fill="currentColor" stroke="none"></circle>
+        </svg>
+        RNDM RELEASE
+      </button>
+    </div>
   </div>
 </div>
 
@@ -110,6 +139,21 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
   }
   .load-more-btn:hover {
     color: var(--theme-text-primary);
+  }
+  .random-review-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .random-review-btn:hover {
+    border-color: var(--theme-accent);
+  }
+  .random-review-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
   }
 </style>
 

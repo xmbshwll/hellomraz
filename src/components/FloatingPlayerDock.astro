@@ -818,6 +818,46 @@
     document.addEventListener('astro:page-load', queueRefresh);
     window.addEventListener('resize', queueRefresh);
     document.addEventListener('scroll', queueRefresh, true);
+    // The inline player is position:fixed with coordinates captured from the
+    // stage anchor. Late layout shifts on page open (cover image h-auto, fonts)
+    // move the stage without firing scroll/resize, leaving the player floating
+    // over the tab row. Watch the anchor for a short window after each load.
+    let inlineWatchUntil = 0;
+    function refreshInlinePosition() {
+      if (state?.mode !== 'inline') return;
+
+      const anchor = getInlineAnchor(state.slug);
+      const dockRoot = getRoot();
+      if (!anchor || !dockRoot) return;
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const dockRect = dockRoot.getBoundingClientRect();
+      const moved =
+        Math.abs(anchorRect.top - dockRect.top) > 1 ||
+        Math.abs(anchorRect.left - dockRect.left) > 1;
+
+      if (moved) applyInlinePosition(anchor);
+    }
+
+    function startInlinePositionWatch() {
+      inlineWatchUntil = performance.now() + 3000;
+
+      function tick() {
+        refreshInlinePosition();
+        if (performance.now() < inlineWatchUntil) {
+          requestAnimationFrame(tick);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    document.addEventListener('astro:page-load', startInlinePositionWatch);
+    window.addEventListener('load', () => {
+      // Images decoding late extend the watch window past the initial 3s.
+      inlineWatchUntil = Math.max(inlineWatchUntil, performance.now() + 2000);
+    });
+    startInlinePositionWatch();
 
     win.__streamingPlayerDock = {
       activate,

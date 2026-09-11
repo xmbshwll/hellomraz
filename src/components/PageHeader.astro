@@ -54,6 +54,9 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
   </div>
 
   <div class="header-actions">
+    <button type="button" class="header-control-btn" data-random-review data-base={base}>
+      RNDM RLS
+    </button>
     <a
       target="_blank"
       rel="noopener noreferrer"
@@ -346,4 +349,9 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
   }
 
   initPwaInstallButtons();
+
+  import { bindRandomReviewButtons } from '../lib/random-review.mjs';
+
+  bindRandomReviewButtons();
+  document.addEventListener('astro:page-load', bindRandomReviewButtons);
 </script>
