@@ -174,3 +174,44 @@ export function searchEntries(entries, query, limit = 8) {
     .slice(0, limit)
     .map((item) => item.entry);
 }
+
+/**
+ * Pick a random entry, preferring one that is not the given slug
+ * so "random" never lands on the page you are already reading.
+ *
+ * @param {RawSearchEntry[]} entries
+ * @param {{ excludeSlug?: string; random?: () => number }} [options]
+ * @returns {RawSearchEntry | null}
+ */
+export function pickRandomEntry(entries, options = {}) {
+  const { excludeSlug = "", random = Math.random } = options;
+
+  /** @type {RawSearchEntry[]} */
+  const pool = (entries ?? [])
+    .filter((entry) => entry?.slug)
+    .filter(
+      (entry, _index, valid) =>
+        // Drop the excluded slug, unless it is all we have.
+        entry.slug !== excludeSlug ||
+        valid.every((other) => other.slug === excludeSlug),
+    );
+
+  return pool[Math.floor(random() * pool.length)] ?? null;
+}
+
+/**
+ * Read the review slug out of a blog post URL, so "random" knows which
+ * entry to exclude. Returns "" for any page that is not a review.
+ *
+ * @param {string | null | undefined} pathname
+ * @param {string} [base]
+ * @returns {string}
+ */
+export function getPostSlugFromPath(pathname, base = "/") {
+  const prefix = `${String(base || "/").replace(/\/?$/, "/")}blog/`;
+  const path = String(pathname ?? "");
+
+  if (!path.startsWith(prefix)) return "";
+
+  return path.slice(prefix.length).replace(/\/+$/, "");
+}
