@@ -23,9 +23,7 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) =>
-        cache.addAll(
-          CORE_FILES.map((path) => new Request(getScopeUrl(path), { cache: 'reload' })),
-        ),
+        cache.addAll(CORE_FILES.map((path) => new Request(getScopeUrl(path), { cache: 'reload' }))),
       )
       .catch(() => undefined),
   );
@@ -38,11 +36,7 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key)),
-        ),
+        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
       )
       .then(() => self.clients.claim()),
   );

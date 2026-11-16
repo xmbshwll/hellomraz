@@ -1,5 +1,5 @@
 ---
-title: 'Forests - That''s Not Very Mid-Century Modern Of You'
+title: "Forests - That's Not Very Mid-Century Modern Of You"
 pubDate: 2026-07-06
 tags: ['punk', 'emo', 'indie', 'math pop', 'post rock', 'singapore', 'stadium rock', 'Singapore']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'Killing Me Softly - To Forever Fall Through God''s Safety Net'
+title: "Killing Me Softly - To Forever Fall Through God's Safety Net"
 pubDate: 2025-08-11
 tags: ['metal', 'metalcore', 'hardcore', 'leeds']
 ---

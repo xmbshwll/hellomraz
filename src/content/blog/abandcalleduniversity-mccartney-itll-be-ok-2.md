@@ -1,5 +1,5 @@
 ---
-title: 'UNIVERSITY - McCartney, It''ll Be OK'
+title: "UNIVERSITY - McCartney, It'll Be OK"
 pubDate: 2025-12-16
 tags: ['alternative', 'emo', 'indie rock', 'noise rock']
 ---

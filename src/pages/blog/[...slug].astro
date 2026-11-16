@@ -12,19 +12,12 @@ import { getPostColor } from '../../lib/colors';
 import { getBandcampData } from '../../lib/bandcamp';
 import { getStreamingLinks } from '../../lib/streaming';
 import { getAlbum, getCoverThumb, parseArtistAlbum } from '../../lib/albums';
-import {
-  getDateIndex,
-  getLinkedTagNames,
-  getPublishedPosts,
-} from '../../lib/blog-data.mjs';
+import { getDateIndex, getLinkedTagNames, getPublishedPosts } from '../../lib/blog-data.mjs';
 import { encodeTagParam } from '../../lib/tag-path';
 import '../../layouts/styles/markdown.css';
 
 export async function getStaticPaths() {
-  const [posts, linkedTagNames] = await Promise.all([
-    getPublishedPosts(),
-    getLinkedTagNames(),
-  ]);
+  const [posts, linkedTagNames] = await Promise.all([getPublishedPosts(), getLinkedTagNames()]);
 
   return posts.map((post, index) => ({
     params: { slug: post.id },
@@ -44,12 +37,7 @@ interface Props {
   nextPost: CollectionEntry<'blog'> | null;
 }
 
-const {
-  post,
-  linkedTagNames = [],
-  previousPost,
-  nextPost,
-} = Astro.props as Props;
+const { post, linkedTagNames = [], previousPost, nextPost } = Astro.props as Props;
 const slug = post.id;
 const postTitle = post.data.title;
 const postTags = post.data.tags ?? [];
@@ -109,9 +97,7 @@ if (!bcUrl && hasStreamingLinks) {
 
 let ogImage: string | undefined;
 if (bcCover) {
-  ogImage = bcCover.includes('bcbits.com')
-    ? bcCover.replace(/_5\.jpg$/, '_2.jpg')
-    : bcCover;
+  ogImage = bcCover.includes('bcbits.com') ? bcCover.replace(/_5\.jpg$/, '_2.jpg') : bcCover;
 }
 
 const postDescription = post.data.description || `${postTitle} — music review on poeba.lu`;
@@ -146,61 +132,65 @@ const articleSchema = {
     <PageHeader dateIndex={dateIndex} />
 
     <!-- Header: cover art + metadata -->
-    <div
-      class="post-page-hero flex flex-col items-center md:flex-row gap-6 px-4 sm:px-6 pt-6 pb-6"
-    >
+    <div class="post-page-hero flex flex-col items-center md:flex-row gap-6 px-4 sm:px-6 pt-6 pb-6">
       <!-- Cover art -->
-      {
-        bcCover ? (
-          <button
-            type="button"
-            class="post-cover-trigger flex-none"
-            data-cover-lightbox-open
-            aria-label={`Enlarge cover for ${postTitle}`}
-          >
-            <img
-              src={bcCover}
-              alt={postTitle}
-              class="w-48 sm:w-56 md:w-72 h-auto rounded-md object-contain bg-[var(--theme-bg-elevated)] shadow-2xl"
-              transition:name={`post-${slug}-image`}
-            />
-          </button>
-        ) : (
-          <div
-            class="post-cover-placeholder h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52 flex-none rounded-md flex items-center justify-center text-5xl font-bold text-white shadow-2xl"
+      {bcCover ? (
+        <button
+          type="button"
+          class="post-cover-trigger flex-none"
+          data-cover-lightbox-open
+          aria-label={`Enlarge cover for ${postTitle}`}
+        >
+          <img
+            src={bcCover}
+            alt={postTitle}
+            class="w-48 sm:w-56 md:w-72 h-auto rounded-md object-contain bg-[var(--theme-bg-elevated)] shadow-2xl"
             transition:name={`post-${slug}-image`}
-          >
-            {initials}
-          </div>
-        )
-      }
+          />
+        </button>
+      ) : (
+        <div
+          class="post-cover-placeholder h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52 flex-none rounded-md flex items-center justify-center text-5xl font-bold text-white shadow-2xl"
+          transition:name={`post-${slug}-image`}
+        >
+          {initials}
+        </div>
+      )}
 
       <!-- Metadata -->
       <div class="flex flex-col gap-2 text-center md:text-left">
-        <span class="text-xs font-semibold uppercase tracking-wider theme-text-secondary">Review</span>
+        <span class="text-xs font-semibold uppercase tracking-wider theme-text-secondary">
+          Review
+        </span>
         <h1
-          class:list={['title-clamp font-extrabold leading-none theme-text-primary', { 'title-clamp-long': hasLongTitle }]}
+          class:list={[
+            'title-clamp font-extrabold leading-none theme-text-primary',
+            { 'title-clamp-long': hasLongTitle },
+          ]}
           transition:name={`post-${slug}-title`}
         >
           {postTitle}
         </h1>
         <div class="post-tag-list flex flex-wrap gap-x-1 gap-y-1 mt-1 theme-text-secondary">
-          {
-            postTags.map((tag, index) => {
-              const isLinkedTag = linkedTags.has(tag);
+          {postTags.map((tag, index) => {
+            const isLinkedTag = linkedTags.has(tag);
 
-              return (
-                <span>
-                  {isLinkedTag ? (
-                    <a href={`${base}tags/${encodeTagParam(tag)}`} class="post-tag-link hover:underline inline-block">{tag}</a>
-                  ) : (
-                    <span class="post-tag-text inline-block">{tag}</span>
-                  )}
-                  {index < postTags.length - 1 && <span class="post-tag-separator">|</span>}
-                </span>
-              );
-            })
-          }
+            return (
+              <span>
+                {isLinkedTag ? (
+                  <a
+                    href={`${base}tags/${encodeTagParam(tag)}`}
+                    class="post-tag-link hover:underline inline-block"
+                  >
+                    {tag}
+                  </a>
+                ) : (
+                  <span class="post-tag-text inline-block">{tag}</span>
+                )}
+                {index < postTags.length - 1 && <span class="post-tag-separator">|</span>}
+              </span>
+            );
+          })}
         </div>
         <div class="text-xs theme-text-muted">
           {formattedDate} · {readingMinutes} min read
@@ -211,24 +201,20 @@ const articleSchema = {
     <!-- Player + Content side by side -->
     <div class="post-page-body">
       <!-- Streaming player (left) -->
-      {
-        hasStreamingLinks && (
-          <div class="post-page-player-slot">
-            <StreamingPlayer
-              links={streamingLinks}
-              bandcampAlbumId={bcAlbumId}
-              coverUrl={playerCover}
-              slug={slug}
-              title={postTitle}
-            />
-          </div>
-        )
-      }
+      {hasStreamingLinks && (
+        <div class="post-page-player-slot">
+          <StreamingPlayer
+            links={streamingLinks}
+            bandcampAlbumId={bcAlbumId}
+            coverUrl={playerCover}
+            slug={slug}
+            title={postTitle}
+          />
+        </div>
+      )}
 
       <!-- Content area (right) -->
-      <div
-        class:list={contentClassList}
-      >
+      <div class:list={contentClassList}>
         <div class="post-review-copy markdown-content leading-relaxed theme-text-secondary">
           <Content />
         </div>
@@ -247,53 +233,66 @@ const articleSchema = {
 
         <ListenOn links={streamingLinks} />
 
-        <RelatedPosts
-          currentSlug={slug}
-          tags={postTags}
-        />
+        <RelatedPosts currentSlug={slug} tags={postTags} />
       </div>
     </div>
 
     {(previousPost || nextPost) && (
       <nav class="post-prev-next" aria-label="Review navigation">
         {previousPost ? (
-          <a href={`${base}blog/${previousPost.id}`} class="post-prev-next-link post-prev-next-link-previous">
+          <a
+            href={`${base}blog/${previousPost.id}`}
+            class="post-prev-next-link post-prev-next-link-previous"
+          >
             <span class="post-prev-next-label">← previous review</span>
             <span>{previousPost.data.title}</span>
           </a>
-        ) : <span />}
+        ) : (
+          <span />
+        )}
         {nextPost ? (
-          <a href={`${base}blog/${nextPost.id}`} class="post-prev-next-link post-prev-next-link-next">
+          <a
+            href={`${base}blog/${nextPost.id}`}
+            class="post-prev-next-link post-prev-next-link-next"
+          >
             <span class="post-prev-next-label">next review →</span>
             <span>{nextPost.data.title}</span>
           </a>
-        ) : <span />}
+        ) : (
+          <span />
+        )}
       </nav>
     )}
 
     <!-- Background gradient (context color) -->
     <div class="post-context-backdrop absolute top-0 inset-x-0 h-80 z-[-1]">
-      <div
-        class="post-context-glow el-to-fade transition-all duration-500 absolute inset-0 scale-90 opacity-30 blur-2xl"
-      >
-      </div>
+      <div class="post-context-glow el-to-fade transition-all duration-500 absolute inset-0 scale-90 opacity-30 blur-2xl"></div>
     </div>
   </div>
 
   {lightboxCover && (
     <dialog class="cover-lightbox" data-cover-lightbox>
-      <button type="button" class="cover-lightbox-close" data-cover-lightbox-close aria-label="Close cover">✕</button>
+      <button
+        type="button"
+        class="cover-lightbox-close"
+        data-cover-lightbox-close
+        aria-label="Close cover"
+      >
+        ✕
+      </button>
       <img src={lightboxCover} alt={postTitle} width="1400" height="1400" loading="lazy" />
     </dialog>
   )}
 </Layout>
 
-<style define:vars={{
-  postCoverGradientStart: `${color.accent}cc`,
-  postCoverGradientEnd: color.dark,
-  postContextGradient: `${color.dark}cc`,
-  postContextGlow: `${color.accent}55`,
-}}>
+<style
+  define:vars={{
+    postCoverGradientStart: `${color.accent}cc`,
+    postCoverGradientEnd: color.dark,
+    postContextGradient: `${color.dark}cc`,
+    postContextGlow: `${color.accent}55`,
+  }}
+>
   .title-clamp {
     font-size: clamp(1.5rem, 5vw, 3.5rem);
     line-height: 1.1;
@@ -450,21 +449,13 @@ const articleSchema = {
     outline-offset: 3px;
   }
   .post-cover-placeholder {
-    background: linear-gradient(
-      135deg,
-      var(--postCoverGradientStart),
-      var(--postCoverGradientEnd)
-    );
+    background: linear-gradient(135deg, var(--postCoverGradientStart), var(--postCoverGradientEnd));
   }
   .post-context-backdrop {
     background: linear-gradient(to bottom, var(--postContextGradient), transparent);
   }
   .post-context-glow {
-    background: radial-gradient(
-      ellipse at 30% 0%,
-      var(--postContextGlow),
-      transparent 70%
-    );
+    background: radial-gradient(ellipse at 30% 0%, var(--postContextGlow), transparent 70%);
   }
   @media (max-width: 640px) {
     .post-prev-next {

@@ -1,5 +1,5 @@
 ---
-title: 'µ-Ziq - Tango N''Vectif'
+title: "µ-Ziq - Tango N'Vectif"
 pubDate: 2026-09-25
 tags: ['electronic', 'breakbeat', 'electronica', 'rephlex', 'techno', 'µ-ziq', 'Hove']
 ---

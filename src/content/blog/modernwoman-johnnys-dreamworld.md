@@ -1,5 +1,5 @@
 ---
-title: 'Modern Woman - Johnny''s Dreamworld'
+title: "Modern Woman - Johnny's Dreamworld"
 pubDate: 2026-05-18
 tags: ['alternative', 'experimental', 'rock', 'folk', 'indie rock', 'post-punk', 'London']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'KNARS - Can''t Sleep (Part 1)'
+title: "KNARS - Can't Sleep (Part 1)"
 pubDate: 2026-06-15
 tags: ['electro', 'dance']
 ---

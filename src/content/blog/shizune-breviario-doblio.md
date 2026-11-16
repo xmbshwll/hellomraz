@@ -1,5 +1,5 @@
 ---
-title: 'shizune - Breviario d''oblio'
+title: "shizune - Breviario d'oblio"
 pubDate: 2025-07-07
 tags: ['alternative', 'diy', 'punk', 'post-hardcore', 'screamo', 'skramz', 'lonigo']
 ---

@@ -27,12 +27,12 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.5",
     "autoprefixer": "^10.5.5",
     "postcss": "^8.5.28",
-    "postcss-preset-env": "^9.6.0",
     "prettier": "^3.9.6",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.5.14",
-    "tailwindcss": "^3.4.19"
+    "prettier-plugin-astro": "^1.1.2",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.5"
   }
 }

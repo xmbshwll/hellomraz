@@ -2,11 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
-import {
-  getDateIndex,
-  getLinkedTagNames,
-  getQualifiedTagPages,
-} from '../../lib/blog-data.mjs';
+import { getDateIndex, getLinkedTagNames, getQualifiedTagPages } from '../../lib/blog-data.mjs';
 import { TAG_PAGE_POST_CAP } from '../../lib/feed-limits.mjs';
 import { encodeTagParam } from '../../lib/tag-path';
 import { getCoverThumb } from '../../lib/albums';
@@ -35,9 +31,7 @@ const { posts = [], linkedTagNames = [], tagName } = Astro.props as Props;
 const tag = tagName;
 const linkedTagSet = new Set<string>(linkedTagNames);
 const dateIndex = await getDateIndex();
-const sortedPosts = [...posts].sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const sortedPosts = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const postCount = sortedPosts.length;
 const postCountLabel = postCount === 1 ? 'post' : 'posts';
 
@@ -65,9 +59,7 @@ const encodedTag = encodeTagParam(tag);
           ← tags/
         </a>
 
-        <h1 class="text-2xl font-bold theme-text-primary">
-          #{tag}
-        </h1>
+        <h1 class="text-2xl font-bold theme-text-primary">#{tag}</h1>
         <p class="text-sm mt-1 theme-text-muted">
           {postCount} {postCountLabel}
         </p>
@@ -78,10 +70,7 @@ const encodedTag = encodeTagParam(tag);
         <div class="mb-6 pb-4 border-b theme-border">
           <div class="flex flex-wrap gap-1.5">
             {relatedTags.map((relatedTag) => (
-              <a
-                href={`${base}tags/${encodeTagParam(relatedTag)}`}
-                class="related-tag-chip"
-              >
+              <a href={`${base}tags/${encodeTagParam(relatedTag)}`} class="related-tag-chip">
                 #{relatedTag}
               </a>
             ))}
@@ -91,7 +80,12 @@ const encodedTag = encodeTagParam(tag);
 
       <div class="tag-post-controls">
         <label for="tag-post-filter">Filter reviews</label>
-        <input id="tag-post-filter" type="search" placeholder="artist or album…" autocomplete="off" />
+        <input
+          id="tag-post-filter"
+          type="search"
+          placeholder="artist or album…"
+          autocomplete="off"
+        />
         <label for="tag-post-sort">Sort</label>
         <select id="tag-post-sort">
           <option value="newest">Newest</option>
@@ -126,11 +120,13 @@ const encodedTag = encodeTagParam(tag);
             )}
             <span class="tag-post-content">
               <span class="tag-post-date">
-                {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: '2-digit',
+                })}
               </span>
-              <span class="tag-post-title">
-                {post.data.title}
-              </span>
+              <span class="tag-post-title">{post.data.title}</span>
             </span>
           </a>
         ))}
@@ -139,11 +135,7 @@ const encodedTag = encodeTagParam(tag);
       <!-- Hidden posts loaded on demand -->
       {hasMore && (
         <div class="mt-4 text-center" id="tag-show-more-wrap">
-          <button
-            id="tag-show-more-btn"
-            class="show-more-btn"
-            data-tag-param={encodedTag}
-          >
+          <button id="tag-show-more-btn" class="show-more-btn" data-tag-param={encodedTag}>
             show all {postCount} posts
           </button>
         </div>
@@ -188,7 +180,9 @@ const encodedTag = encodeTagParam(tag);
     border: 1px solid var(--theme-border);
     color: var(--theme-text-muted);
     text-decoration: none;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
   .related-tag-chip:hover {
     border-color: var(--theme-accent);
@@ -202,7 +196,9 @@ const encodedTag = encodeTagParam(tag);
     color: var(--theme-text-muted);
     background: var(--theme-bg-elevated);
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
   .show-more-btn:hover {
     border-color: var(--theme-accent);
@@ -226,7 +222,9 @@ const encodedTag = encodeTagParam(tag);
     border-bottom: 1px solid var(--theme-border);
     color: var(--theme-text-secondary);
     text-decoration: none;
-    transition: color 0.15s, background-color 0.15s;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
   }
   .tag-post-row:hover {
     color: var(--theme-text-primary);
@@ -311,7 +309,9 @@ const encodedTag = encodeTagParam(tag);
       const rows = Array.from(list.querySelectorAll<HTMLElement>('.tag-post-row'));
       rows.sort((left, right) => {
         const attribute = sortByTitle ? 'postTitle' : 'postDate';
-        const comparison = (left.dataset[attribute] || '').localeCompare(right.dataset[attribute] || '');
+        const comparison = (left.dataset[attribute] || '').localeCompare(
+          right.dataset[attribute] || '',
+        );
         return sortByTitle ? comparison : direction * comparison;
       });
       rows.forEach((row) => {
@@ -327,8 +327,7 @@ const encodedTag = encodeTagParam(tag);
 
   function initTagShowMore() {
     const btn = document.getElementById('tag-show-more-btn') as
-      | (HTMLButtonElement & { __tagShowMoreBound?: boolean })
-      | null;
+      (HTMLButtonElement & { __tagShowMoreBound?: boolean }) | null;
     const list = document.getElementById('tag-posts-list');
     const wrap = document.getElementById('tag-show-more-wrap');
     if (!btn || !list || !wrap || btn.__tagShowMoreBound) return;
@@ -339,7 +338,8 @@ const encodedTag = encodeTagParam(tag);
     btn.addEventListener('click', async () => {
       btn.textContent = 'loading…';
       try {
-        const base = document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
+        const base =
+          document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
         const res = await fetch(`${base}api/tag-posts/${tagParam}.json`);
         const remainingPosts: {
           slug: string;
@@ -379,7 +379,11 @@ const encodedTag = encodeTagParam(tag);
 
           const dateSpan = document.createElement('span');
           dateSpan.className = 'tag-post-date';
-          dateSpan.textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+          dateSpan.textContent = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+          });
 
           const titleSpan = document.createElement('span');
           titleSpan.className = 'tag-post-title';

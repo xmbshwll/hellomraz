@@ -32,9 +32,7 @@ function shuffled(items) {
 }
 
 function currentSlug() {
-  return decodeURIComponent(
-    window.location.pathname.replace(/\/+$/, '').split('/').pop() || '',
-  );
+  return decodeURIComponent(window.location.pathname.replace(/\/+$/, '').split('/').pop() || '');
 }
 
 export async function goRandomReview(base = '/') {
@@ -64,9 +62,7 @@ export async function goRandomReview(base = '/') {
 }
 
 export function bindRandomReviewButtons() {
-  document
-    .querySelectorAll('[data-random-review]')
-    .forEach((button) => {
+  document.querySelectorAll('[data-random-review]').forEach((button) => {
     if (button.dataset.randomBound === 'true') return;
     button.dataset.randomBound = 'true';
     button.addEventListener('click', () => {

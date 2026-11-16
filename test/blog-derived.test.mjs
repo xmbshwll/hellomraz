@@ -40,12 +40,10 @@ const posts = [
 ];
 
 test('sortPostsByDateDesc orders newest first', () => {
-  assert.deepEqual(sortPostsByDateDesc(posts).map((post) => post.slug), [
-    'march-a',
-    'march-b',
-    'feb-a',
-    'jan-a',
-  ]);
+  assert.deepEqual(
+    sortPostsByDateDesc(posts).map((post) => post.slug),
+    ['march-a', 'march-b', 'feb-a', 'jan-a'],
+  );
 });
 
 test('buildTagCounts preserves exact tag keys and counts', () => {

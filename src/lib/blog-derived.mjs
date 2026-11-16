@@ -13,9 +13,7 @@
  * @returns {T[]}
  */
 export function sortPostsByDateDesc(posts) {
-  return [...(posts ?? [])].sort(
-    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-  );
+  return [...(posts ?? [])].sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 }
 
 /**
@@ -67,8 +65,6 @@ export function filterPostsByTag(posts, tag) {
   if (!normalizedTag) return [];
 
   return (posts ?? []).filter((post) =>
-    (post.data.tags ?? []).some(
-      (value) => value.toLowerCase() === normalizedTag,
-    ),
+    (post.data.tags ?? []).some((value) => value.toLowerCase() === normalizedTag),
   );
 }

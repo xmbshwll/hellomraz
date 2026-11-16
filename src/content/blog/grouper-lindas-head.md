@@ -1,5 +1,5 @@
 ---
-title: 'Helen - Linda''s Head'
+title: "Helen - Linda's Head"
 pubDate: 2026-10-02
 tags: ['experimental', 'experimental pop', 'horror', 'United States']
 ---

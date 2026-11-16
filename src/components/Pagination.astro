@@ -39,17 +39,11 @@ const hasNext = currentPage < lastPage;
 <nav class="pagination" aria-label="Pagination">
   <!-- Previous -->
   {hasPrev ? (
-    <a
-      href={pageUrl(currentPage - 1)}
-      class="pagination-link"
-      aria-label="Previous page"
-    >
+    <a href={pageUrl(currentPage - 1)} class="pagination-link" aria-label="Previous page">
       ← Prev
     </a>
   ) : (
-    <span class="pagination-link pagination-link--disabled">
-      ← Prev
-    </span>
+    <span class="pagination-link pagination-link--disabled">← Prev</span>
   )}
 
   <!-- Page numbers -->
@@ -64,22 +58,16 @@ const hasNext = currentPage < lastPage;
       <a href={pageUrl(p)} class="pagination-link">
         {p}
       </a>
-    )
+    ),
   )}
 
   <!-- Next -->
   {hasNext ? (
-    <a
-      href={pageUrl(currentPage + 1)}
-      class="pagination-link"
-      aria-label="Next page"
-    >
+    <a href={pageUrl(currentPage + 1)} class="pagination-link" aria-label="Next page">
       Next →
     </a>
   ) : (
-    <span class="pagination-link pagination-link--disabled">
-      Next →
-    </span>
+    <span class="pagination-link pagination-link--disabled">Next →</span>
   )}
 </nav>
 

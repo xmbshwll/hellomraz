@@ -1,5 +1,5 @@
 ---
-title: 'Water From Your Eyes - It''s A Beautiful Place'
+title: "Water From Your Eyes - It's A Beautiful Place"
 pubDate: 2025-09-01
 tags: ['alternative', 'art rock', 'experimental pop']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'Azalea''s Wake - Azalea''s Wake'
+title: "Azalea's Wake - Azalea's Wake"
 pubDate: 2026-02-25
 tags: ['rock', 'emo', 'experimental', 'hardcore', 'jazzcore', 'mathcore', 'mathfusion', 'mathrock']
 ---

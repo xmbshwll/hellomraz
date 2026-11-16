@@ -26,35 +26,44 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   <div class="min-h-full theme-surface" data-post-slug={video.youtubeId}>
     <PageHeader dateIndex={dateIndex} />
     <div class="video-page">
-    <!-- YouTube embed (responsive 16:9) -->
-    <div class="video-embed-wrapper">
-      <iframe
-        src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`}
-        title={video.title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
-    </div>
+      <!-- YouTube embed (responsive 16:9) -->
+      <div class="video-embed-wrapper">
+        <iframe
+          src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0`}
+          title={video.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
 
-    <!-- Video metadata -->
-    <div class="video-meta theme-border">
-      <h1 class="video-title text-xl font-bold theme-text-primary" data-orig-title={video.title}>{video.title}</h1>
-    </div>
+      <!-- Video metadata -->
+      <div class="video-meta theme-border">
+        <h1 class="video-title text-xl font-bold theme-text-primary" data-orig-title={video.title}>
+          {video.title}
+        </h1>
+      </div>
 
-    <!-- Optional description/review text -->
-    <div
-      class="video-description prose theme-text-secondary mt-4 markdown-content"
-      data-orig-desc={video.description || ''}
-      data-original-html={(video.description || '').split('\n').map(p => `<p>${p}</p>`).join('\n')}
-      style={!video.description ? 'display:none' : ''}
-    >
-      {(video.description || '').split('\n').map(p => <p>{p}</p>)}
-    </div>
+      <!-- Optional description/review text -->
+      <div
+        class="video-description prose theme-text-secondary mt-4 markdown-content"
+        data-orig-desc={video.description || ''}
+        data-original-html={(video.description || '')
+          .split('\n')
+          .map((p) => `<p>${p}</p>`)
+          .join('\n')}
+        style={!video.description ? 'display:none' : ''}
+      >
+        {(video.description || '').split('\n').map((p) => (
+          <p>{p}</p>
+        ))}
+      </div>
 
-    <!-- Back to videos list -->
-    <div class="mt-6">
-      <a href={`${base}videos`} class="text-sm theme-text-accent">&larr; back to all videos</a>
-    </div>
+      <!-- Back to videos list -->
+      <div class="mt-6">
+        <a href={`${base}videos`} class="text-sm theme-text-accent">
+          &larr; back to all videos
+        </a>
+      </div>
     </div>
   </div>
 </Layout>

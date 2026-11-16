@@ -1,5 +1,5 @@
 ---
-title: 'BODY WORLD - BODY WORLD DEMO 24'''
+title: "BODY WORLD - BODY WORLD DEMO 24'"
 pubDate: 2024-11-27
 tags: ['punk']
 ---

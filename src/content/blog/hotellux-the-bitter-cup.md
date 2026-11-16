@@ -1,7 +1,17 @@
 ---
 title: 'Hotel Lux - The Bitter Cup'
 pubDate: 2025-11-14
-tags: ['alternative', 'british rock', 'punk', 'alternative rock', 'indie', 'indie rock', 'post-punk', 'pub rock']
+tags:
+  [
+    'alternative',
+    'british rock',
+    'punk',
+    'alternative rock',
+    'indie',
+    'indie rock',
+    'post-punk',
+    'pub rock',
+  ]
 ---
 
 ЗАЕБАТЫЙ ОТЕЛЬ - БОКАЛЬЧИК ОТРАВЫ (2025)

@@ -1,5 +1,5 @@
 ---
-title: 'King''s Command - Take Back the Throne: Deluxe Edition'
+title: "King's Command - Take Back the Throne: Deluxe Edition"
 pubDate: 2026-10-07
 tags: ['punk', 'hardcore', 'Detroit']
 ---

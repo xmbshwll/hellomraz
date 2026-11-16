@@ -1,7 +1,8 @@
 ---
 title: 'Celestial Scourge - Observers of The Inevitable'
 pubDate: 2025-04-01
-tags: ['death metal', 'metal', 'brutal death', 'brutal technical death metal', 'technical death metal']
+tags:
+  ['death metal', 'metal', 'brutal death', 'brutal technical death metal', 'technical death metal']
 ---
 
 НЕБЕСНЫЙ ХЛЫСТ - СВИДЕТЕЛИ НЕВЕДОМОЙ ХУЙНИ (2025)

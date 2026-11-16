@@ -1,5 +1,5 @@
 ---
-title: '''68 - They Are Survived'
+title: "'68 - They Are Survived"
 pubDate: 2026-06-01
 tags: ['rock', 'rock & roll/rockabilly']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'Barry Can''t Swim - Loner'
+title: "Barry Can't Swim - Loner"
 pubDate: 2025-12-22
 tags: ['electronic', 'house', 'scotland', 'balaeric', 'chill', 'jazz']
 ---

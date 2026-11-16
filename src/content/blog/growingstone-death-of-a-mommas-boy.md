@@ -1,5 +1,5 @@
 ---
-title: 'growing stone - Death of a Momma''s Boy'
+title: "growing stone - Death of a Momma's Boy"
 pubDate: 2024-12-19
 tags: ['alternative', 'acoustic guitar', 'nylon string guitar', 'sadcore', 'rochester']
 ---

@@ -1,9 +1,5 @@
 import { getCollection } from 'astro:content';
-import {
-  buildDateIndex,
-  buildTagCounts,
-  sortPostsByDateDesc,
-} from './blog-derived.mjs';
+import { buildDateIndex, buildTagCounts, sortPostsByDateDesc } from './blog-derived.mjs';
 
 /** @typedef {import('astro:content').CollectionEntry<'blog'>} BlogPost */
 /** @typedef {{ name: string; count: number }} QualifiedTag */
@@ -25,34 +21,32 @@ const dateIndexCache = new Map();
  */
 async function loadBlogSnapshot() {
   if (!snapshotPromise) {
-    snapshotPromise = getCollection('blog', ({ data }) => !data.draft).then(
-      (posts) => {
-        const sortedPosts = sortPostsByDateDesc(posts);
-        const tagCounts = buildTagCounts(sortedPosts);
-        const postsByNormalizedTag = new Map();
+    snapshotPromise = getCollection('blog', ({ data }) => !data.draft).then((posts) => {
+      const sortedPosts = sortPostsByDateDesc(posts);
+      const tagCounts = buildTagCounts(sortedPosts);
+      const postsByNormalizedTag = new Map();
 
-        for (const post of sortedPosts) {
-          for (const tag of post.data.tags ?? []) {
-            const normalizedTag = tag.toLowerCase();
-            const items = postsByNormalizedTag.get(normalizedTag) ?? [];
-            items.push(post);
-            postsByNormalizedTag.set(normalizedTag, items);
-          }
+      for (const post of sortedPosts) {
+        for (const tag of post.data.tags ?? []) {
+          const normalizedTag = tag.toLowerCase();
+          const items = postsByNormalizedTag.get(normalizedTag) ?? [];
+          items.push(post);
+          postsByNormalizedTag.set(normalizedTag, items);
         }
+      }
 
-        const qualifiedTags = [...tagCounts.entries()]
-          .filter(([, count]) => count >= 2)
-          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-          .map(([name, count]) => ({ name, count }));
+      const qualifiedTags = [...tagCounts.entries()]
+        .filter(([, count]) => count >= 2)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([name, count]) => ({ name, count }));
 
-        return {
-          posts: sortedPosts,
-          tagCounts,
-          qualifiedTags,
-          postsByNormalizedTag,
-        };
-      },
-    );
+      return {
+        posts: sortedPosts,
+        tagCounts,
+        qualifiedTags,
+        postsByNormalizedTag,
+      };
+    });
   }
 
   return snapshotPromise;

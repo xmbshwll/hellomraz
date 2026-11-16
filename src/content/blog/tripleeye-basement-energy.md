@@ -1,7 +1,17 @@
 ---
 title: 'Them Teeth - Basement Energy'
 pubDate: 2025-12-12
-tags: ['muskeon', 'punk', 'indie rock', 'michigan punk', 'noise rock', 'post-hardcore', 'sludge', 'milwaukee']
+tags:
+  [
+    'muskeon',
+    'punk',
+    'indie rock',
+    'michigan punk',
+    'noise rock',
+    'post-hardcore',
+    'sludge',
+    'milwaukee',
+  ]
 ---
 
 КУСАТ - ПОДВАЛЬНЫЙ ДВИЖ (2025)

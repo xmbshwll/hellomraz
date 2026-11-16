@@ -15,9 +15,18 @@ const safeTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 <a href={`${base}videos/${youtubeId}`} class="post-card video-item" data-youtube-id={youtubeId}>
   <div class="post-card-cover">
-    <img src={thumbUrl} alt={safeTitle} width="300" height="300"
-         class="post-card-img" loading={index < 8 ? 'eager' : 'lazy'} decoding="async">
-    <div class="play-overlay" aria-hidden="true">&#9654;</div>
+    <img
+      src={thumbUrl}
+      alt={safeTitle}
+      width="300"
+      height="300"
+      class="post-card-img"
+      loading={index < 8 ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+    <div class="play-overlay" aria-hidden="true">
+      &#9654;
+    </div>
   </div>
   <div class="post-card-title">{safeTitle}</div>
 </a>

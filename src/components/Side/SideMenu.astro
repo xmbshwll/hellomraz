@@ -25,26 +25,19 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
   <!-- Nav links -->
   <div class="flex-shrink-0 border-b theme-border">
     <ul class="py-1">
-      <SideMenuItem href={base} icon="home">ОПУСТИ ОРУЖИЕ, МРАЗЬ</SideMenuItem>
+      <SideMenuItem href={base} icon="home">
+        ОПУСТИ ОРУЖИЕ, МРАЗЬ
+      </SideMenuItem>
     </ul>
   </div>
 
   <!-- About blurb -->
   <div class="flex-shrink-0 border-b px-4 py-3 theme-border">
-    <h2 class="text-xs font-bold uppercase tracking-widest mb-2 theme-text-muted">
-      ~ about
-    </h2>
-    <p
-      class="text-xs leading-relaxed theme-text-secondary"
-      data-sidebar-about-text
-    >
+    <h2 class="text-xs font-bold uppercase tracking-widest mb-2 theme-text-muted">~ about</h2>
+    <p class="text-xs leading-relaxed theme-text-secondary" data-sidebar-about-text>
       {defaultSidebarAboutCopy.text}
     </p>
-    <a
-      href={`${base}about`}
-      class="sidebar-about-link"
-      data-sidebar-about-link
-    >
+    <a href={`${base}about`} class="sidebar-about-link" data-sidebar-about-link>
       {defaultSidebarAboutCopy.link}
     </a>
   </div>
@@ -52,32 +45,22 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
   <!-- Recent posts -->
   <div class="flex-1 overflow-y-auto min-h-0">
     <div class="sticky top-0 px-4 pt-3 pb-2 z-10 border-b theme-base theme-border">
-      <h2 class="text-xs font-bold uppercase tracking-widest theme-text-muted">
-        ~ recent
-      </h2>
+      <h2 class="text-xs font-bold uppercase tracking-widest theme-text-muted">~ recent</h2>
     </div>
     <ul class="pb-3" data-side-menu-list>
-      {
-        initialPosts.map((post) => (
-          <li>
-            <SideItemCard post={post} />
-          </li>
-        ))
-      }
+      {initialPosts.map((post) => (
+        <li>
+          <SideItemCard post={post} />
+        </li>
+      ))}
     </ul>
-    {
-      hasMore && (
-        <div class="px-4 pb-3" data-side-menu-load-more-wrap>
-          <button
-            class="load-more-btn"
-            type="button"
-            data-side-menu-load-more-btn
-          >
-            Load more
-          </button>
-        </div>
-      )
-    }
+    {hasMore && (
+      <div class="px-4 pb-3" data-side-menu-load-more-wrap>
+        <button class="load-more-btn" type="button" data-side-menu-load-more-btn>
+          Load more
+        </button>
+      </div>
+    )}
     <div class="px-4 pb-3">
       <button
         type="button"
@@ -95,7 +78,14 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <rect x="4.6" y="4.6" width="10.8" height="10.8" rx="2" transform="rotate(45 10 10)"></rect>
+          <rect
+            x="4.6"
+            y="4.6"
+            width="10.8"
+            height="10.8"
+            rx="2"
+            transform="rotate(45 10 10)"
+          ></rect>
           <circle cx="8.6" cy="8.6" r="0.9" fill="currentColor" stroke="none"></circle>
           <circle cx="11.4" cy="11.4" r="0.9" fill="currentColor" stroke="none"></circle>
           <rect x="12" y="12" width="9" height="9" rx="1.6"></rect>
@@ -145,7 +135,9 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
   }
   .random-review-btn:hover {
     border-color: var(--theme-accent);
@@ -158,10 +150,7 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 </style>
 
 <script>
-  import {
-    getCurrentSiteLang,
-    getSiteCopy,
-  } from '../../lib/site-i18n.mjs';
+  import { getCurrentSiteLang, getSiteCopy } from '../../lib/site-i18n.mjs';
 
   interface SidebarPost {
     slug: string;
@@ -178,9 +167,7 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
   const BATCH = 12;
 
   function getRoots(): HTMLElement[] {
-    return Array.from(
-      document.querySelectorAll<HTMLElement>('[data-side-menu]'),
-    );
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-side-menu]'));
   }
 
   function getInitialCount(root: HTMLElement): number {
@@ -233,9 +220,7 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 
   function setButtonText(text: string) {
     for (const root of getRoots()) {
-      const button = root.querySelector<HTMLButtonElement>(
-        '[data-side-menu-load-more-btn]',
-      );
+      const button = root.querySelector<HTMLButtonElement>('[data-side-menu-load-more-btn]');
       if (button) button.textContent = text;
     }
   }
@@ -245,9 +230,7 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 
     for (const root of getRoots()) {
       const wrap = root.querySelector<HTMLElement>('[data-side-menu-load-more-wrap]');
-      const button = root.querySelector<HTMLButtonElement>(
-        '[data-side-menu-load-more-btn]',
-      );
+      const button = root.querySelector<HTMLButtonElement>('[data-side-menu-load-more-btn]');
 
       if (wrap) {
         wrap.hidden = loaded >= allPosts.length;

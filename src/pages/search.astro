@@ -12,12 +12,21 @@ const dateIndex = await getDateIndex();
   <div class="search-page theme-surface">
     <PageHeader dateIndex={dateIndex} />
     <main class="search-page-content" data-search-page data-base={base} data-query={query}>
-      <a href={base} class="search-back theme-text-accent">← home</a>
+      <a href={base} class="search-back theme-text-accent">
+        ← home
+      </a>
       <h1 class="search-title theme-text-primary">$ search</h1>
       <form class="search-page-form" role="search">
         <label for="search-page-input">Search artist or album</label>
         <div class="search-page-input-row">
-          <input id="search-page-input" name="q" type="search" value={query} autocomplete="off" placeholder="artist or album…" />
+          <input
+            id="search-page-input"
+            name="q"
+            type="search"
+            value={query}
+            autocomplete="off"
+            placeholder="artist or album…"
+          />
           <button type="submit">search</button>
         </div>
       </form>
@@ -43,13 +52,17 @@ const dateIndex = await getDateIndex();
   };
 
   function escapeHtml(value: string) {
-    return value.replace(/[&<>"']/g, (character) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    })[character] ?? character);
+    return value.replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[character] ?? character,
+    );
   }
 
   async function initSearchPage() {
@@ -79,17 +92,23 @@ const dateIndex = await getDateIndex();
     function render() {
       const query = input.value.trim();
       const matches = searchEntries(entries, query, 100);
-      summary.textContent = query ? `${matches.length} result${matches.length === 1 ? '' : 's'}` : 'Type to search all reviews.';
+      summary.textContent = query
+        ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
+        : 'Type to search all reviews.';
       results.innerHTML = matches.length
-        ? matches.map((entry) => {
-            const primary = escapeHtml(getSearchResultPrimaryLabel(entry));
-            const secondary = escapeHtml(getSearchResultSecondaryLabel(entry));
-            return `<a class="search-page-result" href="${base}blog/${encodeURIComponent(entry.slug).replace(/%2F/g, '/')}">
+        ? matches
+            .map((entry) => {
+              const primary = escapeHtml(getSearchResultPrimaryLabel(entry));
+              const secondary = escapeHtml(getSearchResultSecondaryLabel(entry));
+              return `<a class="search-page-result" href="${base}blog/${encodeURIComponent(entry.slug).replace(/%2F/g, '/')}">
               <span class="search-page-result-title">${primary}</span>
               ${secondary ? `<span class="search-page-result-secondary">${secondary}</span>` : ''}
             </a>`;
-          }).join('')
-        : query ? '<p class="search-empty theme-text-muted">No matching reviews.</p>' : '';
+            })
+            .join('')
+        : query
+          ? '<p class="search-empty theme-text-muted">No matching reviews.</p>'
+          : '';
     }
 
     form.addEventListener('submit', (event) => {

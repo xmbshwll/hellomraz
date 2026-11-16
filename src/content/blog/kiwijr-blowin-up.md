@@ -1,5 +1,5 @@
 ---
-title: 'Kiwi jr - Blowin'' Up'
+title: "Kiwi jr - Blowin' Up"
 pubDate: 2026-08-19
 tags: ['rock', 'indie', 'indie pop', 'indie rock', 'Toronto']
 ---

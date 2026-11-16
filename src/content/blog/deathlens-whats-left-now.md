@@ -1,5 +1,5 @@
 ---
-title: 'Death Lens - What''s Left Now'
+title: "Death Lens - What's Left Now"
 pubDate: 2026-04-24
 tags: ['punk', 'rock', 'garage', 'pop', 'Los Angeles']
 ---

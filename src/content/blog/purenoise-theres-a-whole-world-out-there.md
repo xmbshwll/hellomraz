@@ -1,5 +1,5 @@
 ---
-title: 'Arm''s Length - There''s A Whole World Out There'
+title: "Arm's Length - There's A Whole World Out There"
 pubDate: 2025-05-21
 tags: ['music', 'bandcamp']
 ---

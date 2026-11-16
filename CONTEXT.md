@@ -8,10 +8,10 @@
 - **Streaming Link** — URLs to Bandcamp/Spotify/Apple Music/etc. Stored per album in `albums.json`. #
 - **Translation** — Text translations (EN/DE) stored as flat files in:
   - `public/i18n/en/posts/` — blog post translations
-  - `public/i18n/de/posts/` — blog post translations  
+  - `public/i18n/de/posts/` — blog post translations
   - `public/i18n/en/videos/` — video translations
   - `public/i18n/de/videos/` — video translations
-  Applied via `LangSwitcher` component and `lang-changed` event. Fallback banner if translation missing. #
+    Applied via `LangSwitcher` component and `lang-changed` event. Fallback banner if translation missing. #
 
 ## Patterns#
 

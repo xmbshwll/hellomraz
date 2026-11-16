@@ -30,19 +30,17 @@ if (!links.length) return;
   <h3 class="section-heading">Listen on</h3>
 
   <div class="service-list">
-    {
-      links.map(({ service, url, icon }) => (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class:list={['service-btn', getToneClass(service)]}
-        >
-          <span class="service-icon">{icon}</span>
-          {service}
-        </a>
-      ))
-    }
+    {links.map(({ service, url, icon }) => (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class:list={['service-btn', getToneClass(service)]}
+      >
+        <span class="service-icon">{icon}</span>
+        {service}
+      </a>
+    ))}
   </div>
 </div>
 
@@ -79,7 +77,9 @@ if (!links.length) return;
     text-decoration: none;
     font-size: 13px;
     color: var(--theme-text-primary);
-    transition: background-color 0.2s, transform 0.15s;
+    transition:
+      background-color 0.2s,
+      transform 0.15s;
   }
 
   .service-btn:hover {

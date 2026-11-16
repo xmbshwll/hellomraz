@@ -9,8 +9,10 @@
 export function buildBandcampEmbedUrl(bandcampAlbumId, options = {}) {
   const { tracklist = false, artwork = 'default' } = options;
 
+  // Bandcamp now requires the versioned v=2 embed path; the legacy
+  // unversioned one no longer renders reliably.
   const parts = [
-    `https://bandcamp.com/EmbeddedPlayer/album=${bandcampAlbumId}`,
+    `https://bandcamp.com/EmbeddedPlayer/v=2/album=${bandcampAlbumId}`,
     'size=large',
     'bgcol=181818',
     'linkcol=22c55e',
@@ -71,8 +73,7 @@ const FLOATING_STREAMING_PLAYER_CONTENT_HEIGHTS = {
 export function getFloatingStreamingPlayerContentHeight(service) {
   return Math.max(
     FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
-    FLOATING_STREAMING_PLAYER_CONTENT_HEIGHTS[service] ??
-      FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+    FLOATING_STREAMING_PLAYER_CONTENT_HEIGHTS[service] ?? FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
   );
 }
 
@@ -81,8 +82,7 @@ export function getFloatingStreamingPlayerContentHeight(service) {
  */
 export function supportsFloatingTracklistScroll(service) {
   return (
-    getFloatingStreamingPlayerContentHeight(service) >
-    FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT
+    getFloatingStreamingPlayerContentHeight(service) > FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT
   );
 }
 
@@ -91,15 +91,9 @@ export function supportsFloatingTracklistScroll(service) {
  * @param {'inline' | 'floating'} [mode]
  * @param {string} [chromeStyle]
  */
-export function buildStreamingPlayerFrameStyle(
-  service,
-  mode = 'floating',
-  chromeStyle = '',
-) {
+export function buildStreamingPlayerFrameStyle(service, mode = 'floating', chromeStyle = '') {
   const height =
-    mode === 'floating'
-      ? `${getFloatingStreamingPlayerContentHeight(service)}px`
-      : '100%';
+    mode === 'floating' ? `${getFloatingStreamingPlayerContentHeight(service)}px` : '100%';
   const minHeight = mode === 'floating' ? height : '100%';
 
   return `border:0; width:100%; height:${height}; min-height:${minHeight}; display:block; ${chromeStyle}`;
@@ -109,9 +103,7 @@ export function buildStreamingPlayerFrameStyle(
  * @param {Array<{ service: string }>} players
  */
 export function getInitialStreamingPlayerIndex(players) {
-  const bandcampIndex = (players ?? []).findIndex(
-    (player) => player.service === 'Bandcamp',
-  );
+  const bandcampIndex = (players ?? []).findIndex((player) => player.service === 'Bandcamp');
   return bandcampIndex >= 0 ? bandcampIndex : 0;
 }
 
@@ -121,19 +113,12 @@ export function getInitialStreamingPlayerIndex(players) {
  * @param {{ allowReplace?: boolean }} [options]
  * @returns {'activate' | 'reuse' | 'replace' | 'preserve'}
  */
-export function resolveStreamingPlayerActivation(
-  currentState,
-  request,
-  options = {},
-) {
+export function resolveStreamingPlayerActivation(currentState, request, options = {}) {
   if (!currentState) {
     return 'activate';
   }
 
-  if (
-    currentState.slug === request.slug &&
-    currentState.index === request.index
-  ) {
+  if (currentState.slug === request.slug && currentState.index === request.index) {
     return 'reuse';
   }
 
@@ -166,8 +151,10 @@ export function getStreamingPlayerUiState(currentState, slug) {
  * @param {string} slug
  */
 export function shouldAutoRestoreStreamingPlayer(currentState, slug) {
-  return !!currentState &&
+  return (
+    !!currentState &&
     currentState.slug === slug &&
     currentState.mode === 'floating' &&
-    !currentState.pinned;
+    !currentState.pinned
+  );
 }

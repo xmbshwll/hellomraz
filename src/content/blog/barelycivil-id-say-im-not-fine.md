@@ -1,5 +1,5 @@
 ---
-title: 'Barely Civil - I''d Say I''m Not Fine'
+title: "Barely Civil - I'd Say I'm Not Fine"
 pubDate: 2024-12-18
 tags: ['alternative', 'emo', 'indie rock', 'post-rock', 'milwaukee']
 ---

@@ -1,7 +1,19 @@
 ---
 title: 'GUNNER - Reality Soldier'
 pubDate: 2026-03-17
-tags: ['perth', 'punk', 'australia', 'energy', 'greatest label of all time', 'hardcore', 'iron lung', 'iron lung records', 'negative hardcore', 'Seattle']
+tags:
+  [
+    'perth',
+    'punk',
+    'australia',
+    'energy',
+    'greatest label of all time',
+    'hardcore',
+    'iron lung',
+    'iron lung records',
+    'negative hardcore',
+    'Seattle',
+  ]
 ---
 
 СТРЕЛЯЛА - СОЛДАТ СПЕЦОТРЯДА "ПО ЕБАЛУ" (2026)

@@ -4,80 +4,80 @@
 
 /* === Default: Nord Dark Theme === */
 :root,
-[data-theme="dark"],
-[data-theme="nord"] {
-  --theme-bg-base: #2E3440;
-  --theme-bg-surface: #3B4252;
-  --theme-bg-elevated: #434C5E;
-  --theme-bg-hover: #4C566A;
-  --theme-bg-active: #4C566A;
+[data-theme='dark'],
+[data-theme='nord'] {
+  --theme-bg-base: #2e3440;
+  --theme-bg-surface: #3b4252;
+  --theme-bg-elevated: #434c5e;
+  --theme-bg-hover: #4c566a;
+  --theme-bg-active: #4c566a;
 
-  --theme-text-primary: #ECEFF4;
-  --theme-text-secondary: #D8DEE9;
+  --theme-text-primary: #eceff4;
+  --theme-text-secondary: #d8dee9;
   --theme-text-muted: #7b88a1;
-  --theme-text-inverted: #2E3440;
+  --theme-text-inverted: #2e3440;
 
-  --theme-border: #4C566A;
-  --theme-border-subtle: #434C5E;
+  --theme-border: #4c566a;
+  --theme-border-subtle: #434c5e;
 
-  --theme-accent: #88C0D0;
-  --theme-accent-hover: #8FBCBB;
-  --theme-accent-tag-bg: #434C5E;
-  --theme-accent-tag-text: #D8DEE9;
+  --theme-accent: #88c0d0;
+  --theme-accent-hover: #8fbcbb;
+  --theme-accent-tag-bg: #434c5e;
+  --theme-accent-tag-text: #d8dee9;
 
-  --theme-code-bg: #2E3440;
-  --theme-code-text: #D8DEE9;
-  --theme-code-inline-bg: #3B4252;
-  --theme-code-inline-text: #BF616A;
+  --theme-code-bg: #2e3440;
+  --theme-code-text: #d8dee9;
+  --theme-code-inline-bg: #3b4252;
+  --theme-code-inline-text: #bf616a;
 
-  --theme-blockquote-bg: #3B4252;
-  --theme-blockquote-border: #81A1C1;
+  --theme-blockquote-bg: #3b4252;
+  --theme-blockquote-border: #81a1c1;
 
-  --theme-success: #A3BE8C;
-  --theme-warning: #EBCB8B;
-  --theme-error: #BF616A;
+  --theme-success: #a3be8c;
+  --theme-warning: #ebcb8b;
+  --theme-error: #bf616a;
   --theme-shadow: none;
 
   --theme-scrollbar-track: transparent;
-  --theme-scrollbar-thumb: #4C566A;
-  --theme-scrollbar-thumb-hover: #5E81AC;
+  --theme-scrollbar-thumb: #4c566a;
+  --theme-scrollbar-thumb-hover: #5e81ac;
 
   color-scheme: dark;
 }
 
 /* === Light Theme (Nord Light) === */
-[data-theme="light"],
-[data-theme="nord-light"] {
-  --theme-bg-base: #ECEFF4;
-  --theme-bg-surface: #E5E9F0;
-  --theme-bg-elevated: #D8DEE9;
+[data-theme='light'],
+[data-theme='nord-light'] {
+  --theme-bg-base: #eceff4;
+  --theme-bg-surface: #e5e9f0;
+  --theme-bg-elevated: #d8dee9;
   --theme-bg-hover: #c2c8d4;
   --theme-bg-active: #b8bfcc;
 
-  --theme-text-primary: #2E3440;
-  --theme-text-secondary: #3B4252;
-  --theme-text-muted: #4C566A;
-  --theme-text-inverted: #ECEFF4;
+  --theme-text-primary: #2e3440;
+  --theme-text-secondary: #3b4252;
+  --theme-text-muted: #4c566a;
+  --theme-text-inverted: #eceff4;
 
   --theme-border: #c2c8d4;
-  --theme-border-subtle: #D8DEE9;
+  --theme-border-subtle: #d8dee9;
 
-  --theme-accent: #5E81AC;
-  --theme-accent-hover: #81A1C1;
-  --theme-accent-tag-bg: #D8DEE9;
-  --theme-accent-tag-text: #2E3440;
+  --theme-accent: #5e81ac;
+  --theme-accent-hover: #81a1c1;
+  --theme-accent-tag-bg: #d8dee9;
+  --theme-accent-tag-text: #2e3440;
 
-  --theme-code-bg: #2E3440;
-  --theme-code-text: #D8DEE9;
-  --theme-code-inline-bg: #D8DEE9;
-  --theme-code-inline-text: #BF616A;
+  --theme-code-bg: #2e3440;
+  --theme-code-text: #d8dee9;
+  --theme-code-inline-bg: #d8dee9;
+  --theme-code-inline-text: #bf616a;
 
-  --theme-blockquote-bg: #D8DEE9;
-  --theme-blockquote-border: #5E81AC;
+  --theme-blockquote-bg: #d8dee9;
+  --theme-blockquote-border: #5e81ac;
 
-  --theme-success: #A3BE8C;
-  --theme-warning: #EBCB8B;
-  --theme-error: #BF616A;
+  --theme-success: #a3be8c;
+  --theme-warning: #ebcb8b;
+  --theme-error: #bf616a;
   --theme-shadow: none;
 
   --theme-scrollbar-track: transparent;
@@ -88,7 +88,7 @@
 }
 
 /* === Catppuccin Mocha (Dark) === */
-[data-theme="catppuccin-mocha"] {
+[data-theme='catppuccin-mocha'] {
   --theme-bg-base: #1e1e2e;
   --theme-bg-surface: #313244;
   --theme-bg-elevated: #45475a;
@@ -129,7 +129,7 @@
 }
 
 /* === Catppuccin Macchiato (Dark) === */
-[data-theme="catppuccin-macchiato"] {
+[data-theme='catppuccin-macchiato'] {
   --theme-bg-base: #24273a;
   --theme-bg-surface: #363a4f;
   --theme-bg-elevated: #494d64;
@@ -170,7 +170,7 @@
 }
 
 /* === Catppuccin Frappé (Dark) === */
-[data-theme="catppuccin-frappe"] {
+[data-theme='catppuccin-frappe'] {
   --theme-bg-base: #303446;
   --theme-bg-surface: #414559;
   --theme-bg-elevated: #51576d;
@@ -211,7 +211,7 @@
 }
 
 /* === Catppuccin Latte (Light) === */
-[data-theme="catppuccin-latte"] {
+[data-theme='catppuccin-latte'] {
   --theme-bg-base: #eff1f5;
   --theme-bg-surface: #e6e9ef;
   --theme-bg-elevated: #dce0e8;
@@ -252,7 +252,7 @@
 }
 
 /* === Rosé Pine (Dark) === */
-[data-theme="rose-pine"] {
+[data-theme='rose-pine'] {
   --theme-bg-base: #191724;
   --theme-bg-surface: #1f1d2e;
   --theme-bg-elevated: #26233a;
@@ -293,7 +293,7 @@
 }
 
 /* === Rosé Pine Moon (Dark) === */
-[data-theme="rose-pine-moon"] {
+[data-theme='rose-pine-moon'] {
   --theme-bg-base: #232136;
   --theme-bg-surface: #2a273f;
   --theme-bg-elevated: #393552;
@@ -334,7 +334,7 @@
 }
 
 /* === Rosé Pine Dawn (Light) === */
-[data-theme="rose-pine-dawn"] {
+[data-theme='rose-pine-dawn'] {
   --theme-bg-base: #faf4ed;
   --theme-bg-surface: #fffaf3;
   --theme-bg-elevated: #f2e9e1;
@@ -601,42 +601,42 @@
 }
 
 /* ---- Light theme text overrides ---- */
-[data-theme="light"] .text-zinc-900,
-[data-theme="nord-light"] .text-zinc-900,
-[data-theme="catppuccin-latte"] .text-zinc-900,
-[data-theme="rose-pine-dawn"] .text-zinc-900 {
+[data-theme='light'] .text-zinc-900,
+[data-theme='nord-light'] .text-zinc-900,
+[data-theme='catppuccin-latte'] .text-zinc-900,
+[data-theme='rose-pine-dawn'] .text-zinc-900 {
   color: var(--theme-text-primary) !important;
 }
 
-[data-theme="light"] .text-zinc-800,
-[data-theme="nord-light"] .text-zinc-800,
-[data-theme="catppuccin-latte"] .text-zinc-800,
-[data-theme="rose-pine-dawn"] .text-zinc-800 {
+[data-theme='light'] .text-zinc-800,
+[data-theme='nord-light'] .text-zinc-800,
+[data-theme='catppuccin-latte'] .text-zinc-800,
+[data-theme='rose-pine-dawn'] .text-zinc-800 {
   color: var(--theme-text-primary) !important;
 }
 
-[data-theme="light"] .text-zinc-600,
-[data-theme="nord-light"] .text-zinc-600,
-[data-theme="catppuccin-latte"] .text-zinc-600,
-[data-theme="rose-pine-dawn"] .text-zinc-600 {
+[data-theme='light'] .text-zinc-600,
+[data-theme='nord-light'] .text-zinc-600,
+[data-theme='catppuccin-latte'] .text-zinc-600,
+[data-theme='rose-pine-dawn'] .text-zinc-600 {
   color: var(--theme-text-secondary) !important;
 }
 
-[data-theme="light"] .bg-white,
-[data-theme="nord-light"] .bg-white,
-[data-theme="catppuccin-latte"] .bg-white,
-[data-theme="rose-pine-dawn"] .bg-white {
+[data-theme='light'] .bg-white,
+[data-theme='nord-light'] .bg-white,
+[data-theme='catppuccin-latte'] .bg-white,
+[data-theme='rose-pine-dawn'] .bg-white {
   background-color: var(--theme-bg-base) !important;
 }
 
-[data-theme="light"] .bg-zinc-100,
-[data-theme="light"] .bg-zinc-50,
-[data-theme="nord-light"] .bg-zinc-100,
-[data-theme="nord-light"] .bg-zinc-50,
-[data-theme="catppuccin-latte"] .bg-zinc-100,
-[data-theme="catppuccin-latte"] .bg-zinc-50,
-[data-theme="rose-pine-dawn"] .bg-zinc-100,
-[data-theme="rose-pine-dawn"] .bg-zinc-50 {
+[data-theme='light'] .bg-zinc-100,
+[data-theme='light'] .bg-zinc-50,
+[data-theme='nord-light'] .bg-zinc-100,
+[data-theme='nord-light'] .bg-zinc-50,
+[data-theme='catppuccin-latte'] .bg-zinc-100,
+[data-theme='catppuccin-latte'] .bg-zinc-50,
+[data-theme='rose-pine-dawn'] .bg-zinc-100,
+[data-theme='rose-pine-dawn'] .bg-zinc-50 {
   background-color: var(--theme-bg-surface) !important;
 }
 

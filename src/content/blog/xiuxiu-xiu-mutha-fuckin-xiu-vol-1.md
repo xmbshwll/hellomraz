@@ -1,5 +1,5 @@
 ---
-title: 'Xiu Xiu - Xiu Mutha Fuckin'' Xiu: Vol. 1'
+title: "Xiu Xiu - Xiu Mutha Fuckin' Xiu: Vol. 1"
 pubDate: 2026-01-19
 tags: ['electronic', 'experimental', 'indie', 'punk', 'rock']
 ---

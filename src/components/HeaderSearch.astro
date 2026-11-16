@@ -1,5 +1,5 @@
 ---
-const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 ---
 
 <div id="header-search" class="header-search" data-base={base}>
@@ -8,7 +8,9 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       Search artist or album
     </label>
     <div class="header-search-field">
-      <span class="header-search-icon" aria-hidden="true">⌕</span>
+      <span class="header-search-icon" aria-hidden="true">
+        ⌕
+      </span>
       <input
         id="header-search-input"
         class="header-search-input"
@@ -34,13 +36,13 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 </div>
 
 <script>
-  import { createFloatingDropdown } from "../lib/floating-dropdown.mjs";
+  import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
   import {
     getSearchResultPrimaryLabel,
     getSearchResultSecondaryLabel,
     prepareSearchEntries,
     searchEntries,
-  } from "../lib/search.mjs";
+  } from '../lib/search.mjs';
 
   interface SearchRawEntry {
     slug: string;
@@ -59,16 +61,18 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
   const SEARCH_INPUT_DEBOUNCE_MS = 120;
 
-  let cachedBase = "";
+  let cachedBase = '';
   let cachedEntries: PreparedSearchEntry[] | null = null;
   let loadingPromise: Promise<PreparedSearchEntry[]> | null = null;
 
   function navigateInternal(url: string) {
-    const navigate = (window as Window & {
-      __hellomrazNavigate?: (href: string) => Promise<void> | void;
-    }).__hellomrazNavigate;
+    const navigate = (
+      window as Window & {
+        __hellomrazNavigate?: (href: string) => Promise<void> | void;
+      }
+    ).__hellomrazNavigate;
 
-    if (typeof navigate === "function") {
+    if (typeof navigate === 'function') {
       void navigate(url);
       return;
     }
@@ -84,7 +88,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       loadingPromise = fetch(`${base}api/search.json`)
         .then(async (response) => {
           if (!response.ok) {
-            throw new Error("Failed to load search index");
+            throw new Error('Failed to load search index');
           }
           const raw = (await response.json()) as SearchRawEntry[];
           cachedEntries = prepareSearchEntries(raw) as PreparedSearchEntry[];
@@ -99,15 +103,11 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     return loadingPromise;
   }
 
-  function renderMessage(
-    resultsEl: HTMLElement,
-    message: string,
-    kind = "info",
-  ) {
-    resultsEl.innerHTML = "";
+  function renderMessage(resultsEl: HTMLElement, message: string, kind = 'info') {
+    resultsEl.innerHTML = '';
 
-    const empty = document.createElement("div");
-    empty.className = `header-search-message ${kind === "loading" ? "is-loading" : ""}`;
+    const empty = document.createElement('div');
+    empty.className = `header-search-message ${kind === 'loading' ? 'is-loading' : ''}`;
     empty.textContent = message;
     resultsEl.appendChild(empty);
   }
@@ -118,31 +118,31 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     base: string,
     query: string,
   ) {
-    resultsEl.innerHTML = "";
+    resultsEl.innerHTML = '';
 
     if (!matches.length) {
       renderMessage(resultsEl, `no albums for “${query.trim()}”`);
       return;
     }
 
-    const list = document.createElement("div");
-    list.className = "header-search-list";
+    const list = document.createElement('div');
+    list.className = 'header-search-list';
 
     for (const [index, entry] of matches.entries()) {
-      const link = document.createElement("a");
-      link.className = "header-search-result";
+      const link = document.createElement('a');
+      link.className = 'header-search-result';
       link.dataset.searchResultIndex = String(index);
       link.href = `${base}blog/${entry.slug}`;
 
-      const title = document.createElement("span");
-      title.className = "header-search-result-title";
+      const title = document.createElement('span');
+      title.className = 'header-search-result-title';
       title.textContent = getSearchResultPrimaryLabel(entry);
       link.appendChild(title);
 
       const secondary = getSearchResultSecondaryLabel(entry);
       if (secondary) {
-        const meta = document.createElement("span");
-        meta.className = "header-search-result-meta";
+        const meta = document.createElement('span');
+        meta.className = 'header-search-result-meta';
         meta.textContent = secondary;
         link.appendChild(meta);
       }
@@ -160,7 +160,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
   }
 
   function bindHeaderSearch() {
-    const root = document.getElementById("header-search") as
+    const root = document.getElementById('header-search') as
       | (HTMLElement & {
           __headerSearchBound?: boolean;
           __headerSearchReset?: () => void;
@@ -168,27 +168,17 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       | null;
     if (!root || root.__headerSearchBound) return;
 
-    const form = root.querySelector(
-      ".header-search-form",
-    ) as HTMLFormElement | null;
-    const fieldEl = root.querySelector(
-      ".header-search-field",
-    ) as HTMLElement | null;
-    const input = root.querySelector(
-      ".header-search-input",
-    ) as HTMLInputElement | null;
-    const clearBtn = root.querySelector(
-      ".header-search-clear",
-    ) as HTMLButtonElement | null;
-    const resultsEl = root.querySelector(
-      ".header-search-results",
-    ) as HTMLElement | null;
+    const form = root.querySelector('.header-search-form') as HTMLFormElement | null;
+    const fieldEl = root.querySelector('.header-search-field') as HTMLElement | null;
+    const input = root.querySelector('.header-search-input') as HTMLInputElement | null;
+    const clearBtn = root.querySelector('.header-search-clear') as HTMLButtonElement | null;
+    const resultsEl = root.querySelector('.header-search-results') as HTMLElement | null;
 
     if (!form || !fieldEl || !input || !clearBtn || !resultsEl) return;
 
     root.__headerSearchBound = true;
 
-    const base = root.dataset.base || "/";
+    const base = root.dataset.base || '/';
     let requestId = 0;
     let searchTimer: number | undefined;
     let selectedIndex = -1;
@@ -198,7 +188,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       getPanel: () => resultsEl,
       zIndex: 99999,
       position: {
-        align: "start",
+        align: 'start',
         width: (anchorRect) => Math.max(220, anchorRect.width),
         offset: 6,
         viewportPadding: 4,
@@ -207,13 +197,13 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
         flipThreshold: 160,
       },
       onOpenChange(open) {
-        root.classList.toggle("is-open", open);
+        root.classList.toggle('is-open', open);
       },
     });
 
     function resetResults() {
       selectedIndex = -1;
-      resultsEl.innerHTML = "";
+      resultsEl.innerHTML = '';
       floatingSearchResults.close();
     }
 
@@ -225,10 +215,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
       selectedIndex = (selectedIndex + direction + links.length) % links.length;
       links.forEach((link, index) => {
-        link.setAttribute(
-          'aria-selected',
-          index === selectedIndex ? 'true' : 'false',
-        );
+        link.setAttribute('aria-selected', index === selectedIndex ? 'true' : 'false');
       });
       links[selectedIndex].focus();
     }
@@ -242,7 +229,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     function resetSearch() {
       requestId += 1;
       cancelPendingSearch();
-      input.value = "";
+      input.value = '';
       syncClearButton();
       resetResults();
     }
@@ -266,14 +253,8 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
 
     function rememberSearch(query: string) {
       const recent = getRecentSearches();
-      const next = [
-        query,
-        ...recent.filter((item) => item !== query),
-      ].slice(0, 5);
-      localStorage.setItem(
-        'hellomraz-recent-searches',
-        JSON.stringify(next),
-      );
+      const next = [query, ...recent.filter((item) => item !== query)].slice(0, 5);
+      localStorage.setItem('hellomraz-recent-searches', JSON.stringify(next));
     }
 
     function renderRecentSearches() {
@@ -315,7 +296,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       }
 
       if (!cachedEntries) {
-        renderMessage(resultsEl, "searching…", "loading");
+        renderMessage(resultsEl, 'searching…', 'loading');
         floatingSearchResults.open();
       }
 
@@ -334,7 +315,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       }, SEARCH_INPUT_DEBOUNCE_MS);
     }
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       cancelPendingSearch();
       const query = input.value.trim();
@@ -350,7 +331,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       }
     });
 
-    input.addEventListener("focus", () => {
+    input.addEventListener('focus', () => {
       if (!cachedEntries) {
         void loadSearchIndex(base);
       }
@@ -361,24 +342,24 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
       }
     });
 
-    input.addEventListener("input", () => {
+    input.addEventListener('input', () => {
       scheduleResultsUpdate();
     });
 
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowDown") {
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
         event.preventDefault();
         moveSelection(1);
-      } else if (event.key === "ArrowUp") {
+      } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         moveSelection(-1);
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         resetResults();
         input.blur();
       }
     });
 
-    clearBtn.addEventListener("click", () => {
+    clearBtn.addEventListener('click', () => {
       resetSearch();
       input.focus();
     });
@@ -390,7 +371,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
   function handleHeaderSearchPageLoad() {
     bindHeaderSearch();
 
-    const root = document.getElementById("header-search") as
+    const root = document.getElementById('header-search') as
       | (HTMLElement & {
           __headerSearchReset?: () => void;
         })
@@ -398,7 +379,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     root?.__headerSearchReset?.();
   }
 
-  document.addEventListener("astro:page-load", handleHeaderSearchPageLoad);
+  document.addEventListener('astro:page-load', handleHeaderSearchPageLoad);
   bindHeaderSearch();
 </script>
 
@@ -447,8 +428,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
     border-color: var(--theme-accent);
   }
   .header-search-input:focus {
-    box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--theme-accent) 25%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
   }
   .header-search-clear {
     position: absolute;

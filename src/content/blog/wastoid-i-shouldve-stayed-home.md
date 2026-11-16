@@ -1,5 +1,5 @@
 ---
-title: 'Wastoid - I Should''ve Stayed Home'
+title: "Wastoid - I Should've Stayed Home"
 pubDate: 2026-03-02
 tags: []
 ---

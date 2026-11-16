@@ -1,5 +1,5 @@
 ---
-title: 'trait d''union - tristesse préventive'
+title: "trait d'union - tristesse préventive"
 pubDate: 2026-08-27
 tags: ['punk', 'cold wave', 'coldwave', 'new wave', 'post-punk', 'Toulouse']
 ---

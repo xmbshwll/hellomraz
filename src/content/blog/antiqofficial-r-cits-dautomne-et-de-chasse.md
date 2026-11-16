@@ -1,5 +1,5 @@
 ---
-title: 'Cercle du Chêne - Récits d''Automne et de Chasse'
+title: "Cercle du Chêne - Récits d'Automne et de Chasse"
 pubDate: 2025-03-27
 tags: ['black metal', 'death metal', 'metal', 'ambient', 'traditional music', 'angers']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'Sigh - I Saw The World End (Hangman''s Hymn MMXXV)'
+title: "Sigh - I Saw The World End (Hangman's Hymn MMXXV)"
 pubDate: 2025-06-18
 tags: ['black metal', 'death metal', 'metal', 'heavy metal', 'progressive metal']
 ---

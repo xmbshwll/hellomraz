@@ -1,5 +1,5 @@
 ---
-title: 'Softcult - When A Flower Doesn''t Grow'
+title: "Softcult - When A Flower Doesn't Grow"
 pubDate: 2026-02-04
 tags: ['alternative', 'grunge', 'indie rock', 'shoegaze']
 ---

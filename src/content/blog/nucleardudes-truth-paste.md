@@ -1,7 +1,17 @@
 ---
 title: 'NUCLEAR DUDES - Truth Paste'
 pubDate: 2025-10-13
-tags: ['edm', 'industrial metal', 'metal', 'progressive synth metal', 'death metal', 'grind', 'grindcore', 'grindcore powerviolence']
+tags:
+  [
+    'edm',
+    'industrial metal',
+    'metal',
+    'progressive synth metal',
+    'death metal',
+    'grind',
+    'grindcore',
+    'grindcore powerviolence',
+  ]
 ---
 
 ЯДРЕНЫЕ ЧУВАКИ - ЗУБНАЯ ПАСТА С СЫВОРОТКОЙ ПРАВДЫ (2025)

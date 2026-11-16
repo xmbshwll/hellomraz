@@ -1,5 +1,5 @@
 ---
-title: 'I''m the Manager - Sells You Whiplash'
+title: "I'm the Manager - Sells You Whiplash"
 pubDate: 2026-06-09
 tags: ['rock']
 ---

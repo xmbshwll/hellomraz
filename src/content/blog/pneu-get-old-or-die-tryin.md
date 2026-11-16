@@ -1,5 +1,5 @@
 ---
-title: 'pneu - GET OLD OR DIE TRYIN'''
+title: "pneu - GET OLD OR DIE TRYIN'"
 pubDate: 2025-02-20
 tags: ['kids', 'ghettoblaster tropical']
 ---

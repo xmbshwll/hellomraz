@@ -6,7 +6,7 @@ tags: ['anarcho', 'asian', 'diy', 'punk', 'desi', 'disability', 'free palestine'
 
 ПО ПИЗДЕ ВСЯ ЭЛЕКТРОНИКА!!!!!11111
 
-__Reality’s ugly
+**Reality’s ugly
 It’s ugly
 It’s ugly
-Existence is a disease, a disorder to the machine__
+Existence is a disease, a disorder to the machine**

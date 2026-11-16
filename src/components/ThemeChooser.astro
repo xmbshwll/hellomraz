@@ -7,7 +7,9 @@
     aria-haspopup="listbox"
   >
     <span id="theme-chooser-label">theme:dark</span>
-    <span id="theme-chooser-arrow" class="header-control-arrow">▾</span>
+    <span id="theme-chooser-arrow" class="header-control-arrow">
+      ▾
+    </span>
   </button>
 </div>
 
@@ -31,12 +33,7 @@
     { id: 'rose-pine-dawn', label: 'rose-pine-dawn', bg: '#faf4ed', accent: '#286983' },
   ];
 
-  const lightThemes = new Set([
-    'light',
-    'nord-light',
-    'catppuccin-latte',
-    'rose-pine-dawn',
-  ]);
+  const lightThemes = new Set(['light', 'nord-light', 'catppuccin-latte', 'rose-pine-dawn']);
 
   function isLightTheme(theme: string): boolean {
     return lightThemes.has(theme);
@@ -64,10 +61,7 @@
     const swatch = document.createElement('span');
     swatch.className = 'chooser-swatch';
     swatch.style.setProperty('--chooser-swatch-bg', theme.bg ?? 'transparent');
-    swatch.style.setProperty(
-      '--chooser-swatch-accent',
-      theme.accent ?? 'transparent',
-    );
+    swatch.style.setProperty('--chooser-swatch-accent', theme.accent ?? 'transparent');
 
     swatch.append(
       Object.assign(document.createElement('span'), {

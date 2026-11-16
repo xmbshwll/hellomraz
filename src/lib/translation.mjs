@@ -113,9 +113,10 @@ export function setupTranslationListener(getSlug) {
     const contentEl = document.querySelector('.markdown-content');
     if (!contentEl) return;
 
-    const slug = typeof getSlug === 'function'
-      ? getSlug()
-      : contentEl.closest('[data-post-slug]')?.getAttribute('data-post-slug');
+    const slug =
+      typeof getSlug === 'function'
+        ? getSlug()
+        : contentEl.closest('[data-post-slug]')?.getAttribute('data-post-slug');
 
     if (slug) applyTranslationToElement(contentEl, slug);
   });

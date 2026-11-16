@@ -1,7 +1,17 @@
 ---
 title: 'HEAVY PSYCH SOUNDS Records - CONAN - Violence Dimension'
 pubDate: 2025-04-25
-tags: ['rock', 'doom', 'doom metal', 'heavy metal', 'heavy psych', 'psychedelic rock', 'retro rock', 'sludge']
+tags:
+  [
+    'rock',
+    'doom',
+    'doom metal',
+    'heavy metal',
+    'heavy psych',
+    'psychedelic rock',
+    'retro rock',
+    'sludge',
+  ]
 ---
 
 Подавляющее большинство этих произведений, с точки зрения копирайта являющихся пиратскими, написано под псевдонимами фантастами, в частности, Мартьяновым, Глумовым, Хаецкой и другими. На 2007 год Сага о Конане, выпущенная этими издательствами, включала следующие книги:

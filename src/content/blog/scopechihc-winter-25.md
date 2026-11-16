@@ -1,5 +1,5 @@
 ---
-title: 'Scope - Winter ''25'
+title: "Scope - Winter '25"
 pubDate: 2025-04-30
 tags: ['punk', 'democore', 'hardcore']
 ---

@@ -1,5 +1,5 @@
 ---
-title: 'Goat - The Human Language ''Goat'' Tape'
+title: "Goat - The Human Language 'Goat' Tape"
 pubDate: 2025-10-13
 tags: ['rock', 'alternative', 'psychedelic', 'korpilombolo']
 ---

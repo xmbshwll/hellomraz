@@ -41,9 +41,7 @@ const topTag = getTopSharedTag(tags, related);
               class="related-thumb"
             />
           ) : (
-            <div class="related-placeholder">
-              {post.title.charAt(0)}
-            </div>
+            <div class="related-placeholder">{post.title.charAt(0)}</div>
           )}
           <div class="related-info">
             <div class="related-title">{post.title}</div>
@@ -82,7 +80,9 @@ const topTag = getTopSharedTag(tags, related);
     border-radius: 8px;
     padding: 8px;
     text-decoration: none;
-    transition: background-color 0.2s, transform 0.15s;
+    transition:
+      background-color 0.2s,
+      transform 0.15s;
   }
   .related-card:hover {
     background-color: var(--theme-bg-elevated);

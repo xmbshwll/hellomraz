@@ -1,12 +1,12 @@
 :root {
-  --color-primary: #88C0D0;
-  --color-background: #2E3440;
-  --color-foreground: #3B4252;
+  --color-primary: #88c0d0;
+  --color-background: #2e3440;
+  --color-foreground: #3b4252;
 }
 
 body {
   background: var(--theme-bg-base, var(--color-background));
-  color: var(--theme-text-primary, #ECEFF4);
+  color: var(--theme-text-primary, #eceff4);
 }
 
 .skip-link {
@@ -35,7 +35,7 @@ body.mobile-sidebar-open {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--theme-scrollbar-thumb, #4C566A) var(--theme-scrollbar-track, transparent);
+  scrollbar-color: var(--theme-scrollbar-thumb, #4c566a) var(--theme-scrollbar-track, transparent);
 }
 *::-webkit-scrollbar {
   height: 6px;
@@ -45,10 +45,10 @@ body.mobile-sidebar-open {
   background-color: var(--theme-scrollbar-track, transparent);
 }
 *::-webkit-scrollbar-thumb {
-  background-color: var(--theme-scrollbar-thumb, #4C566A);
+  background-color: var(--theme-scrollbar-thumb, #4c566a);
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: var(--theme-scrollbar-thumb-hover, #5E81AC);
+  background-color: var(--theme-scrollbar-thumb-hover, #5e81ac);
 }
 
 /* App shell: use dvh for mobile viewport, fall back to vh */

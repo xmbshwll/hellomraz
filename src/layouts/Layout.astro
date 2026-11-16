@@ -5,10 +5,7 @@ import '../styles/global.css';
 import '../styles/themes.css';
 import SideMenu from '../components/Side/SideMenu.astro';
 import FloatingPlayerDock from '../components/FloatingPlayerDock.astro';
-import {
-  getPublishedPostCount,
-  getRecentPosts,
-} from '../lib/blog-data.mjs';
+import { getPublishedPostCount, getRecentPosts } from '../lib/blog-data.mjs';
 import { SIDEBAR_INITIAL_POSTS } from '../lib/feed-limits.mjs';
 import { SITE_TITLE } from '../consts';
 
@@ -19,12 +16,7 @@ interface Props {
   type?: string;
 }
 
-const {
-  title = 'poeba.lu',
-  description = 'music reviews',
-  image,
-  type = 'website',
-} = Astro.props;
+const { title = 'poeba.lu', description = 'music reviews', image, type = 'website' } = Astro.props;
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://poeba.lu';
@@ -49,12 +41,7 @@ const [recentPosts, totalPosts] = await Promise.all([
   getPublishedPostCount(),
 ]);
 const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
-const lightThemeIds = [
-  'light',
-  'nord-light',
-  'catppuccin-latte',
-  'rose-pine-dawn',
-];
+const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-dawn'];
 ---
 
 <!doctype html>
@@ -62,38 +49,18 @@ const lightThemeIds = [
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/x-icon" href={`${base}favicon.ico`} />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href={`${base}favicon-32x32.png`}
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href={`${base}favicon-16x16.png`}
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href={`${base}apple-touch-icon.png`}
-    />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${base}favicon-32x32.png`} />
+    <link rel="icon" type="image/png" sizes="16x16" href={`${base}favicon-16x16.png`} />
+    <link rel="apple-touch-icon" sizes="180x180" href={`${base}apple-touch-icon.png`} />
     <link rel="manifest" href={`${base}manifest.webmanifest`} />
     <link rel="canonical" href={canonicalUrl} />
     <meta name="application-name" content={SITE_TITLE} />
     <meta name="theme-color" content="#2E3440" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content={SITE_TITLE} />
     <link
       rel="alternate"
@@ -184,27 +151,18 @@ const lightThemeIds = [
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">
+      Skip to content
+    </a>
     <div class="app-shell flex items-stretch theme-base">
       <!-- Mobile sidebar overlay -->
-      <div
-        id="mobile-sidebar-overlay"
-        class="mobile-sidebar-overlay"
-        aria-hidden="true"
-      >
+      <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay" aria-hidden="true">
         <div class="mobile-sidebar-backdrop"></div>
-        <div
-          class="mobile-sidebar-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Site menu"
-        >
+        <div class="mobile-sidebar-panel" role="dialog" aria-modal="true" aria-label="Site menu">
           <div class="mobile-sidebar-header">
-            <button
-              id="mobile-sidebar-close"
-              class="mobile-sidebar-close"
-              aria-label="Close menu">✕</button
-            >
+            <button id="mobile-sidebar-close" class="mobile-sidebar-close" aria-label="Close menu">
+              ✕
+            </button>
           </div>
           <div class="mobile-sidebar-content">
             <SideMenu initialPosts={recentPosts} hasMore={hasMoreRecentPosts} />
@@ -311,8 +269,7 @@ const lightThemeIds = [
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
             const baseUrl =
-              document.querySelector('meta[name="base-url"]')?.getAttribute('content') ||
-              '/';
+              document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
 
             navigator.serviceWorker
               .register(`${baseUrl}sw.js`, { scope: baseUrl })
@@ -372,7 +329,8 @@ const lightThemeIds = [
         if (!overlay) return;
 
         function open() {
-          mobileSidebarWindow.__mobileSidebarReturnFocus = document.activeElement as HTMLElement | null;
+          mobileSidebarWindow.__mobileSidebarReturnFocus =
+            document.activeElement as HTMLElement | null;
           overlay.classList.add('open');
           overlay.setAttribute('aria-hidden', 'false');
           document.body.classList.add('mobile-sidebar-open');
@@ -403,7 +361,9 @@ const lightThemeIds = [
 
             if (event.key !== 'Tab') return;
             const focusable = Array.from(
-              currentOverlay.querySelectorAll<HTMLElement>('button, a, input, select, [tabindex]:not([tabindex="-1"])'),
+              currentOverlay.querySelectorAll<HTMLElement>(
+                'button, a, input, select, [tabindex]:not([tabindex="-1"])',
+              ),
             ).filter((element) => !element.hasAttribute('disabled'));
             if (!focusable.length) return;
 

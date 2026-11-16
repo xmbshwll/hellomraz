@@ -1,5 +1,5 @@
 ---
-title: 'HANGMAN''S CHAIR - Saddiction'
+title: "HANGMAN'S CHAIR - Saddiction"
 pubDate: 2025-02-14
 tags: ['cold doom', 'metal', 'doom', 'sludge']
 ---

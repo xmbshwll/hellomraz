@@ -1,10 +1,10 @@
 ---
 interface Props {
   href: string;
-  icon?: "home" | "search" | "library";
+  icon?: 'home' | 'search' | 'library';
 }
 
-const { href, icon = "home" } = Astro.props;
+const { href, icon = 'home' } = Astro.props;
 
 const icons = {
   home: `<span class="text-sm">⌂</span>`,
@@ -31,7 +31,10 @@ const icons = {
     border-left: 2px solid transparent;
     color: var(--theme-text-muted);
     text-decoration: none;
-    transition: color 0.15s, background-color 0.15s, border-left-color 0.15s;
+    transition:
+      color 0.15s,
+      background-color 0.15s,
+      border-left-color 0.15s;
   }
   .side-menu-link:hover {
     color: var(--theme-text-primary);

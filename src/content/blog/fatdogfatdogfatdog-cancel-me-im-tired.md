@@ -1,5 +1,5 @@
 ---
-title: 'Fat Dog - Cancel Me (I''m Tired)'
+title: "Fat Dog - Cancel Me (I'm Tired)"
 pubDate: 2026-10-07
 tags: ['alternative', 'elctronic', 'London']
 ---

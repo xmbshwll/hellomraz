@@ -30,148 +30,169 @@ const latestExcerpt = latestPost
   <PageHeader dateIndex={dateIndex} />
 
   <div id="playlist-container" class="theme-surface">
-  {latestPost && (
-    <section
-      class="latest-review theme-surface"
-      aria-labelledby="latest-review-heading"
-      data-latest-slug={latestPost.id}
-      data-latest-excerpt={latestExcerpt}
-    >
-      <div class="section-heading-row">
-        <h1 id="latest-review-heading" class="text-lg font-bold theme-text-primary">~ latest drop</h1>
-        <span class="text-sm theme-text-muted">{latestPost.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-      </div>
-      <div class="featured-review">
-        <PostCard post={latestPost} index={0} excerpt={latestExcerpt} />
-      </div>
-      <script is:inline>
-        (() => {
-          const section = document.currentScript?.closest('[data-latest-slug]');
-          if (!section || section.dataset.languageBound === '1') return;
-          section.dataset.languageBound = '1';
+    {latestPost && (
+      <section
+        class="latest-review theme-surface"
+        aria-labelledby="latest-review-heading"
+        data-latest-slug={latestPost.id}
+        data-latest-excerpt={latestExcerpt}
+      >
+        <div class="section-heading-row">
+          <h1 id="latest-review-heading" class="text-lg font-bold theme-text-primary">
+            ~ latest drop
+          </h1>
+          <span class="text-sm theme-text-muted">
+            {latestPost.data.pubDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        </div>
+        <div class="featured-review">
+          <PostCard post={latestPost} index={0} excerpt={latestExcerpt} />
+        </div>
+        <script is:inline>
+          (() => {
+            const section = document.currentScript?.closest('[data-latest-slug]');
+            if (!section || section.dataset.languageBound === '1') return;
+            section.dataset.languageBound = '1';
 
-          let requestId = 0;
-          const updateExcerpt = async () => {
-            const currentRequest = ++requestId;
-            const excerpt = section.querySelector('.post-card-excerpt');
-            if (!excerpt) return;
+            let requestId = 0;
+            const updateExcerpt = async () => {
+              const currentRequest = ++requestId;
+              const excerpt = section.querySelector('.post-card-excerpt');
+              if (!excerpt) return;
 
-            const { latestSlug: slug = '', latestExcerpt: original = '' } = section.dataset;
-            const lang = localStorage.getItem('site-lang') || 'ru';
-            const applyExcerpt = (text) => {
-              if (currentRequest === requestId) excerpt.textContent = text;
+              const { latestSlug: slug = '', latestExcerpt: original = '' } = section.dataset;
+              const lang = localStorage.getItem('site-lang') || 'ru';
+              const applyExcerpt = (text) => {
+                if (currentRequest === requestId) excerpt.textContent = text;
+              };
+
+              if (lang === 'ru') {
+                applyExcerpt(original);
+                return;
+              }
+
+              try {
+                const base =
+                  document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
+                const response = await fetch(`${base}i18n/${lang}/posts/${slug}.txt`);
+                const translated = response.ok ? (await response.text()).trim() : '';
+                applyExcerpt(translated || original);
+              } catch {
+                applyExcerpt(original);
+              }
             };
 
-            if (lang === 'ru') {
-              applyExcerpt(original);
-              return;
-            }
+            window.addEventListener('lang-changed', updateExcerpt);
+            updateExcerpt();
+          })();
+        </script>
+      </section>
+    )}
 
-            try {
-              const base = document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
-              const response = await fetch(`${base}i18n/${lang}/posts/${slug}.txt`);
-              const translated = response.ok ? (await response.text()).trim() : '';
-              applyExcerpt(translated || original);
-            } catch {
-              applyExcerpt(original);
-            }
-          };
-
-          window.addEventListener('lang-changed', updateExcerpt);
-          updateExcerpt();
-        })();
-      </script>
-    </section>
-  )}
-
-  <section class="reviews-section theme-surface" aria-labelledby="reviews-heading">
-    <div class="reviews-header">
-      <button
-        id="reviews-header-toggle"
-        class="reviews-toggle"
-        type="button"
-        aria-expanded="true"
-        aria-controls="reviews-body"
-      >
-        <h2 id="reviews-heading" class="text-lg font-bold theme-text-primary">~ reviews</h2>
-        <span class="reviews-chevron" aria-hidden="true">▾</span>
-      </button>
-      <a
-        href={`${base}blog`}
-        class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
-      >
-        see all →
-      </a>
-    </div>
-    <div class="reviews-body" id="reviews-body">
-      <div
-        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
-        id="more-reviews-grid"
-        data-base={base}
-      >
-        {morePosts.slice(1).map((post, i) => (
-          <PostCard post={post} index={i + 1} />
-        ))}
-      </div>
-
-      <div class="flex justify-center mt-6" id="load-more-reviews-wrap">
+    <section class="reviews-section theme-surface" aria-labelledby="reviews-heading">
+      <div class="reviews-header">
         <button
-          id="load-more-reviews-btn"
-          class="load-more-reviews-btn"
+          id="reviews-header-toggle"
+          class="reviews-toggle"
           type="button"
+          aria-expanded="true"
+          aria-controls="reviews-body"
         >
-          load more
+          <h2 id="reviews-heading" class="text-lg font-bold theme-text-primary">
+            ~ reviews
+          </h2>
+          <span class="reviews-chevron" aria-hidden="true">
+            ▾
+          </span>
         </button>
-      </div>
-    </div>
-  </section>
-
-  {initialVideos.length > 0 && (
-    <aside class="videos-drawer videos-collapsed theme-border" id="home-videos-strip" aria-labelledby="videos-heading">
-      <div class="videos-drawer-tab">
-        <button
-          id="videos-strip-toggle"
-          class="videos-strip-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="home-videos-scroll"
+        <a
+          href={`${base}blog`}
+          class="reviews-link text-sm font-medium touch-target-inline theme-text-accent"
         >
-          <span id="videos-heading">videos</span>
-          <span class="videos-strip-chevron" aria-hidden="true">▾</span>
-        </button>
+          see all →
+        </a>
       </div>
-      <div class="videos-drawer-panel">
-        <div class="videos-drawer-toolbar">
-          <span class="text-lg font-bold theme-text-primary">~ videos</span>
-          <a href={`${base}videos`} class="videos-strip-link text-sm font-medium touch-target-inline theme-text-accent">see all →</a>
-        </div>
-        <div class="videos-strip-body" id="home-videos-scroll">
-          {initialVideos.map((v, i) => (
-            <a
-              href={`${base}videos/${v.youtubeId}`}
-              class="video-strip-card"
-              data-youtube-id={v.youtubeId}
-            >
-              <div class="video-strip-thumb">
-                <img
-                  src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
-                  alt={v.title}
-                  width={320}
-                  height={180}
-                  loading={i < 4 ? 'eager' : 'lazy'}
-                  decoding="async"
-                />
-                <div class="video-strip-play" aria-hidden="true">▶</div>
-              </div>
-              <span class="video-strip-title">{v.title}</span>
-            </a>
+      <div class="reviews-body" id="reviews-body">
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3"
+          id="more-reviews-grid"
+          data-base={base}
+        >
+          {morePosts.slice(1).map((post, i) => (
+            <PostCard post={post} index={i + 1} />
           ))}
         </div>
-      </div>
-    </aside>
-  )}
-  </div>
 
+        <div class="flex justify-center mt-6" id="load-more-reviews-wrap">
+          <button id="load-more-reviews-btn" class="load-more-reviews-btn" type="button">
+            load more
+          </button>
+        </div>
+      </div>
+    </section>
+
+    {initialVideos.length > 0 && (
+      <aside
+        class="videos-drawer videos-collapsed theme-border"
+        id="home-videos-strip"
+        aria-labelledby="videos-heading"
+      >
+        <div class="videos-drawer-tab">
+          <button
+            id="videos-strip-toggle"
+            class="videos-strip-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="home-videos-scroll"
+          >
+            <span id="videos-heading">videos</span>
+            <span class="videos-strip-chevron" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+        </div>
+        <div class="videos-drawer-panel">
+          <div class="videos-drawer-toolbar">
+            <span class="text-lg font-bold theme-text-primary">~ videos</span>
+            <a
+              href={`${base}videos`}
+              class="videos-strip-link text-sm font-medium touch-target-inline theme-text-accent"
+            >
+              see all →
+            </a>
+          </div>
+          <div class="videos-strip-body" id="home-videos-scroll">
+            {initialVideos.map((v, i) => (
+              <a
+                href={`${base}videos/${v.youtubeId}`}
+                class="video-strip-card"
+                data-youtube-id={v.youtubeId}
+              >
+                <div class="video-strip-thumb">
+                  <img
+                    src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
+                    alt={v.title}
+                    width={320}
+                    height={180}
+                    loading={i < 4 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
+                  <div class="video-strip-play" aria-hidden="true">
+                    ▶
+                  </div>
+                </div>
+                <span class="video-strip-title">{v.title}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </aside>
+    )}
+  </div>
 </Layout>
 
 <script>
@@ -271,7 +292,10 @@ const latestExcerpt = latestPost
 
       grid.insertAdjacentHTML(
         'beforeend',
-        posts.slice(loaded, end).map((post) => renderCard(post, base)).join(''),
+        posts
+          .slice(loaded, end)
+          .map((post) => renderCard(post, base))
+          .join(''),
       );
       loaded = end;
 
@@ -371,7 +395,9 @@ const latestExcerpt = latestPost
     color: var(--theme-text-secondary);
     background: var(--theme-bg-elevated);
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
   .load-more-reviews-btn:hover,
   .load-more-reviews-btn:focus-visible {
@@ -499,24 +525,30 @@ const latestExcerpt = latestPost
   .videos-strip-chevron {
     font-size: 1.25rem;
     color: var(--theme-text-muted);
-    transition: transform 0.2s ease, color 0.15s;
+    transition:
+      transform 0.2s ease,
+      color 0.15s;
   }
-  #videos-strip-toggle[aria-expanded="false"] .videos-strip-chevron {
+  #videos-strip-toggle[aria-expanded='false'] .videos-strip-chevron {
     transform: rotate(-90deg);
   }
 
   .reviews-chevron {
     font-size: 1.25rem;
     color: var(--theme-text-muted);
-    transition: transform 0.2s ease, color 0.15s;
+    transition:
+      transform 0.2s ease,
+      color 0.15s;
   }
-  #reviews-header-toggle[aria-expanded="false"] .reviews-chevron {
+  #reviews-header-toggle[aria-expanded='false'] .reviews-chevron {
     transform: rotate(-90deg);
   }
   .reviews-body {
     overflow: hidden;
     max-height: 100000px;
-    transition: max-height 0.3s ease, opacity 0.2s ease;
+    transition:
+      max-height 0.3s ease,
+      opacity 0.2s ease;
     opacity: 1;
   }
   .reviews-body.reviews-collapsed {

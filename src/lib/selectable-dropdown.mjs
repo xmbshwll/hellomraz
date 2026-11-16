@@ -110,9 +110,7 @@ export function mountSelectableDropdown(config) {
     const current = config.getCurrent();
     const currentPanel = ensurePanel();
 
-    const activeOption = Array.from(
-      currentPanel.querySelectorAll('.chooser-option'),
-    ).find(
+    const activeOption = Array.from(currentPanel.querySelectorAll('.chooser-option')).find(
       (optionButton) => optionButton.getAttribute('data-option-value') === current,
     );
 

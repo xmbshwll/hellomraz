@@ -1,5 +1,5 @@
 ---
-title: 'Baby''s Breath - Tough Cookie'
+title: "Baby's Breath - Tough Cookie"
 pubDate: 2026-01-20
 tags: ['punk', 'emoviolence', 'screamo', 'providence']
 ---

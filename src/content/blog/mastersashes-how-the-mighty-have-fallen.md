@@ -1,5 +1,5 @@
 ---
-title: 'Master''s Ashes - How The Mighty Have Fallen'
+title: "Master's Ashes - How The Mighty Have Fallen"
 pubDate: 2026-04-29
 tags: ['metal', 'alternative metal', 'heavy metal', 'metal', 'United States']
 ---

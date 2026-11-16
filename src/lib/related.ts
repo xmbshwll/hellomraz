@@ -14,10 +14,7 @@ export interface RelatedPost {
 
 let cache: Map<string, RelatedPost[]> | null = null;
 
-export async function getRelatedPosts(
-  slug: string,
-  limit = 4,
-): Promise<RelatedPost[]> {
+export async function getRelatedPosts(slug: string, limit = 4): Promise<RelatedPost[]> {
   if (!cache) {
     cache = new Map();
     const posts = await getPublishedPosts();
@@ -77,10 +74,7 @@ export async function getRelatedPosts(
 /**
  * Get the top shared tag name for a heading like "More hardcore"
  */
-export function getTopSharedTag(
-  currentTags: string[],
-  relatedPosts: RelatedPost[],
-): string {
+export function getTopSharedTag(currentTags: string[], relatedPosts: RelatedPost[]): string {
   const currentTagSet = new Set(currentTags.map((tag) => tag.toLowerCase()));
   const counts = new Map<string, number>();
 

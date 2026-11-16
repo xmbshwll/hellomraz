@@ -45,10 +45,7 @@
 
   <div id="floating-player-dock-panel" class="floating-player-dock-panel">
     <div class="floating-player-dock-frame-scroll">
-      <div
-        id="floating-player-dock-frame-host"
-        class="floating-player-dock-frame-host"
-      ></div>
+      <div id="floating-player-dock-frame-host" class="floating-player-dock-frame-host"></div>
     </div>
   </div>
 </div>
@@ -91,8 +88,16 @@
     height: 3.5rem;
     border: 1px solid var(--theme-border);
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent), var(--theme-bg-surface)),
-      radial-gradient(circle at top left, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 60%);
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent),
+        var(--theme-bg-surface)
+      ),
+      radial-gradient(
+        circle at top left,
+        color-mix(in srgb, var(--theme-accent) 12%, transparent),
+        transparent 60%
+      );
     overflow: hidden;
   }
   .floating-player-dock-cover {
@@ -285,10 +290,7 @@
     }) => boolean;
     close: () => void;
     showInline: (slug?: string) => boolean;
-    showFloating: (options?: {
-      expand?: boolean;
-      pinned?: boolean;
-    }) => boolean;
+    showFloating: (options?: { expand?: boolean; pinned?: boolean }) => boolean;
     toggleExpanded: (force?: boolean) => void;
     refresh: () => void;
     getState: () => StreamingPlayerDockState | null;
@@ -421,11 +423,7 @@
       const nextUrl = normalizeUrl(embedUrl);
       const currentChromeStyle = activeIframe?.dataset.chromeStyle || '';
 
-      if (
-        activeIframe &&
-        currentUrl === nextUrl &&
-        currentChromeStyle === chromeStyle
-      ) {
+      if (activeIframe && currentUrl === nextUrl && currentChromeStyle === chromeStyle) {
         return;
       }
 
@@ -473,10 +471,7 @@
       return true;
     }
 
-    function applyIframeStyle(
-      iframe: HTMLIFrameElement,
-      nextState: StreamingPlayerDockState,
-    ) {
+    function applyIframeStyle(iframe: HTMLIFrameElement, nextState: StreamingPlayerDockState) {
       iframe.style.cssText = buildStreamingPlayerFrameStyle(
         nextState.service,
         nextState.mode,
@@ -492,8 +487,7 @@
     function createIframe(nextState: StreamingPlayerDockState) {
       const iframe = document.createElement('iframe');
       iframe.src = nextState.embedUrl;
-      iframe.allow =
-        'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
       iframe.loading = 'eager';
       iframe.setAttribute('seamless', '');
       applyIframeStyle(iframe, nextState);
@@ -650,8 +644,10 @@
     }
 
     function getCurrentPagePlayerSlug() {
-      return document.querySelector<HTMLElement>('.streaming-player[data-player-slug]')?.dataset
-        .playerSlug || '';
+      return (
+        document.querySelector<HTMLElement>('.streaming-player[data-player-slug]')?.dataset
+          .playerSlug || ''
+      );
     }
 
     function requestInlineReset(slug: string) {
@@ -718,10 +714,7 @@
       refresh(true);
     }
 
-    function resolveNextMode(
-      nextMode: 'inline' | 'floating' | undefined,
-      slug: string,
-    ) {
+    function resolveNextMode(nextMode: 'inline' | 'floating' | undefined, slug: string) {
       if (nextMode) {
         return nextMode;
       }

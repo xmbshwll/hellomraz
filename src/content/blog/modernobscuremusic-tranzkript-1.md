@@ -1,7 +1,8 @@
 ---
 title: 'Actress - Tranzkript 1'
 pubDate: 2025-06-16
-tags: ['electronic', 'abstract techno', 'ambient', 'experimental pop', 'leftfield', 'piano', 'techno']
+tags:
+  ['electronic', 'abstract techno', 'ambient', 'experimental pop', 'leftfield', 'piano', 'techno']
 ---
 
 Новый альбом Даррена Каннингема - всегда событие. Как всегда очень кропотливо сделанная электроника, из нового - добавление голоса в композиции. Голос при этом AI генеренный и используется скорее как дополнительный инструмент, а не как рассказчик с членораздельной лирикой.

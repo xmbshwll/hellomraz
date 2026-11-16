@@ -1,7 +1,7 @@
 /**
  * Bandcamp data helpers – reads from centralized albums module.
  */
-import albums from "./albums";
+import albums from './albums';
 
 export interface BandcampEntry {
   url: string;

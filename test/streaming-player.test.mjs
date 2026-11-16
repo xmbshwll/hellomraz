@@ -35,7 +35,7 @@ test('buildBandcampEmbedUrl can build artwork-free detached embeds', () => {
     artwork: 'none',
   });
 
-  assert.match(url, /album=999/);
+  assert.match(url, /\/v=2\/album=999/);
   assert.match(url, /tracklist=true/);
   assert.match(url, /artwork=none/);
 });
@@ -53,7 +53,10 @@ test('buildStreamingPlayers uses one artwork-free Bandcamp embed to preserve pla
 test('buildStreamingPlayers filters out services without embed URLs', () => {
   const players = buildStreamingPlayers(links, null);
 
-  assert.deepEqual(players.map((player) => player.service), ['Spotify']);
+  assert.deepEqual(
+    players.map((player) => player.service),
+    ['Spotify'],
+  );
 });
 
 test('getInitialStreamingPlayerIndex prefers Bandcamp when present', () => {
@@ -105,10 +108,7 @@ test('resolveStreamingPlayerActivation replaces the iframe when switching servic
 
 test('getStreamingPlayerUiState reflects ownership and floating state', () => {
   assert.equal(getStreamingPlayerUiState(null, 'album-a'), 'inactive');
-  assert.equal(
-    getStreamingPlayerUiState({ slug: 'album-a', mode: 'inline' }, 'album-a'),
-    'inline',
-  );
+  assert.equal(getStreamingPlayerUiState({ slug: 'album-a', mode: 'inline' }, 'album-a'), 'inline');
   assert.equal(
     getStreamingPlayerUiState({ slug: 'album-a', mode: 'floating' }, 'album-a'),
     'floating',
@@ -150,8 +150,7 @@ test('floating dock keeps one viewport size while allowing taller tracklist serv
     FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
   );
   assert.ok(
-    getFloatingStreamingPlayerContentHeight('Spotify') >
-      FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
+    getFloatingStreamingPlayerContentHeight('Spotify') > FLOATING_STREAMING_PLAYER_VIEWPORT_HEIGHT,
   );
   assert.ok(
     getFloatingStreamingPlayerContentHeight('SoundCloud') >

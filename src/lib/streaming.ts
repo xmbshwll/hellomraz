@@ -73,9 +73,7 @@ export function getStreamingLinks(slug: string): StreamingLink[] {
     });
   }
 
-  found.sort(
-    (a, b) => SERVICE_PRIORITY.indexOf(a.service) - SERVICE_PRIORITY.indexOf(b.service)
-  );
+  found.sort((a, b) => SERVICE_PRIORITY.indexOf(a.service) - SERVICE_PRIORITY.indexOf(b.service));
 
   return found;
 }

@@ -1,5 +1,5 @@
 ---
-title: 'Yard Act - You''re Gonna Need A Little Music'
+title: "Yard Act - You're Gonna Need A Little Music"
 pubDate: 2026-07-20
 tags: ['alternative', 'rock', 'indie rock', 'post-punk', 'Leeds']
 ---

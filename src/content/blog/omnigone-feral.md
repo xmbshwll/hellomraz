@@ -1,7 +1,8 @@
 ---
 title: 'OMNIGONE - FERAL'
 pubDate: 2024-12-17
-tags: ['punk', 'hardcore', 'hardcore punk', 'ska', 'ska core', 'ska punk', 'skacore', 'straight edge']
+tags:
+  ['punk', 'hardcore', 'hardcore punk', 'ska', 'ska core', 'ska punk', 'skacore', 'straight edge']
 ---
 
 Не большой любитель ска, но скакор люблю и Link 80 люблю всем сердцем. Очень жаль трагическую судьбу Ника Трайны, одного из самых многообещающих панк вокалистов 90х.

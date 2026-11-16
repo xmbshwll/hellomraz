@@ -1,7 +1,22 @@
 ---
 title: 'Last Agony - Death Wave'
 pubDate: 2026-10-23
-tags: ['black metal', 'death metal', 'metal', 'speed metal', 'crust', 'crust punk', 'd-beat', 'dark ambient', 'hardcore', 'hardcore punk', 'industrial punk', 'raw punk', 'Oakland']
+tags:
+  [
+    'black metal',
+    'death metal',
+    'metal',
+    'speed metal',
+    'crust',
+    'crust punk',
+    'd-beat',
+    'dark ambient',
+    'hardcore',
+    'hardcore punk',
+    'industrial punk',
+    'raw punk',
+    'Oakland',
+  ]
 ---
 
 ПОСЛЕДНЯЯ АГОНИЯ - Я ВОЛНА, СМЕРТЕЛЬНАЯ ВОЛНА (2026)

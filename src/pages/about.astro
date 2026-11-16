@@ -33,7 +33,6 @@ function getLinkProps(link: SiteLink) {
     title: link.title ?? link.label,
   };
 }
-
 ---
 
 <Layout title="About" description="О блоге Опусти Оружие, Мразь">
@@ -43,9 +42,7 @@ function getLinkProps(link: SiteLink) {
     <div class="about-page__content">
       <div class="about-page__header">
         <h1 class="about-page__title theme-text-primary">$ whoami</h1>
-        <p class="about-page__subtitle theme-text-muted">
-          music · reviews · underground
-        </p>
+        <p class="about-page__subtitle theme-text-muted">music · reviews · underground</p>
       </div>
 
       <section class="about-panel" aria-labelledby="about-panel-heading">
@@ -58,7 +55,9 @@ function getLinkProps(link: SiteLink) {
         </h2>
 
         <div class="about-copy theme-text-secondary" data-copy-paragraphs>
-          {defaultCopy.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          {defaultCopy.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
         </div>
       </section>
 
@@ -72,39 +71,32 @@ function getLinkProps(link: SiteLink) {
         </h2>
 
         <div class="about-link-groups">
-          {
-            aboutLinkGroups.map((group) => (
-              <section
-                class="about-link-group"
-                aria-labelledby={`about-${group.id}-links-heading`}
+          {aboutLinkGroups.map((group) => (
+            <section class="about-link-group" aria-labelledby={`about-${group.id}-links-heading`}>
+              <h3
+                id={`about-${group.id}-links-heading`}
+                class="about-link-group__title theme-text-muted"
+                data-copy-key={group.headingKey}
               >
-                <h3
-                  id={`about-${group.id}-links-heading`}
-                  class="about-link-group__title theme-text-muted"
-                  data-copy-key={group.headingKey}
-                >
-                  {defaultCopy[group.headingKey]}
-                </h3>
+                {defaultCopy[group.headingKey]}
+              </h3>
 
-                <ul class="about-links-list">
-                  {
-                    group.links.map((link) => {
-                      const linkProps = getLinkProps(link);
+              <ul class="about-links-list">
+                {group.links.map((link) => {
+                  const linkProps = getLinkProps(link);
 
-                      return (
-                        <li>
-                          <a {...linkProps} class="about-action-card">
-                            <span class="about-action-card__label">{link.label}</span>
-                            <span class="about-action-card__value">{link.value}</span>
-                          </a>
-                        </li>
-                      );
-                    })
-                  }
-                </ul>
-              </section>
-            ))
-          }
+                  return (
+                    <li>
+                      <a {...linkProps} class="about-action-card">
+                        <span class="about-action-card__label">{link.label}</span>
+                        <span class="about-action-card__value">{link.value}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
         </div>
       </section>
 
@@ -123,7 +115,9 @@ function getLinkProps(link: SiteLink) {
           rel="noopener noreferrer"
           class="about-action-card about-action-card--support"
         >
-          <span class="about-support__icon" aria-hidden="true">☕</span>
+          <span class="about-support__icon" aria-hidden="true">
+            ☕
+          </span>
           <span class="about-support__body">
             <span class="about-support__title">{BUY_ME_A_COFFEE_LINK.label}</span>
             <span class="about-support__url">{BUY_ME_A_COFFEE_LINK.displayUrl}</span>
@@ -228,11 +222,7 @@ function getLinkProps(link: SiteLink) {
 
   .about-action-card:hover {
     border-color: var(--theme-accent);
-    background-color: color-mix(
-      in srgb,
-      var(--theme-accent) 8%,
-      var(--theme-bg-surface)
-    );
+    background-color: color-mix(in srgb, var(--theme-accent) 8%, var(--theme-bg-surface));
   }
 
   .about-action-card__label {

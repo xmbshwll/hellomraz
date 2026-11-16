@@ -57,7 +57,8 @@ export function getCoverThumb(slug: string, size: 'sm' | 'md' | 'lg' = 'md'): st
 
   // Spotify covers (i.scdn.co or spotifycdn.com)
   if (url.includes('scdn.co') || url.includes('spotifycdn.com')) {
-    const hash = size === 'sm' ? 'ab67616d00004851' : size === 'md' ? 'ab67616d00001e02' : 'ab67616d0000b273';
+    const hash =
+      size === 'sm' ? 'ab67616d00004851' : size === 'md' ? 'ab67616d00001e02' : 'ab67616d0000b273';
     return url.replace(/ab67616d[0-9a-f]{8}/, hash);
   }
 

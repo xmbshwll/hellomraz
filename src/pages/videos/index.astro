@@ -12,7 +12,11 @@ const initialVideos = allVideos.slice(0, VIDEO_STRIP_INITIAL);
 
 function fmtDate(d: string): string {
   try {
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(d).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   } catch {
     return d;
   }
@@ -31,40 +35,40 @@ function fmtDate(d: string): string {
         </p>
       </div>
 
-    <div class="video-list" id="videos-list" data-base={base}>
-      {initialVideos.map((v, i) => (
-        <a href={`${base}videos/${v.youtubeId}`} class="video-row" data-youtube-id={v.youtubeId}>
-          <div class="video-row-thumb">
-            <img
-              src={getVideoThumb(v.youtubeId, 'hq')}
-              alt={v.title}
-              loading={i < 4 ? 'eager' : 'lazy'}
-              decoding="async"
-              width="320"
-              height="180"
-            />
-            <div class="video-row-play" aria-hidden="true">▶</div>
-          </div>
-          <div class="video-row-body">
-            <div class="video-row-title">{v.title}</div>
-            <div class="video-row-meta">
-              <span class="video-row-date">{fmtDate(v.pubDate)}</span>
+      <div class="video-list" id="videos-list" data-base={base}>
+        {initialVideos.map((v, i) => (
+          <a href={`${base}videos/${v.youtubeId}`} class="video-row" data-youtube-id={v.youtubeId}>
+            <div class="video-row-thumb">
+              <img
+                src={getVideoThumb(v.youtubeId, 'hq')}
+                alt={v.title}
+                loading={i < 4 ? 'eager' : 'lazy'}
+                decoding="async"
+                width="320"
+                height="180"
+              />
+              <div class="video-row-play" aria-hidden="true">
+                ▶
+              </div>
             </div>
-            {v.description && (
-              <div class="video-row-desc">{v.description}</div>
-            )}
-          </div>
-        </a>
-      ))}
-    </div>
-
-    {allVideos.length > VIDEO_STRIP_INITIAL && (
-      <div class="flex justify-center mt-6" id="load-more-videos-wrap">
-        <button id="load-more-videos-btn" class="load-more-reviews-btn">
-          load more
-        </button>
+            <div class="video-row-body">
+              <div class="video-row-title">{v.title}</div>
+              <div class="video-row-meta">
+                <span class="video-row-date">{fmtDate(v.pubDate)}</span>
+              </div>
+              {v.description && <div class="video-row-desc">{v.description}</div>}
+            </div>
+          </a>
+        ))}
       </div>
-    )}
+
+      {allVideos.length > VIDEO_STRIP_INITIAL && (
+        <div class="flex justify-center mt-6" id="load-more-videos-wrap">
+          <button id="load-more-videos-btn" class="load-more-reviews-btn">
+            load more
+          </button>
+        </div>
+      )}
     </div>
   </div>
 </Layout>
@@ -94,7 +98,11 @@ function fmtDate(d: string): string {
 
   function fmtDate(d: string): string {
     try {
-      return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      return new Date(d).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
     } catch {
       return d;
     }
@@ -126,14 +134,14 @@ function fmtDate(d: string): string {
     const list = document.getElementById('videos-list');
     const base = list?.dataset.base || '/';
     const res = await fetch(`${base}videos/api/video-cards.json`);
-    allVideos = await res.json() as VideoItem[];
+    allVideos = (await res.json()) as VideoItem[];
     return allVideos;
   }
 
   function appendRows(videos: VideoItem[], base: string) {
     const list = document.getElementById('videos-list');
     if (!list) return;
-    videos.forEach(video => {
+    videos.forEach((video) => {
       list.insertAdjacentHTML('beforeend', renderRow(video, base));
     });
   }
@@ -219,7 +227,10 @@ function fmtDate(d: string): string {
     row.dataset.origStashed = '1';
   }
 
-  function applyRowTranslation(row: HTMLElement, entry: { title: string; description: string } | null) {
+  function applyRowTranslation(
+    row: HTMLElement,
+    entry: { title: string; description: string } | null,
+  ) {
     stashOriginals(row);
     const titleEl = row.querySelector('.video-row-title') as HTMLElement | null;
     const descEl = row.querySelector('.video-row-desc') as HTMLElement | null;
@@ -244,19 +255,19 @@ function fmtDate(d: string): string {
   }
 
   async function applyListTranslations() {
-    const lang = (localStorage.getItem('site-lang') || 'ru');
+    const lang = localStorage.getItem('site-lang') || 'ru';
     const list = document.getElementById('videos-list');
     if (!list) return;
     const rows = Array.from(list.querySelectorAll<HTMLElement>('.video-row'));
 
     if (lang === 'ru') {
-      rows.forEach(r => applyRowTranslation(r, null));
+      rows.forEach((r) => applyRowTranslation(r, null));
       return;
     }
 
     // Fetch all visible row translations in parallel
     const results = await Promise.all(
-      rows.map(r => fetchVideoTxt(r.dataset.youtubeId || '', lang).then(t => ({ row: r, t })))
+      rows.map((r) => fetchVideoTxt(r.dataset.youtubeId || '', lang).then((t) => ({ row: r, t }))),
     );
     results.forEach(({ row, t }) => applyRowTranslation(row, t || null));
   }

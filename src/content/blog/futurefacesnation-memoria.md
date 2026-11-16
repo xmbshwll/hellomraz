@@ -1,7 +1,17 @@
 ---
 title: 'Future Faces - Memoria'
 pubDate: 2025-01-23
-tags: ['alternative', 'electronic rock', 'synthwave and darksynth', 'the cure', 'coldwave', 'darkwave', 'depeche mode', 'electronic music']
+tags:
+  [
+    'alternative',
+    'electronic rock',
+    'synthwave and darksynth',
+    'the cure',
+    'coldwave',
+    'darkwave',
+    'depeche mode',
+    'electronic music',
+  ]
 ---
 
 ЕБАЛЬНИКИ ИЗ БУДУЩЕГО - ПАМЯТЬ (2024)

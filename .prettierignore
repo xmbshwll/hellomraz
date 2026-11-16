@@ -1,0 +1,7 @@
+dist
+.astro
+test-results
+node_modules
+package-lock.json
+src/data/albums.json
+src/data/videos.json

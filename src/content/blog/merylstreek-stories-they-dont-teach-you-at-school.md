@@ -1,5 +1,5 @@
 ---
-title: 'Meryl Streek - Stories They Don''t Teach You At School'
+title: "Meryl Streek - Stories They Don't Teach You At School"
 pubDate: 2026-10-12
 tags: ['electronic', 'irish', 'punk', 'spoken word', 'advant-garde', 'Dublin']
 ---

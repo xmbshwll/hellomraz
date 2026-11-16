@@ -1,5 +1,5 @@
 ---
-title: 'Planning For Burial - It''s Closeness, It''s Easy'
+title: "Planning For Burial - It's Closeness, It's Easy"
 pubDate: 2025-05-30
 tags: ['experimental', 'metal', 'rock', 'ambient', 'dark ambient', 'doom', 'drone', 'gloom']
 ---

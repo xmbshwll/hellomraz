@@ -19,7 +19,16 @@ interface Props {
   linkedTags?: Set<string>;
 }
 
-const { artist, album, tags = [], date, releaseDate, bandcampUrl, primaryLink, linkedTags } = Astro.props;
+const {
+  artist,
+  album,
+  tags = [],
+  date,
+  releaseDate,
+  bandcampUrl,
+  primaryLink,
+  linkedTags,
+} = Astro.props;
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 function hasPage(tag: string): boolean {
@@ -67,30 +76,18 @@ if (!hasContent) return;
             {tag}
           </a>
         ) : (
-          <span class="tag-chip">
-            {tag}
-          </span>
-        )
+          <span class="tag-chip">{tag}</span>
+        ),
       )}
     </div>
   )}
 
   {bandcampUrl ? (
-    <a
-      href={bandcampUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="bc-link"
-    >
+    <a href={bandcampUrl} target="_blank" rel="noopener noreferrer" class="bc-link">
       ⬡ Buy on Bandcamp →
     </a>
   ) : primaryLink ? (
-    <a
-      href={primaryLink.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="bc-link"
-    >
+    <a href={primaryLink.url} target="_blank" rel="noopener noreferrer" class="bc-link">
       Listen on {primaryLink.service} →
     </a>
   ) : null}

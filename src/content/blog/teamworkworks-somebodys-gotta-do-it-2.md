@@ -1,5 +1,5 @@
 ---
-title: 'Team Work - Somebody''s Gotta Do It'
+title: "Team Work - Somebody's Gotta Do It"
 pubDate: 2026-09-01
 tags: ['diy', 'punk', 'automatic style', 'experimental', 'Berlin']
 ---

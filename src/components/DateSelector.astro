@@ -56,20 +56,20 @@ const MONTH_NAMES = [
 
   <select class="ds-select" data-ds-year>
     <option value="">Year</option>
-    {
-      sortedYears.map((y) => (
-        <option value={y} selected={y === currentYear}>
-          {y}
-        </option>
-      ))
-    }
+    {sortedYears.map((y) => (
+      <option value={y} selected={y === currentYear}>
+        {y}
+      </option>
+    ))}
   </select>
 
   <select class="ds-select" data-ds-month disabled>
     <option value="">Month</option>
   </select>
 
-  <button class="ds-go-btn" type="button" data-ds-go disabled>Go</button>
+  <button class="ds-go-btn" type="button" data-ds-go disabled>
+    Go
+  </button>
 
   <span class="ds-sep">│</span>
 
@@ -82,7 +82,9 @@ const MONTH_NAMES = [
       aria-haspopup="listbox"
     >
       <span>#tag</span>
-      <span class="header-control-arrow" data-ds-tag-arrow>▾</span>
+      <span class="header-control-arrow" data-ds-tag-arrow>
+        ▾
+      </span>
     </button>
   </div>
 </div>
@@ -192,9 +194,11 @@ const MONTH_NAMES = [
   const tagDataCache = new Map<string, Promise<TagSummary[]>>();
 
   function navigateInternal(url: string) {
-    const navigate = (window as Window & {
-      __hellomrazNavigate?: (href: string) => Promise<void> | void;
-    }).__hellomrazNavigate;
+    const navigate = (
+      window as Window & {
+        __hellomrazNavigate?: (href: string) => Promise<void> | void;
+      }
+    ).__hellomrazNavigate;
 
     if (typeof navigate === 'function') {
       void navigate(url);
@@ -224,11 +228,7 @@ const MONTH_NAMES = [
     return request;
   }
 
-  function ensureDropdown(
-    root: DateSelectorRoot,
-    tags: TagSummary[],
-    closeDropdown: () => void,
-  ) {
+  function ensureDropdown(root: DateSelectorRoot, tags: TagSummary[], closeDropdown: () => void) {
     if (root.__tagDropdown?.isConnected) {
       return root.__tagDropdown;
     }
@@ -376,9 +376,7 @@ const MONTH_NAMES = [
   }
 
   function initTagPickers() {
-    document
-      .querySelectorAll<DateSelectorRoot>('.date-selector')
-      .forEach(bindTagPicker);
+    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach(bindTagPicker);
   }
 
   if (!(window as DateSelectorWindow).__dateSelectorTagPageLoadBound) {
@@ -419,8 +417,7 @@ const MONTH_NAMES = [
   }
   .ds-select:focus {
     border-color: var(--theme-accent);
-    box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--theme-accent) 25%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
   }
   .ds-go-btn {
     font-size: 0.875rem;
@@ -497,8 +494,7 @@ const MONTH_NAMES = [
   }
   .ds-tag-search:focus {
     border-color: var(--theme-accent);
-    box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--theme-accent) 25%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
   }
   .ds-tag-list {
     overflow-y: auto;

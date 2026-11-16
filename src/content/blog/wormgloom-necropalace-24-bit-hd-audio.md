@@ -1,7 +1,8 @@
 ---
 title: 'Worm - Necropalace (24-bit HD audio)'
 pubDate: 2026-02-16
-tags: ['black metal', 'black swamp crypt metal', 'death doom', 'death metal', 'funeral doom', 'metal']
+tags:
+  ['black metal', 'black swamp crypt metal', 'death doom', 'death metal', 'funeral doom', 'metal']
 ---
 
 ЧЕРВЯК - ДВОРЕЦ СТРАШНОГО НЕКРОМАНТА (2026)

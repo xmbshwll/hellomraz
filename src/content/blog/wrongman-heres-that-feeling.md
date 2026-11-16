@@ -1,5 +1,5 @@
 ---
-title: 'Wrong Man - Here''s That Feeling'
+title: "Wrong Man - Here's That Feeling"
 pubDate: 2026-09-11
 tags: ['rock', 'alternative rock', 'hardcore', 'post-hardcore', 'post-rock', 'punkrock', 'Ghent']
 ---

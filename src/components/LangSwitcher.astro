@@ -7,7 +7,9 @@
     aria-haspopup="listbox"
   >
     <span id="lang-chooser-label">lang:ru</span>
-    <span id="lang-chooser-arrow" class="header-control-arrow">▾</span>
+    <span id="lang-chooser-arrow" class="header-control-arrow">
+      ▾
+    </span>
   </button>
 </div>
 
@@ -27,11 +29,7 @@
 
 <script>
   import { mountSelectableDropdown } from '../lib/selectable-dropdown.mjs';
-  import {
-    getCurrentSiteLang,
-    setCurrentSiteLang,
-    SITE_LANGS,
-  } from '../lib/site-i18n.mjs';
+  import { getCurrentSiteLang, setCurrentSiteLang, SITE_LANGS } from '../lib/site-i18n.mjs';
   import { applyTranslationToElement, setupTranslationListener } from '../lib/translation.mjs';
 
   function getSlug(): string | null {

@@ -9,8 +9,19 @@ import { getDateIndex, getPublishedPosts } from '../../lib/blog-data.mjs';
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 const MONTH_LABELS = [
-  '', 'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -54,7 +65,12 @@ for (const post of page.data) {
             <h1 class="text-3xl font-bold mb-2 theme-text-primary">All Reviews</h1>
             <p class="text-sm theme-text-muted">
               {page.total} releases
-              {page.lastPage > 1 && <span> · Page {page.currentPage} of {page.lastPage}</span>}
+              {page.lastPage > 1 && (
+                <span>
+                  {' '}
+                  · Page {page.currentPage} of {page.lastPage}
+                </span>
+              )}
             </p>
           </div>
           <label class="review-sort-control theme-text-muted">
@@ -69,19 +85,21 @@ for (const post of page.data) {
       </div>
 
       <div id="review-list">
-      {(() => {
-        let globalIndex = 0;
-        return monthGroups.map((group) => (
-          <section id={`month-${group.key}`} data-month-key={group.key} class="mb-8 scroll-mt-4">
-            <h2 class="text-lg font-semibold mb-4 pb-2 border-b theme-text-secondary theme-border">
-              {group.label}
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4">
-              {group.posts.map((post) => <PostCard post={post} index={globalIndex++} />)}
-            </div>
-          </section>
-        ));
-      })()}
+        {(() => {
+          let globalIndex = 0;
+          return monthGroups.map((group) => (
+            <section id={`month-${group.key}`} data-month-key={group.key} class="mb-8 scroll-mt-4">
+              <h2 class="text-lg font-semibold mb-4 pb-2 border-b theme-text-secondary theme-border">
+                {group.label}
+              </h2>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4">
+                {group.posts.map((post) => (
+                  <PostCard post={post} index={globalIndex++} />
+                ))}
+              </div>
+            </section>
+          ));
+        })()}
       </div>
 
       {page.lastPage > 1 && (

@@ -1,5 +1,5 @@
 ---
-title: 'Pleiades - If Your Roots Run Deep, You Can''t Fear The Wind'
+title: "Pleiades - If Your Roots Run Deep, You Can't Fear The Wind"
 pubDate: 2025-03-28
 tags: ['emo', 'rock', 'post-hardcore', 'post-metal', 'postrock', 'manchester']
 ---

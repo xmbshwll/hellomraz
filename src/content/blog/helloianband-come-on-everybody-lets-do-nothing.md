@@ -1,5 +1,5 @@
 ---
-title: 'IAN - Come On Everybody, Let''s Do Nothing!'
+title: "IAN - Come On Everybody, Let's Do Nothing!"
 pubDate: 2025-10-23
 tags: ['experimental', 'doom', 'drone', 'drone metal', 'loud', 'metal', 'noise', 'noise rock']
 ---

@@ -33,4 +33,3 @@ export function getAllVideos(): (VideoEntry & { slug: string })[] {
     .map(([slug, entry]) => ({ ...entry, slug }))
     .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 }
-

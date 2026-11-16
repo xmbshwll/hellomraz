@@ -1,5 +1,5 @@
 ---
-title: 'Quercia - mentre i monsoni curano e scuotono l''erba rimasta,'
+title: "Quercia - mentre i monsoni curano e scuotono l'erba rimasta,"
 pubDate: 2026-03-12
 tags: ['alternative', 'alt rock', 'emo', 'post-rock', 'screamo', 'Italy']
 ---

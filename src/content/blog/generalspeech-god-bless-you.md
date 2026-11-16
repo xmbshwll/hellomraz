@@ -1,7 +1,20 @@
 ---
 title: 'Ejaculators - God Bless You'
 pubDate: 2026-10-06
-tags: ['hardcore', 'japanese hardcore', 'post-punk', 'punk', 'punk rock', 'chicago', 'garage rock', 'hardcore', 'punk', 'raw punk', 'United States']
+tags:
+  [
+    'hardcore',
+    'japanese hardcore',
+    'post-punk',
+    'punk',
+    'punk rock',
+    'chicago',
+    'garage rock',
+    'hardcore',
+    'punk',
+    'raw punk',
+    'United States',
+  ]
 ---
 
 Гейб Пуаро утверждал, что встретил Иисуса, когда провел 18 дней в коме

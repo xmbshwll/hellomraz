@@ -4,10 +4,7 @@
  * The live iframe is owned by the persistent FloatingPlayerDock host.
  */
 import type { StreamingLink } from '../lib/streaming';
-import {
-  buildStreamingPlayers,
-  getInitialStreamingPlayerIndex,
-} from '../lib/streaming-player.mjs';
+import { buildStreamingPlayers, getInitialStreamingPlayerIndex } from '../lib/streaming-player.mjs';
 
 interface Props {
   links: StreamingLink[];
@@ -81,42 +78,44 @@ function iframeChromeStyle(service: string): string {
                     aria-pressed={index === initialIdx ? 'true' : 'false'}
                     title={player.service}
                   >
-                    <span class="player-tab-icon" aria-hidden="true">{player.icon}</span>
+                    <span class="player-tab-icon" aria-hidden="true">
+                      {player.icon}
+                    </span>
                     <span class="player-tab-label">{player.service}</span>
                   </button>
                 );
               })}
             </div>
 
-            {
-              isPrimaryRow && (
-                <button
-                  type="button"
-                  class="player-pin-btn"
-                  data-player-pin
-                  aria-label="Pin player to floating widget"
-                  aria-pressed="false"
-                  title="Pin player to floating widget"
+            {isPrimaryRow && (
+              <button
+                type="button"
+                class="player-pin-btn"
+                data-player-pin
+                aria-label="Pin player to floating widget"
+                aria-pressed="false"
+                title="Pin player to floating widget"
+              >
+                <svg
+                  class="player-pin-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  <svg
-                    class="player-pin-icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 5h5v5"></path>
-                    <path d="M10 14 19 5"></path>
-                    <path d="M19 13v6H5V5h6"></path>
-                  </svg>
-                  <span class="player-pin-label" data-player-pin-label>pin</span>
-                </button>
-              )
-            }
+                  <path d="M14 5h5v5"></path>
+                  <path d="M10 14 19 5"></path>
+                  <path d="M19 13v6H5V5h6"></path>
+                </svg>
+                <span class="player-pin-label" data-player-pin-label>
+                  pin
+                </span>
+              </button>
+            )}
           </div>
         );
       })}
@@ -174,10 +173,7 @@ function iframeChromeStyle(service: string): string {
     }) => boolean;
     close: () => void;
     showInline: (slug?: string) => boolean;
-    showFloating: (options?: {
-      expand?: boolean;
-      pinned?: boolean;
-    }) => boolean;
+    showFloating: (options?: { expand?: boolean; pinned?: boolean }) => boolean;
     toggleExpanded: (force?: boolean) => void;
     refresh: () => void;
     getState: () => StreamingPlayerDockState | null;
@@ -411,7 +407,10 @@ function iframeChromeStyle(service: string): string {
 
     const handleInlineResetRequest = (event: Event) => {
       if (!document.body.contains(container)) {
-        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        window.removeEventListener(
+          'streaming-player-inline-reset-request',
+          handleInlineResetRequest,
+        );
         return;
       }
 
@@ -434,7 +433,10 @@ function iframeChromeStyle(service: string): string {
       if (!document.body.contains(container)) {
         window.removeEventListener('streaming-player-dock-change', handleDockChange);
         window.removeEventListener('streaming-player-dock-ready', handleDockReady);
-        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        window.removeEventListener(
+          'streaming-player-inline-reset-request',
+          handleInlineResetRequest,
+        );
         return;
       }
 
@@ -451,7 +453,10 @@ function iframeChromeStyle(service: string): string {
     const handleDockReady = () => {
       if (!document.body.contains(container)) {
         window.removeEventListener('streaming-player-dock-ready', handleDockReady);
-        window.removeEventListener('streaming-player-inline-reset-request', handleInlineResetRequest);
+        window.removeEventListener(
+          'streaming-player-inline-reset-request',
+          handleInlineResetRequest,
+        );
         return;
       }
       initPlayerSession(container);
@@ -630,8 +635,16 @@ function iframeChromeStyle(service: string): string {
     height: 100%;
     border: 1px solid var(--theme-border);
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent), var(--theme-bg-surface)),
-      radial-gradient(circle at top left, color-mix(in srgb, var(--theme-accent) 12%, transparent), transparent 60%);
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-bg-elevated) 88%, transparent),
+        var(--theme-bg-surface)
+      ),
+      radial-gradient(
+        circle at top left,
+        color-mix(in srgb, var(--theme-accent) 12%, transparent),
+        transparent 60%
+      );
     display: flex;
     align-items: flex-end;
     padding: 1rem;

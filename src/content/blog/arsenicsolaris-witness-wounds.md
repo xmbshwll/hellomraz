@@ -11,10 +11,10 @@ meticulously crafted.
 
 On one side, **Tomorrow I Feel Wrong **unites **Sara Trawöger** and **Kristin Gerwien**, long-time collaborators known for their unique blend of poetic intensity and sonic experimentation.
 
-On the other side, **P/O Massacre**, the duo of **Anton Ponomarev** and **Anton Obrazeena** — has carved out a reputation across Europe’s experimental and noise scenes for their high-voltage performances. Combining guitars, amps, saxophone, electronics and unconventional objects, their sound is an explosive, ever-shifting force, documented on four albums including collaboration with __Merzbow__ and __Alex Buess__.
+On the other side, **P/O Massacre**, the duo of **Anton Ponomarev** and **Anton Obrazeena** — has carved out a reputation across Europe’s experimental and noise scenes for their high-voltage performances. Combining guitars, amps, saxophone, electronics and unconventional objects, their sound is an explosive, ever-shifting force, documented on four albums including collaboration with **Merzbow** and **Alex Buess**.
 
 🎧 [**Listen now**](https://album.link/de/i/1859024007)
 🪙 [**Buy on Bandcamp**](https://arsenicsolaris.bandcamp.com/album/witness-wounds)
 
-__Release date: 09.12.2025
-Catalog number: CT019__
+**Release date: 09.12.2025
+Catalog number: CT019**

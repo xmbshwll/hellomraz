@@ -19,7 +19,9 @@ test('mobile menu opens as dialog and closes with Escape', async ({ page }) => {
 
 test('tag rows show album covers', async ({ page }) => {
   await page.goto('/tags/death$20metal');
-  await expect(page.locator('.tag-post-row').first().locator('.tag-post-cover, .tag-post-cover-placeholder')).toBeVisible();
+  await expect(
+    page.locator('.tag-post-row').first().locator('.tag-post-cover, .tag-post-cover-placeholder'),
+  ).toBeVisible();
 });
 
 test('search page returns review results', async ({ page }) => {
@@ -28,7 +30,10 @@ test('search page returns review results', async ({ page }) => {
 });
 
 test('album player does not overlap article content', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'mobile layout intentionally stacks player above content');
+  test.skip(
+    testInfo.project.name === 'mobile',
+    'mobile layout intentionally stacks player above content',
+  );
   await page.goto('/blog/arabstrapband-half-told-tales/');
   const player = await page.locator('.post-page-player-slot').boundingBox();
   const content = await page.locator('.post-page-content').boundingBox();

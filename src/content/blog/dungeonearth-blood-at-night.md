@@ -1,7 +1,8 @@
 ---
 title: 'Chat Pile (+-) - Blood at Night'
 pubDate: 2025-07-08
-tags: ['ambient', 'chat pile', 'experimental', 'indie', 'metal', 'noise', 'tape loops', 'alternative']
+tags:
+  ['ambient', 'chat pile', 'experimental', 'indie', 'metal', 'noise', 'tape loops', 'alternative']
 ---
 
 **Chat Pile** запустили кассетный лейбл Dungeon Earth и в честь этого дропнули два релиза. Онлайн — только на бэндкемпе.**

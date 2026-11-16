@@ -1,5 +1,5 @@
 ---
-title: 'Swallow''s Rose - The Beginning'
+title: "Swallow's Rose - The Beginning"
 pubDate: 2026-09-23
 tags: ['punk', 'punk rock', 'hardcore', 'post-hardcore', 'punkrock', 'skate punk', 'Tönning']
 ---

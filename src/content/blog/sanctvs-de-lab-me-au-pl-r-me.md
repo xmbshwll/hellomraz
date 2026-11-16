@@ -1,5 +1,5 @@
 ---
-title: 'Sanctvs - De l''Abîme au Plérôme'
+title: "Sanctvs - De l'Abîme au Plérôme"
 pubDate: 2026-02-11
 tags: ['black metal', 'extreme metal', 'metal', 'symphonic black metal']
 ---

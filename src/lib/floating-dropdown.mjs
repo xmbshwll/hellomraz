@@ -34,14 +34,14 @@ export function computeFloatingPosition(anchorRect, options = {}) {
   const viewportWidth = options.viewportWidth ?? 1024;
   const viewportHeight = options.viewportHeight ?? 768;
   const offset = options.offset ?? 4;
-  const align = options.align ?? "start";
+  const align = options.align ?? 'start';
   const flipThreshold = options.flipThreshold ?? 160;
   const maxPanelHeight = options.maxHeight ?? 320;
 
   let width;
-  if (typeof options.width === "function") {
+  if (typeof options.width === 'function') {
     width = options.width(anchorRect);
-  } else if (options.width == null || options.width === "anchor") {
+  } else if (options.width == null || options.width === 'anchor') {
     width = anchorRect.width;
   } else {
     width = options.width;
@@ -51,31 +51,24 @@ export function computeFloatingPosition(anchorRect, options = {}) {
   if (options.maxWidth != null) width = Math.min(width, options.maxWidth);
   width = Math.min(width, Math.max(0, viewportWidth - viewportPadding * 2));
 
-  let left = align === "end" ? anchorRect.right - width : anchorRect.left;
+  let left = align === 'end' ? anchorRect.right - width : anchorRect.left;
   if (left + width > viewportWidth - viewportPadding) {
     left = viewportWidth - width - viewportPadding;
   }
   if (left < viewportPadding) left = viewportPadding;
 
   let top = anchorRect.bottom + offset;
-  let maxHeight = Math.min(
-    maxPanelHeight,
-    Math.max(0, viewportHeight - top - viewportPadding),
-  );
+  let maxHeight = Math.min(maxPanelHeight, Math.max(0, viewportHeight - top - viewportPadding));
 
   if (options.flip !== false) {
-    const aboveAvailable = Math.max(
-      0,
-      anchorRect.top - viewportPadding - offset,
-    );
+    const aboveAvailable = Math.max(0, anchorRect.top - viewportPadding - offset);
     if (maxHeight < flipThreshold && aboveAvailable > maxHeight) {
       maxHeight = Math.min(maxPanelHeight, aboveAvailable);
       top = Math.max(viewportPadding, anchorRect.top - maxHeight - offset);
     }
   }
 
-  if (options.minHeight != null)
-    maxHeight = Math.max(maxHeight, options.minHeight);
+  if (options.minHeight != null) maxHeight = Math.max(maxHeight, options.minHeight);
 
   return {
     left,
@@ -220,7 +213,7 @@ export function createFloatingDropdown(options) {
     }
   }
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener('click', (event) => {
     if (!isOpen) return;
 
     const target = event.target;
@@ -233,12 +226,12 @@ export function createFloatingDropdown(options) {
     close();
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && isOpen) close();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isOpen) close();
   });
 
-  window.addEventListener("resize", schedulePosition);
-  document.addEventListener("scroll", schedulePosition, true);
+  window.addEventListener('resize', schedulePosition);
+  document.addEventListener('scroll', schedulePosition, true);
 
   return {
     open,

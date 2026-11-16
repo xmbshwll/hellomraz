@@ -1,5 +1,5 @@
 ---
-title: 'ZOMBIESHARK! - ANGEL NOISES, YOU''RE SAFE NOW.'
+title: "ZOMBIESHARK! - ANGEL NOISES, YOU'RE SAFE NOW."
 pubDate: 2026-06-05
 tags: ['rock']
 ---

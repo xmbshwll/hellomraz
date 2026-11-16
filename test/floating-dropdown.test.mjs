@@ -1,9 +1,9 @@
-import test from "node:test";
-import assert from "node:assert/strict";
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
-import { computeFloatingPosition } from "../src/lib/floating-dropdown.mjs";
+import { computeFloatingPosition } from '../src/lib/floating-dropdown.mjs';
 
-test("computeFloatingPosition matches anchor width and stays below when space allows", () => {
+test('computeFloatingPosition matches anchor width and stays below when space allows', () => {
   const position = computeFloatingPosition(
     {
       left: 100,
@@ -14,7 +14,7 @@ test("computeFloatingPosition matches anchor width and stays below when space al
       height: 44,
     },
     {
-      width: "anchor",
+      width: 'anchor',
       offset: 6,
       viewportWidth: 1280,
       viewportHeight: 900,
@@ -31,7 +31,7 @@ test("computeFloatingPosition matches anchor width and stays below when space al
   });
 });
 
-test("computeFloatingPosition flips above when bottom space is too small", () => {
+test('computeFloatingPosition flips above when bottom space is too small', () => {
   const position = computeFloatingPosition(
     {
       left: 24,
@@ -60,7 +60,7 @@ test("computeFloatingPosition flips above when bottom space is too small", () =>
   });
 });
 
-test("computeFloatingPosition end-aligns and clamps within viewport", () => {
+test('computeFloatingPosition end-aligns and clamps within viewport', () => {
   const position = computeFloatingPosition(
     {
       left: 8,
@@ -71,7 +71,7 @@ test("computeFloatingPosition end-aligns and clamps within viewport", () => {
       height: 44,
     },
     {
-      align: "end",
+      align: 'end',
       width: 200,
       offset: 4,
       viewportWidth: 220,
@@ -89,7 +89,7 @@ test("computeFloatingPosition end-aligns and clamps within viewport", () => {
   });
 });
 
-test("computeFloatingPosition respects min width and min height", () => {
+test('computeFloatingPosition respects min width and min height', () => {
   const position = computeFloatingPosition(
     {
       left: 20,
@@ -100,7 +100,7 @@ test("computeFloatingPosition respects min width and min height", () => {
       height: 44,
     },
     {
-      width: "anchor",
+      width: 'anchor',
       minWidth: 220,
       minHeight: 120,
       maxHeight: 320,
