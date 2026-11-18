@@ -1,7 +1,7 @@
 ---
 title: 'Shaved Ape - Loveletter to Hardcore'
 pubDate: 2026-05-28
-tags: ['punk', 'hardcore', 'pittsburgh', 'ushc', 'Raleigh']
+tags: ['punk', 'hardcore', 'pittsburgh', 'ushc']
 ---
 
 СКИНХЭД - ЛЮБИ ХАРДКОР (2026)

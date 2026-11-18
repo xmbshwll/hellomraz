@@ -1,7 +1,7 @@
 ---
 title: 'Arca - XXXXX'
 pubDate: 2026-07-30
-tags: ['alternative', 'electronic', 'Caracas']
+tags: ['alternative', 'electronic']
 ---
 
 Кажется уже все, кто хотел, послушали в рамках стрима-перформанса с предпрослушиванием. Но если нет - официальный релиз альбома. Как всегда у Arca - высший пилотаж.

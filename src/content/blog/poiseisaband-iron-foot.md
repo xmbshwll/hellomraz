@@ -1,7 +1,7 @@
 ---
 title: 'POISE - IRON FOOT'
 pubDate: 2026-10-06
-tags: ['punk', 'chain punk', 'd-beat', 'd-beat punk', 'hardcore punk', 'United States']
+tags: ['punk', 'chain punk', 'd-beat', 'd-beat punk', 'hardcore punk']
 ---
 
 САМООБЛАДАНИЕ - ФУТФЕТИШ НА КОВАНЫЕ САПОГИ (2026)

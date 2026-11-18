@@ -22,6 +22,57 @@ const SITE_COPY = {
       link: 'mehr erfahren →',
     },
   },
+  geoPicker: {
+    ru: {
+      placeholder: 'поиск города или страны…',
+      rootLabel: 'все страны',
+      footer: 'КАРТА →',
+      empty: 'здесь пока пусто',
+    },
+    en: {
+      placeholder: 'search city or country…',
+      rootLabel: 'all countries',
+      footer: 'GEO MAP →',
+      empty: 'no places here yet',
+    },
+    de: {
+      placeholder: 'Stadt oder Land suchen…',
+      rootLabel: 'alle Länder',
+      footer: 'KARTE →',
+      empty: 'noch keine Orte hier',
+    },
+  },
+  datePicker: {
+    ru: { rootLabel: 'все годы', footer: 'все рецензии →' },
+    en: { rootLabel: 'all years', footer: 'all reviews →' },
+    de: { rootLabel: 'alle Jahre', footer: 'alle Rezensionen →' },
+  },
+  geoPage: {
+    ru: {
+      city: 'город',
+      state: 'регион',
+      country: 'страна',
+      location: 'место',
+      posts: { one: 'рецензия', few: 'рецензии', many: 'рецензий', other: 'рецензии' },
+      empty: 'здесь пока нет рецензий — первая зажжёт это место на карте',
+    },
+    en: {
+      city: 'city',
+      state: 'region',
+      country: 'country',
+      location: 'location',
+      posts: { one: 'post', few: 'posts', many: 'posts', other: 'posts' },
+      empty: 'no reviews from here yet — the first one lights this place up on the map',
+    },
+    de: {
+      city: 'Stadt',
+      state: 'Region',
+      country: 'Land',
+      location: 'Ort',
+      posts: { one: 'Rezension', few: 'Rezensionen', many: 'Rezensionen', other: 'Rezensionen' },
+      empty: 'noch keine Rezensionen von hier — die erste erhellt diesen Ort auf der Karte',
+    },
+  },
   aboutPage: {
     ru: {
       about: '~ about',

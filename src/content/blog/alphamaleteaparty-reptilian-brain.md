@@ -1,7 +1,7 @@
 ---
 title: 'Alpha Male Tea Party - Reptilian Brain'
 pubDate: 2025-10-06
-tags: ['alternative', 'rock', 'math', 'math rock', 'progressive', 'liverpool']
+tags: ['alternative', 'rock', 'math', 'math rock', 'progressive']
 ---
 
 ЧАЕПИТИЕ АЛЬФАЧЕЙ - АНУНАЧИЙ МОЗГ (2025)

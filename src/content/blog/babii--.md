@@ -1,7 +1,7 @@
 ---
 title: 'Cyst - ᲘᲘ'
 pubDate: 2026-09-08
-tags: ['electronic', 'hyperpop', 'dance', 'electronica', 'electropop', 'pop', 'United Kingdom']
+tags: ['electronic', 'hyperpop', 'dance', 'electronica', 'electropop', 'pop']
 ---
 
 Парный проект Iglooghost и его партнерши daisy* (ex-BABii.). Семейная пара часто коллаборировала в прошлом и в принципе сразу было понятно, что ждать от полноценного совместного проекта - фирменный очень узнаваемый абразивный электронный звук с речетативом поверх.

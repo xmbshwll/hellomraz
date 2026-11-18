@@ -1,7 +1,7 @@
 ---
 title: 'Basht. - Poor Advice'
 pubDate: 2026-10-12
-tags: ['rock', 'alt', 'alternative', 'alternative rock', 'indie', 'indie rock', 'Dublin']
+tags: ['rock', 'alt', 'alternative', 'alternative rock', 'indie', 'indie rock']
 ---
 
 Дебютный лонгплей очередной новой модной гитарной группы с островов. Ирландцы играют хороший пост-панк, неизбежно сравниваемый с ранними Fountaines D.C. - однако тут сильно больше вычурных гитарных запилов.

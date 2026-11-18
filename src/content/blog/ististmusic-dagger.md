@@ -1,7 +1,7 @@
 ---
 title: 'IST IST - DAGGER'
 pubDate: 2026-02-06
-tags: ['alternative', 'indie', 'new wave', 'post-punk', 'manchester']
+tags: ['alternative', 'indie', 'new wave', 'post-punk']
 ---
 
 Новый альбом возможно главных нынешних последователей дела Яна Кертиса, родом из Манчестера.

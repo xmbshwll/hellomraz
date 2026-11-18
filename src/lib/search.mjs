@@ -4,6 +4,7 @@
  *   title: string;
  *   artist?: string;
  *   album?: string;
+ *   geo?: string;
  * }} RawSearchEntry
  *
  * @typedef {RawSearchEntry & {
@@ -11,6 +12,7 @@
  *   titleSearch: string;
  *   artistSearch: string;
  *   albumSearch: string;
+ *   geoSearch: string;
  *   searchText: string;
  * }} PreparedSearchEntry
  */
@@ -49,6 +51,7 @@ export function prepareSearchEntries(entries) {
     const title = String(entry.title ?? '').trim();
     const artist = String(entry.artist ?? '').trim();
     const album = String(entry.album ?? '').trim();
+    const geo = String(entry.geo ?? '').trim();
 
     return {
       ...entry,
@@ -59,7 +62,8 @@ export function prepareSearchEntries(entries) {
       titleSearch: normalizeSearchText(title),
       artistSearch: normalizeSearchText(artist),
       albumSearch: normalizeSearchText(album),
-      searchText: normalizeSearchText([artist, album, title].filter(Boolean).join(' ')),
+      geoSearch: normalizeSearchText(geo),
+      searchText: normalizeSearchText([artist, album, title, geo].filter(Boolean).join(' ')),
     };
   });
 }
@@ -87,6 +91,15 @@ export function getSearchResultSecondaryLabel(entry) {
 
   const primary = getSearchResultPrimaryLabel(entry);
   return normalizeSearchText(title) === normalizeSearchText(primary) ? '' : title;
+}
+
+/**
+ * Canonical geo name for an entry (e.g. "New York City"), or "".
+ *
+ * @param {RawSearchEntry} entry
+ */
+export function getSearchResultGeoLabel(entry) {
+  return String(entry?.geo ?? '').trim();
 }
 
 /**
@@ -133,7 +146,10 @@ function getSearchScore(entry, query, tokens) {
   if (entry.albumSearch.includes(query)) return 8;
   if (entry.titleSearch.includes(query)) return 9;
 
-  if (tokens.length > 1 && hasAllTokens(entry.searchText, tokens)) return 10;
+  if (entry.geoSearch === query || entry.geoSearch.startsWith(query)) return 10;
+  if (entry.geoSearch.includes(query)) return 11;
+
+  if (tokens.length > 1 && hasAllTokens(entry.searchText, tokens)) return 12;
 
   return null;
 }

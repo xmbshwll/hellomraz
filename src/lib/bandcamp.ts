@@ -7,8 +7,8 @@ export interface BandcampEntry {
   url: string;
   albumId: string | null;
   coverUrl: string | null;
-  artist?: string;
-  album?: string;
+  artist?: string | null;
+  album?: string | null;
   bcTags?: string[];
 }
 

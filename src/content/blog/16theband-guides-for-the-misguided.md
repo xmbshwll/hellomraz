@@ -1,7 +1,7 @@
 ---
 title: '16 - Guides For The Misguided'
 pubDate: 2025-02-11
-tags: ['metal', 'hardcore', 'sludge', 'sludgecore', 'stoner', 'stoner rock', 'san diego']
+tags: ['metal', 'hardcore', 'sludge', 'sludgecore', 'stoner', 'stoner rock']
 ---
 
 ШЕСТНАДЦАТЬ - ГАЙДЫ ДЛЯ МИСГАЙДНУТЫХ (2025)

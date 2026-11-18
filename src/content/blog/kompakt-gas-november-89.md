@@ -1,7 +1,7 @@
 ---
 title: 'GAS - November 89'
 pubDate: 2026-07-03
-tags: ['ambient', 'dub', 'gas', 'november', 'oktember', 'techno', 'art', 'raster-noton', 'Cologne']
+tags: ['ambient', 'dub', 'gas', 'november', 'oktember', 'techno', 'art', 'raster-noton']
 ---
 
 Альбом - переиздание сборки ранних треков Вольфганга Войта (преимущественно эмбиент направленности), одного из самых значительных музыкантов эпохи становления немецкого техно.

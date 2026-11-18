@@ -1,7 +1,7 @@
 ---
 title: 'Coprolith - Putrescence'
 pubDate: 2026-07-27
-tags: ['death metal', 'metal', 'underground death metal', 'underground metal', 'United Kingdom']
+tags: ['death metal', 'metal', 'underground death metal', 'underground metal']
 ---
 
 Очень уверенный олд скульный дэт дебют квинтета из Торонто.

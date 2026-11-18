@@ -1,18 +1,7 @@
 ---
 title: 'Surrealistic Pillhead - Crush the Pill'
 pubDate: 2026-05-05
-tags:
-  [
-    'pop',
-    'psyhcedelic',
-    'punk',
-    'pop rock',
-    'psychedelic',
-    'psychedelic rock',
-    'punk',
-    'rock n roll',
-    'Tonopah',
-  ]
+tags: ['pop', 'psyhcedelic', 'punk', 'pop rock', 'psychedelic', 'psychedelic rock', 'punk', 'rock n roll']
 ---
 
 СТРЕМНЫЙ ЧЕЛОВЕК-ПИЛЮЛЬКА - СКУШАЙ ТАБЛЕТОЧКУ (2026)

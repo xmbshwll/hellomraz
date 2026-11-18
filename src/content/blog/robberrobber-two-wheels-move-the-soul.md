@@ -1,7 +1,7 @@
 ---
 title: 'Robber Robber - Two Wheels Move the Soul'
 pubDate: 2026-04-07
-tags: ['rock', 'krautrock', 'post-punk', 'post-rock', 'Burlington']
+tags: ['rock', 'krautrock', 'post-punk', 'post-rock']
 ---
 
 Интересная инди четверка из Берлингтона. В пику современным трендовым гитарным группам тут максимально шершавый и непричесанный звук. Обреченный женский вокал, песни об утратах - все составляющие интересного релиза на месте.

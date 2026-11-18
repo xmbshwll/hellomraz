@@ -1,7 +1,7 @@
 ---
 title: 'AXE COLLECTOR - AXE COLLECTOR'
 pubDate: 2026-07-31
-tags: ['punk', 'hardcore', 'powerviolence', 'san diego', 'San Diego']
+tags: ['punk', 'hardcore', 'powerviolence']
 ---
 
 БОЙ ТОПОРАМИ *

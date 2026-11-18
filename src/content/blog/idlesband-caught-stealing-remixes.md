@@ -1,7 +1,7 @@
 ---
 title: 'IDLES - Caught Stealing Remixes'
 pubDate: 2025-12-03
-tags: ['new wave', 'post-punk', 'punk', 'rock', 'bristol']
+tags: ['new wave', 'post-punk', 'punk', 'rock']
 ---
 
 3 доп ремикса саундтрека IDLES к новому (плохому) фильму Даррена Аранофски. На ремиксах уважаемые люди - Interpol, Nick Zinner, Lip Critic.[

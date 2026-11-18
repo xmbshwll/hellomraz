@@ -1,7 +1,7 @@
 ---
 title: 'Arse - ETT - 130 - Arse - Complete Arse LP'
 pubDate: 2025-06-10
-tags: ['hardcore punk', 'indipendent', 'punk', 'weird punk', 'mannheim']
+tags: ['hardcore punk', 'indipendent', 'punk', 'weird punk']
 ---
 
 ЖОПА - ПОЛНАЯ ЖОПА (2025)

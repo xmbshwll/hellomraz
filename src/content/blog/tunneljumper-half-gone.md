@@ -1,7 +1,7 @@
 ---
 title: 'Tunnel Jumper - Half Gone'
 pubDate: 2026-11-10
-tags: ['hardcore', 'metal', 'metallic hardcore', 'Denver']
+tags: ['hardcore', 'metal', 'metallic hardcore']
 ---
 
 СИГАНУВШИЙ В КОЛОДЕЦ - ОДНА НОГА ТУТ ДРУГАЯ ТАМ (2026)

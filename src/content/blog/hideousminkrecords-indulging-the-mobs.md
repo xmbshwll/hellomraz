@@ -1,7 +1,7 @@
 ---
 title: 'Alien Chicks - Indulging The Mobs'
 pubDate: 2024-12-16
-tags: ['brighton']
+tags: []
 ---
 
 ИНОПЛАНЕТЯНЕ ЖЕНСКОГО ПОЛА НАЗЫВАЮТСЯ ИНОПЛАНЕТЯНКИ - В УГОДУ ПУБЛИКЕ (2024)

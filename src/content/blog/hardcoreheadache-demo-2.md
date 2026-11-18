@@ -1,7 +1,7 @@
 ---
 title: 'DEAF DUMB & BLIND - Demo'
 pubDate: 2026-06-02
-tags: ['punk', 'south carolina', 'hardcore punk', 'Charlotte']
+tags: ['punk', 'south carolina', 'hardcore punk']
 ---
 
 ТЫ СЛЕПОГЛУХОНЕМОЙ? ДА! - ДЕМОВЕРСИЯ (2026)

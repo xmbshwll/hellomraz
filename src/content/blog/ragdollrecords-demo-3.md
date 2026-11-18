@@ -1,7 +1,7 @@
 ---
 title: 'Birth Rejects - Demo'
 pubDate: 2026-03-04
-tags: ['punk', 'ushc', 'hardcore punk', 'supplication tapes', 'united states']
+tags: ['punk', 'ushc', 'hardcore punk', 'supplication tapes']
 ---
 
 РЕШИВШИЕ НЕ ВЫЛЕЗАТЬ ИЗ ВАГИНЫ - ДЕМКА (2026)

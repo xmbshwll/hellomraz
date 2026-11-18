@@ -1,7 +1,7 @@
 ---
 title: 'Westside Cowboy - It Goes On'
 pubDate: 2026-09-14
-tags: ['americana', 'rock', 'folk', 'indie rock', 'power pop', 'rock and roll', 'Manchester']
+tags: ['americana', 'rock', 'folk', 'indie rock', 'power pop', 'rock and roll']
 ---
 
 Дебют еще одной многообещающей молодой гитарной группы с Туманного Альбиона - манчестерцы с инди роком в духе Wilco и очень хитовым сонграйтингом. Приятнейшая запись, хочется пожелать четверке еще больших успехов в будущем.

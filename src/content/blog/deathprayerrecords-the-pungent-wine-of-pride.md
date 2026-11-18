@@ -1,7 +1,7 @@
 ---
 title: 'Grave Pilgrim - The Pungent Wine of Pride'
 pubDate: 2026-06-29
-tags: ['americana', 'black metal', 'metal', 'raw black metal', 'us black metal', 'United Kingdom']
+tags: ['americana', 'black metal', 'metal', 'raw black metal', 'us black metal']
 ---
 
 Третий альбом отличных американских сырых блэк металлистов, второй в планируемом концептуальном триптихе, базирующемся на творчестве Ницше. Отличные гитары, фирменные для коллектива нотки американы, смыслы для любителей смыслов - отличная запись.

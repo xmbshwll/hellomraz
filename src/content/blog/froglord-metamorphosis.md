@@ -1,7 +1,7 @@
 ---
 title: 'Froglord - Metamorphosis'
 pubDate: 2025-05-02
-tags: ['metal', 'doom metal', 'sludge metal', 'stoner metal', 'stonerdoom', 'bristol']
+tags: ['metal', 'doom metal', 'sludge metal', 'stoner metal', 'stonerdoom']
 ---
 
 Персональные любимчики и по совместительству большие любители сладжа и лягушек - с новым, пятым альбомом в цикле о КОРОЛЕ ЛЯГУХ.

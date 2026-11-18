@@ -1,7 +1,7 @@
 ---
 title: 'múm - History of Silence'
 pubDate: 2025-09-30
-tags: ['experimental', 'electronica', 'independent', 'iceland']
+tags: ['experimental', 'electronica', 'independent']
 ---
 
 После 12 лет молчания - новый альбом исландских ветеранов экспериментальной поп музыки, перекликающийся с ранним периодом группы, минималистичной индитроникой. Чувственная, хрупкая и меланхоличная музыка.

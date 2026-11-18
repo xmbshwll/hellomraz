@@ -1,16 +1,7 @@
 ---
 title: 'Vibora - Egin Ez Dugun Guztia'
 pubDate: 2026-03-09
-tags:
-  [
-    'emotional hardcore',
-    'hardcore',
-    'hardcore-punk',
-    'post-hardcore',
-    'punk',
-    'screamo',
-    'Vitoria Gasteiz',
-  ]
+tags: ['emotional hardcore', 'hardcore', 'hardcore-punk', 'post-hardcore', 'punk', 'screamo']
 ---
 
 Второй полноформатник испанских горлопанов, скримо с примесью металкора с шугейзом. Тексты на испанском, но описание альбома hits hard.

@@ -1,7 +1,7 @@
 ---
 title: 'Witches Hammer - Final Storm'
 pubDate: 2026-07-28
-tags: ['metal', 'black metal', 'death metal', 'doom metal', 'heavy metal', 'thrash metal', 'Austin']
+tags: ['metal', 'black metal', 'death metal', 'doom metal', 'heavy metal', 'thrash metal']
 ---
 
 Культовые канадцы, большая часть репутации которых, начиная с 80х годов прошлого века, как и полагается настоящей блэк метал группе, держалась на малочисленных сырых демках и быстром распаде. Марко Бранко, гитарист-основатель коллектива, так же засветился в Blasphemy, что добавило Witches Hammer еще более культовый статус.

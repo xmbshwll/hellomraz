@@ -1,7 +1,7 @@
 ---
 title: 'ONYON - Pale Horses'
 pubDate: 2025-11-28
-tags: ['punk', 'garage', 'no wave', 'post-punk', 'weird', 'leipzig']
+tags: ['punk', 'garage', 'no wave', 'post-punk', 'weird']
 ---
 
 Лейпциг, по непонятным мне причинам, постепенно стал у нас главной столицей эгг панка и странного минималистичного no-wave в Германии. Наверное там что-то подсыпали в воду в Weiße Elster, других объяснений у меня нет.

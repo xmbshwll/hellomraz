@@ -1,0 +1,155 @@
+/* Shared dropdown panel for the header pickers (tag picker, geo search).
+   The panels are created with DOM APIs, so these classes must stay global. */
+.picker-dropdown {
+  position: fixed;
+  width: 280px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-bg-surface);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.1s;
+}
+.picker-dropdown.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.picker-search-wrap {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--theme-border);
+  flex-shrink: 0;
+}
+.picker-search {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  min-height: 36px;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.375rem;
+  background: var(--theme-bg-elevated);
+  color: var(--theme-text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.picker-search::placeholder {
+  color: var(--theme-text-muted);
+}
+.picker-search:focus {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
+}
+.picker-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 0.25rem 0;
+}
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 40px;
+  text-decoration: none;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+.picker-item:hover {
+  background: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
+}
+.picker-item__label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.picker-item__name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.picker-item__meta {
+  font-size: 0.6875rem;
+  color: var(--theme-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.picker-item__count {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--theme-bg-elevated);
+  color: var(--theme-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.picker-more {
+  flex-shrink: 0;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  min-height: 40px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: center;
+  border: none;
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-bg-surface);
+  color: var(--theme-accent);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.picker-more:hover {
+  background: var(--theme-bg-hover);
+}
+.picker-empty {
+  padding: 1rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--theme-text-muted);
+  text-align: center;
+}
+.picker-crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-size: 0.6875rem;
+  color: var(--theme-text-muted);
+}
+.picker-crumb {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--theme-accent);
+  cursor: pointer;
+}
+.picker-crumb:hover {
+  text-decoration: underline;
+}
+.picker-crumb--current {
+  color: var(--theme-text-primary);
+  cursor: default;
+}
+.picker-item__chevron {
+  flex-shrink: 0;
+  color: var(--theme-text-muted);
+}

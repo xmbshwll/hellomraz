@@ -1,7 +1,7 @@
 ---
 title: 'Kid, Feral - 2019'
 pubDate: 2026-04-02
-tags: ['punk', 'hardcore', 'post-hardcore', 'screamo', 'skramz', 'Skövde']
+tags: ['punk', 'hardcore', 'post-hardcore', 'screamo', 'skramz']
 ---
 
 Шведские эмоциональные горлопаны полноценно вернулись после долгого молчания и выпустили второй альбом с отсылкой к дебютнику в названии - тот вышел в 2018ом году.

@@ -1,7 +1,7 @@
 ---
 title: 'Protomartyr - Hotel Usona'
 pubDate: 2026-09-25
-tags: ['alternative', 'detroit', 'hardly art', 'punk', 'sub', 'Detroit']
+tags: ['alternative', 'hardly art', 'punk', 'sub']
 ---
 
 Ну, тут описания излишни, бегом слушать.

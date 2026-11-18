@@ -1,7 +1,7 @@
 ---
 title: 'NØ MAN - Between the Sword and the Neck'
 pubDate: 2026-10-30
-tags: ['punk', 'hardcore', 'Washington']
+tags: ['punk', 'hardcore']
 ---
 
 Четвертый альбом отличной панк хардкор четверки из Вашингтона. Быстрая грязная музыка, политизированные тексты, вокалистка с палестинскими корнями.

@@ -55,6 +55,22 @@ export function buildDateIndex(posts, pageSize = 24) {
 }
 
 /**
+ * Releases per month, keyed "YYYY-MM". Used by the header date picker.
+ * @template {BlogLikePost} T
+ * @param {T[]} posts
+ * @returns {Record<string, number>}
+ */
+export function buildMonthCounts(posts) {
+  const counts = {};
+  for (const post of posts ?? []) {
+    const date = post.data.pubDate;
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/**
  * @template {BlogLikePost} T
  * @param {T[]} posts
  * @param {string} tag

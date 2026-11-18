@@ -1,7 +1,7 @@
 ---
 title: 'Zyclone - Visions of Impending Death'
 pubDate: 2025-02-04
-tags: ['d-beat crust', 'hardcore', 'punk', 'crust punk', 'd-beat', 'hardcore punk', 'united states']
+tags: ['d-beat crust', 'hardcore', 'punk', 'crust punk', 'd-beat', 'hardcore punk']
 ---
 
 ЦИКЛОН С ОПЕЧАТКОЙ - КАЖЕТСЯ СКОРО КИРДЫК (2024)

@@ -1,7 +1,7 @@
 ---
 title: 'Repeat Offender - Weapon Fetish'
 pubDate: 2026-07-09
-tags: ['los angeles', 'hardcore', 'hardcore punk', 'punk', 'Denver']
+tags: ['los angeles', 'hardcore', 'hardcore punk', 'punk']
 ---
 
 Как же хочется ПО ЕБАЛУ.

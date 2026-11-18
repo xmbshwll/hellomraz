@@ -205,6 +205,10 @@ const latestExcerpt = latestPost
 </script>
 
 <script>
+  import { geoNameAttr, type GeoCardPayload } from '../lib/geo';
+  import { applyPlaceNames } from '../lib/geo-i18n.mjs';
+  import { globeIcon } from '../lib/icons';
+
   interface ReviewPost {
     slug: string;
     title: string;
@@ -213,6 +217,7 @@ const latestExcerpt = latestPost
     colorDark: string;
     colorAccent: string;
     initials: string;
+    geo: GeoCardPayload | null;
   }
 
   const BATCH = 12;
@@ -248,13 +253,18 @@ const latestExcerpt = latestPost
          </div>`;
 
     const tags = post.tags.slice(0, 3).join(' · ');
+    const geo = post.geo
+      ? `<a class="post-card-geo" href="${base}geo/${post.geo.slug}">${globeIcon()}<span data-geo-names="${escapeHtml(geoNameAttr(post.geo.names))}">${escapeHtml(post.geo.name)}</span></a>`
+      : '';
 
-    return `<a href="${base}blog/${post.slug}"
-      class="post-card playlist-item" data-color="${post.colorDark}">
+    return `<div class="post-card playlist-item" data-color="${post.colorDark}">
       <div class="post-card-cover">${cover}</div>
-      <div class="post-card-title">${safeTitle}</div>
-      <div class="post-card-tags">${tags}</div>
-    </a>`;
+      <div class="post-card-body">
+        <a class="post-card-title" href="${base}blog/${post.slug}">${safeTitle}</a>
+        <div class="post-card-tags">${tags}</div>
+        ${geo}
+      </div>
+    </div>`;
   }
 
   async function fetchPosts(): Promise<ReviewPost[]> {
@@ -297,6 +307,8 @@ const latestExcerpt = latestPost
           .map((post) => renderCard(post, base))
           .join(''),
       );
+      // Injected cards carry their names; align them with the chosen language.
+      applyPlaceNames(grid);
       loaded = end;
 
       if (loaded >= posts.length) {
@@ -342,34 +354,29 @@ const latestExcerpt = latestPost
   .featured-review :global(.post-card) {
     display: grid;
     grid-template-columns: minmax(11rem, 18rem) minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
     gap: 0.75rem 1.25rem;
     padding: 1rem;
   }
-  .featured-review :global(.post-card-cover) {
+  .featured-review :global(.post-card-media) {
     grid-column: 1;
-    grid-row: 1 / -1;
+    grid-row: 1;
+  }
+  .featured-review :global(.post-card-body) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: center;
+  }
+  .featured-review :global(.post-card-cover) {
     margin-bottom: 0;
   }
   .featured-review :global(.post-card-title) {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: end;
     min-height: 0;
     font-size: clamp(1rem, 2vw, 1.5rem);
     line-height: 1.25;
     -webkit-line-clamp: 3;
   }
   .featured-review :global(.post-card-tags) {
-    grid-column: 2;
-    grid-row: 2;
-    align-self: start;
     min-height: 0;
-  }
-  .featured-review :global(.post-card-excerpt) {
-    grid-column: 2;
-    grid-row: 3;
-    align-self: start;
   }
   @media (max-width: 639px) {
     .latest-review {
@@ -378,6 +385,7 @@ const latestExcerpt = latestPost
 
     .featured-review :global(.post-card) {
       display: flex;
+      flex-direction: column;
       gap: 0;
     }
 

@@ -1,7 +1,7 @@
 ---
 title: 'Mendeku Diskak - -080- TERRE NEUVE "Depuis Les Marais" 7"'
 pubDate: 2024-12-04
-tags: ['cobra jaune skins', 'oi!', 'punk', 'rock', 'hardcore', 'afghanistan']
+tags: ['cobra jaune skins', 'oi!', 'punk', 'rock', 'hardcore']
 ---
 
 Смотрите, вот скины есть даже в Брюсселе.

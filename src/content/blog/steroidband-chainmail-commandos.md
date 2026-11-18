@@ -1,7 +1,7 @@
 ---
 title: 'STERÖID - CHAINMAIL COMMANDOS'
 pubDate: 2025-04-30
-tags: ['nwobhm', 'punk', 'rock', 'egg', 'garage punk', 'sydney']
+tags: ['nwobhm', 'punk', 'rock', 'egg', 'garage punk']
 ---
 
 ЗАПРЕЩЕННЫЙ ПРЕПАРАТ - КАК КОМАНДОС, ТОЛЬКО В КОЛЬЧУГЕ (2025)

@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { buildDateIndex, buildTagCounts, sortPostsByDateDesc } from './blog-derived.mjs';
+import { buildDateIndex, buildMonthCounts, buildTagCounts, sortPostsByDateDesc } from './blog-derived.mjs';
 
 /** @typedef {import('astro:content').CollectionEntry<'blog'>} BlogPost */
 /** @typedef {{ name: string; count: number }} QualifiedTag */
@@ -84,6 +84,16 @@ export async function getDateIndex(pageSize = 24) {
   }
 
   return dateIndexCache.get(pageSize) ?? {};
+}
+
+let monthCountsCache = null;
+
+/** Releases per month, keyed "YYYY-MM", cached for the header date picker. */
+export async function getMonthCounts() {
+  if (!monthCountsCache) {
+    monthCountsCache = buildMonthCounts(await getPublishedPosts());
+  }
+  return monthCountsCache;
 }
 
 /**

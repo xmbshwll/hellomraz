@@ -1,7 +1,7 @@
 ---
 title: 'Bozone - What Happened to the Bozone?'
 pubDate: 2026-08-11
-tags: ['hardcore', 'punk', 'hardcore', 'hardcore punk', 'punk', 'California']
+tags: ['hardcore', 'punk', 'hardcore', 'hardcore punk', 'punk']
 ---
 
 БОЗОН, НО НЕ ХИГГСА - ЧТО СЛУЧИЛОСЬ С БОЗОНОМ, НО НЕ ХИГГСА? (2026)

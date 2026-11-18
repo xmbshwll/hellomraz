@@ -1,7 +1,7 @@
 ---
 title: 'MIRAGE - S/T 12"'
 pubDate: 2026-06-17
-tags: ['punk', 'hardcore punk', 'New York']
+tags: ['punk', 'hardcore punk']
 ---
 
 Снова в подвал я убегаю

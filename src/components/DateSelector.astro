@@ -9,71 +9,47 @@
  *   baseUrl   – e.g. "/blog"
  */
 
+import '../styles/picker-dropdown.css';
+
 interface Props {
   dateIndex: Record<string, number>;
+  /** Releases per month, keyed "YYYY-MM". */
+  monthCounts: Record<string, number>;
   baseUrl: string;
   currentYear?: number;
   currentMonth?: number;
 }
 
-const { dateIndex, baseUrl, currentYear, currentMonth } = Astro.props;
+const { dateIndex, monthCounts, baseUrl, currentYear, currentMonth } = Astro.props;
 
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-
-// Derive available years and months-per-year
-const yearMonths: Record<number, number[]> = {};
-for (const key of Object.keys(dateIndex)) {
-  const [y, m] = key.split('-').map(Number);
-  if (!yearMonths[y]) yearMonths[y] = [];
-  yearMonths[y].push(m);
-}
-const sortedYears = Object.keys(yearMonths)
-  .map(Number)
-  .sort((a, b) => b - a);
-for (const y of sortedYears) {
-  yearMonths[y].sort((a, b) => b - a);
-}
-
-const MONTH_NAMES = [
-  '',
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 ---
 
-<div class="date-selector" data-base={base} data-current-month={currentMonth ?? ''}>
-  <label class="ds-label">Jump to</label>
-
-  <select class="ds-select" data-ds-year>
-    <option value="">Year</option>
-    {sortedYears.map((y) => (
-      <option value={y} selected={y === currentYear}>
-        {y}
-      </option>
-    ))}
-  </select>
-
-  <select class="ds-select" data-ds-month disabled>
-    <option value="">Month</option>
-  </select>
-
-  <button class="ds-go-btn" type="button" data-ds-go disabled>
-    Go
-  </button>
+<div
+  class="date-selector"
+  data-base={base}
+  data-current-year={currentYear ?? ''}
+  data-current-month={currentMonth ?? ''}
+  data-blog-url={baseUrl}
+  data-date-index={JSON.stringify(dateIndex)}
+  data-month-counts={JSON.stringify(monthCounts)}
+>
+  <div class="ds-picker">
+    <button
+      class="header-control-btn"
+      type="button"
+      data-ds-date-btn
+      aria-expanded="false"
+      aria-haspopup="listbox"
+    >
+      <span>#date</span>
+      <span class="header-control-arrow" data-ds-date-arrow>▾</span>
+    </button>
+  </div>
 
   <span class="ds-sep">│</span>
 
-  <div class="ds-tag-picker">
+  <div class="ds-picker">
     <button
       class="header-control-btn"
       type="button"
@@ -87,93 +63,23 @@ const MONTH_NAMES = [
       </span>
     </button>
   </div>
+
+  <slot />
 </div>
 
-<script define:vars={{ yearMonths, dateIndex, baseUrl, MONTH_NAMES }}>
-  function navigateInternal(url) {
-    const navigate = window.__hellomrazNavigate;
-
-    if (typeof navigate === 'function') {
-      void navigate(url);
-      return;
-    }
-
-    window.location.assign(url);
-  }
-
-  function populateMonths(monthEl, goEl, year, selectedMonth = '') {
-    monthEl.innerHTML = '<option value="">Month</option>';
-
-    const yearKey = Number(year);
-    if (!year || !yearMonths[yearKey]) {
-      monthEl.disabled = true;
-      goEl.disabled = true;
-      return;
-    }
-
-    for (const month of yearMonths[yearKey]) {
-      const option = document.createElement('option');
-      option.value = String(month);
-      option.textContent = MONTH_NAMES[month];
-      option.selected = String(month) === selectedMonth;
-      monthEl.appendChild(option);
-    }
-
-    monthEl.disabled = false;
-    goEl.disabled = !monthEl.value;
-  }
-
-  function bindDateSelector(root) {
-    if (root.dataset.dateSelectorBound === 'true') {
-      return;
-    }
-    root.dataset.dateSelectorBound = 'true';
-
-    const yearEl = root.querySelector('[data-ds-year]');
-    const monthEl = root.querySelector('[data-ds-month]');
-    const goEl = root.querySelector('[data-ds-go]');
-    if (!yearEl || !monthEl || !goEl) {
-      return;
-    }
-
-    const initialMonth = root.dataset.currentMonth || '';
-
-    yearEl.addEventListener('change', () => {
-      populateMonths(monthEl, goEl, yearEl.value);
-    });
-
-    monthEl.addEventListener('change', () => {
-      goEl.disabled = !monthEl.value;
-    });
-
-    goEl.addEventListener('click', () => {
-      const year = yearEl.value;
-      const month = monthEl.value.padStart(2, '0');
-      const key = `${year}-${month}`;
-      const page = dateIndex[key];
-      if (page == null) return;
-      const url = page === 1 ? baseUrl : `${baseUrl}/${page}`;
-      navigateInternal(`${url}#month-${key}`);
-    });
-
-    if (yearEl.value) {
-      populateMonths(monthEl, goEl, yearEl.value, initialMonth);
-    }
-  }
-
-  function initDateSelectors() {
-    document.querySelectorAll('.date-selector').forEach(bindDateSelector);
-  }
-
-  if (!window.__dateSelectorPageLoadBound) {
-    window.__dateSelectorPageLoadBound = true;
-    document.addEventListener('astro:page-load', initDateSelectors);
-  }
-  initDateSelectors();
-</script>
 
 <script>
-  import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
+  import {
+    createPickerCrumbs,
+    createPickerFooter,
+    createPickerPanel,
+    createPickerPanelDom,
+    createPickerRow,
+    loadJsonCached,
+    type PickerCrumbs,
+  } from '../lib/picker-panel';
+  import { navigateInternal } from '../lib/navigate';
+  import { getCurrentSiteLang, getSiteCopy } from '../lib/site-i18n.mjs';
   import { encodeTagParam } from '../lib/tag-path';
 
   interface TagSummary {
@@ -184,6 +90,10 @@ const MONTH_NAMES = [
   interface DateSelectorRoot extends HTMLElement {
     __tagPickerBound?: boolean;
     __tagDropdown?: HTMLElement | null;
+    __dateBound?: boolean;
+    __datePanel?: HTMLElement | null;
+    /** Refresh chrome and rows after the language changes. */
+    __refreshDatePanel?: () => void;
   }
 
   type DateSelectorWindow = Window & {
@@ -193,39 +103,12 @@ const MONTH_NAMES = [
   const INITIAL_SHOW = 10;
   const tagDataCache = new Map<string, Promise<TagSummary[]>>();
 
-  function navigateInternal(url: string) {
-    const navigate = (
-      window as Window & {
-        __hellomrazNavigate?: (href: string) => Promise<void> | void;
-      }
-    ).__hellomrazNavigate;
-
-    if (typeof navigate === 'function') {
-      void navigate(url);
-      return;
-    }
-
-    window.location.assign(url);
-  }
-
   function getBase(root: HTMLElement): string {
     return root.dataset.base || '/';
   }
 
   function loadTags(base: string) {
-    let request = tagDataCache.get(base);
-    if (!request) {
-      request = fetch(`${base}api/tags.json`)
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error('Failed to load tags');
-          }
-          return (await response.json()) as TagSummary[];
-        })
-        .catch(() => [] as TagSummary[]);
-      tagDataCache.set(base, request);
-    }
-    return request;
+    return loadJsonCached(tagDataCache, `${base}api/tags.json`);
   }
 
   function ensureDropdown(root: DateSelectorRoot, tags: TagSummary[], closeDropdown: () => void) {
@@ -233,33 +116,13 @@ const MONTH_NAMES = [
       return root.__tagDropdown;
     }
 
-    const dropdown = document.createElement('div');
-    dropdown.className = 'ds-tag-dropdown';
-    dropdown.hidden = true;
+    const { panel: dropdown, searchInput, listEl } = createPickerPanelDom('search tags…');
 
-    const searchWrap = document.createElement('div');
-    searchWrap.className = 'ds-tag-search-wrap';
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.placeholder = 'search tags…';
-    searchInput.className = 'ds-tag-search';
-    searchInput.autocomplete = 'off';
-    searchWrap.appendChild(searchInput);
-    dropdown.appendChild(searchWrap);
-
-    const listEl = document.createElement('div');
-    listEl.className = 'ds-tag-list';
-    dropdown.appendChild(listEl);
-
-    const moreBtn = document.createElement('a');
-    moreBtn.className = 'ds-tag-more';
-    moreBtn.href = `${getBase(root)}tags/`;
-    moreBtn.textContent = `all ${tags.length} tags →`;
-    moreBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      closeDropdown();
-      navigateInternal(moreBtn.href);
-    });
+    const moreBtn = createPickerFooter(
+      `${getBase(root)}tags/`,
+      `all ${tags.length} tags →`,
+      closeDropdown,
+    );
     dropdown.appendChild(moreBtn);
 
     function renderTags(filter: string) {
@@ -277,26 +140,18 @@ const MONTH_NAMES = [
 
       if (items.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'ds-tag-empty';
+        empty.className = 'picker-empty';
         empty.textContent = 'no matching tags';
         listEl.appendChild(empty);
         return;
       }
 
       for (const tag of items) {
-        const link = document.createElement('a');
-        link.href = `${getBase(root)}tags/${encodeTagParam(tag.name)}`;
-        link.className = 'ds-tag-item';
-
-        const name = document.createElement('span');
-        name.className = 'ds-tag-name';
-        name.textContent = `#${tag.name}`;
-        link.appendChild(name);
-
-        const count = document.createElement('span');
-        count.className = 'ds-tag-count';
-        count.textContent = String(tag.count);
-        link.appendChild(count);
+        const link = createPickerRow({
+          href: `${getBase(root)}tags/${encodeTagParam(tag.name)}`,
+          name: `#${tag.name}`,
+          count: tag.count,
+        });
 
         link.addEventListener('click', (event) => {
           event.preventDefault();
@@ -315,7 +170,7 @@ const MONTH_NAMES = [
     searchInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        const first = listEl.querySelector('.ds-tag-item') as HTMLAnchorElement | null;
+        const first = listEl.querySelector('.picker-item') as HTMLAnchorElement | null;
         if (first) {
           closeDropdown();
           navigateInternal(first.href);
@@ -340,31 +195,10 @@ const MONTH_NAMES = [
       return;
     }
 
-    const floatingTagDropdown = createFloatingDropdown({
-      getAnchor: () => button,
+    const floatingTagDropdown = createPickerPanel({
+      button,
+      arrow,
       getPanel: () => root.__tagDropdown ?? null,
-      useOverlay: true,
-      zIndex: 99999,
-      position: {
-        align: 'start',
-        width: 280,
-        offset: 4,
-        viewportPadding: 4,
-        maxHeight: 400,
-      },
-      onOpenChange(open, panel) {
-        button.setAttribute('aria-expanded', open ? 'true' : 'false');
-        arrow.classList.toggle('is-open', open);
-
-        if (open && panel) {
-          const input = panel.querySelector('.ds-tag-search') as HTMLInputElement | null;
-          if (input) {
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
-            requestAnimationFrame(() => input.focus());
-          }
-        }
-      },
     });
 
     button.addEventListener('click', async (event) => {
@@ -375,14 +209,169 @@ const MONTH_NAMES = [
     });
   }
 
+  /** One formatter per language: building one is ~100x the cost of a format. */
+  const monthFormatters = new Map<string, Intl.DateTimeFormat>();
+
+  function monthFormatter(lang: string): Intl.DateTimeFormat {
+    let formatter = monthFormatters.get(lang);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat(lang, { month: 'short', timeZone: 'UTC' });
+      monthFormatters.set(lang, formatter);
+    }
+    return formatter;
+  }
+
+  /** Short month name in the site language, capitalised ("янв." / "Jan"). */
+  function monthLabel(month: number): string {
+    const date = new Date(Date.UTC(2021, month - 1, 1));
+    const label = monthFormatter(getCurrentSiteLang()).format(date);
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  /** Month rows of one year, newest first: [monthNumber, releases]. */
+  function monthsOfYear(counts: Record<string, number>, year: number): Array<[number, number]> {
+    return Object.entries(counts)
+      .map(([key, count]) => {
+        const [keyYear, month] = key.split('-').map(Number);
+        return keyYear === year ? ([month, count] as [number, number]) : null;
+      })
+      .filter((entry): entry is [number, number] => entry !== null)
+      .sort((a, b) => b[0] - a[0]);
+  }
+
+  function bindDatePicker(root: DateSelectorRoot) {
+    if (root.__dateBound) return;
+    root.__dateBound = true;
+
+    const button = root.querySelector<HTMLButtonElement>('[data-ds-date-btn]');
+    const arrow = root.querySelector<HTMLElement>('[data-ds-date-arrow]');
+    if (!button || !arrow) return;
+
+    const index = JSON.parse(root.dataset.dateIndex || '{}') as Record<string, number>;
+    const counts = JSON.parse(root.dataset.monthCounts || '{}') as Record<string, number>;
+    const blogUrl = root.dataset.blogUrl || '/blog';
+    const years = [...new Set(Object.keys(counts).map((key) => Number(key.split('-')[0])))].sort(
+      (a, b) => b - a,
+    );
+    const startYear = Number(root.dataset.currentYear || 0);
+
+    /** '' = all years, otherwise the drilled year. */
+    let year: number | null = years.includes(startYear) ? startYear : null;
+
+    const dropdown = createPickerPanel({
+      button,
+      arrow,
+      getPanel: () => root.__datePanel ?? null,
+    });
+
+    function ensurePanel() {
+      if (root.__datePanel?.isConnected) return root.__datePanel;
+
+      const copy = getSiteCopy('datePicker', getCurrentSiteLang());
+      const { panel, listEl } = createPickerPanelDom('', false);
+      const crumbs = createPickerCrumbs(
+        () => getSiteCopy('datePicker', getCurrentSiteLang()).rootLabel,
+        () => {
+          year = null;
+          render(panel, listEl, crumbs);
+        },
+      );
+      panel.insertBefore(crumbs.el, listEl);
+      const footer = createPickerFooter(blogUrl, copy.footer, () => dropdown.close());
+      panel.appendChild(footer);
+      render(panel, listEl, crumbs);
+      root.__datePanel = panel;
+      root.__refreshDatePanel = () => {
+        footer.textContent = getSiteCopy('datePicker', getCurrentSiteLang()).footer;
+        if (!panel.hidden) render(panel, listEl, crumbs);
+      };
+      return panel;
+    }
+
+    function monthHref(key: string): string {
+      const page = index[key];
+      if (page == null) return blogUrl;
+      return page === 1 ? `${blogUrl}#month-${key}` : `${blogUrl}/${page}#month-${key}`;
+    }
+
+    function render(panel: HTMLElement, listEl: HTMLElement, crumbs: PickerCrumbs) {
+      crumbs.setTrail(year === null ? [] : [String(year)]);
+      listEl.innerHTML = '';
+
+      if (year === null) {
+        for (const value of years) {
+          const months = monthsOfYear(counts, value);
+          const releases = months.reduce((sum, [, count]) => sum + count, 0);
+          const row = createPickerRow({
+            href: blogUrl,
+            name: String(value),
+            count: releases,
+            drill: true,
+          });
+          row.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            year = value;
+            render(panel, listEl, crumbs);
+          });
+          listEl.appendChild(row);
+        }
+        if (!years.length) listEl.appendChild(emptyRow('no reviews yet'));
+        return;
+      }
+
+      const months = monthsOfYear(counts, year);
+      for (const [month, count] of months) {
+        const key = `${year}-${String(month).padStart(2, '0')}`;
+        const row = createPickerRow({
+          href: monthHref(key),
+          name: monthLabel(month),
+          count,
+        });
+        row.addEventListener('click', (event) => {
+          event.preventDefault();
+          dropdown.close();
+          navigateInternal(monthHref(key));
+        });
+        listEl.appendChild(row);
+      }
+      if (!months.length) listEl.appendChild(emptyRow('no reviews yet'));
+    }
+
+    function emptyRow(text: string): HTMLElement {
+      const empty = document.createElement('div');
+      empty.className = 'picker-empty';
+      empty.textContent = text;
+      return empty;
+    }
+
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      ensurePanel();
+      dropdown.toggle();
+    });
+
+    window.addEventListener('lang-changed', () => {
+      root.__refreshDatePanel?.();
+    });
+  }
+
+  function initDatePickers() {
+    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach(bindDatePicker);
+  }
+
   function initTagPickers() {
     document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach(bindTagPicker);
   }
 
   if (!(window as DateSelectorWindow).__dateSelectorTagPageLoadBound) {
     (window as DateSelectorWindow).__dateSelectorTagPageLoadBound = true;
-    document.addEventListener('astro:page-load', initTagPickers);
+    document.addEventListener('astro:page-load', () => {
+      initDatePickers();
+      initTagPickers();
+    });
   }
+  initDatePickers();
   initTagPickers();
 </script>
 
@@ -393,52 +382,10 @@ const MONTH_NAMES = [
     gap: 0.5rem;
     flex-wrap: wrap;
   }
-  .ds-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--theme-text-muted);
-  }
-  .ds-select {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 44px;
-    border: 1px solid var(--theme-border);
-    border-radius: 0.375rem;
-    background-color: var(--theme-bg-elevated);
-    color: var(--theme-text-primary);
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .ds-select:hover {
-    border-color: var(--theme-accent);
-  }
-  .ds-select:focus {
-    border-color: var(--theme-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
-  }
-  .ds-go-btn {
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    min-height: 44px;
-    border: none;
-    border-radius: 0.375rem;
-    background-color: var(--theme-accent);
-    color: #fff;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .ds-go-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
   .ds-sep {
     color: var(--theme-border);
   }
-  .ds-tag-picker {
+  .ds-picker {
     position: relative;
   }
 
@@ -449,112 +396,3 @@ const MONTH_NAMES = [
   }
 </style>
 
-<style is:global>
-  .ds-tag-dropdown {
-    position: fixed;
-    width: 280px;
-    max-height: 400px;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--theme-border);
-    border-radius: 0.5rem;
-    background: var(--theme-bg-surface);
-    z-index: 99999;
-    opacity: 0;
-    pointer-events: none;
-    font-family: inherit;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    transition: opacity 0.1s;
-  }
-  .ds-tag-dropdown.is-open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .ds-tag-search-wrap {
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--theme-border);
-    flex-shrink: 0;
-  }
-  .ds-tag-search {
-    width: 100%;
-    padding: 0.5rem 0.625rem;
-    min-height: 36px;
-    font-size: 0.8125rem;
-    font-family: inherit;
-    border: 1px solid var(--theme-border);
-    border-radius: 0.375rem;
-    background: var(--theme-bg-elevated);
-    color: var(--theme-text-primary);
-    outline: none;
-    transition: border-color 0.15s;
-    box-sizing: border-box;
-  }
-  .ds-tag-search::placeholder {
-    color: var(--theme-text-muted);
-  }
-  .ds-tag-search:focus {
-    border-color: var(--theme-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 25%, transparent);
-  }
-  .ds-tag-list {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-    padding: 0.25rem 0;
-  }
-  .ds-tag-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 0.75rem;
-    min-height: 40px;
-    text-decoration: none;
-    color: var(--theme-text-secondary);
-    cursor: pointer;
-    transition:
-      background 0.1s,
-      color 0.1s;
-  }
-  .ds-tag-item:hover {
-    background: var(--theme-bg-hover);
-    color: var(--theme-text-primary);
-  }
-  .ds-tag-name {
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-  .ds-tag-count {
-    font-size: 0.6875rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 9999px;
-    background: var(--theme-bg-elevated);
-    color: var(--theme-text-muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .ds-tag-more {
-    flex-shrink: 0;
-    display: block;
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    min-height: 40px;
-    font-size: 0.75rem;
-    font-family: inherit;
-    font-weight: 500;
-    text-align: center;
-    border: none;
-    border-top: 1px solid var(--theme-border);
-    background: var(--theme-bg-surface);
-    color: var(--theme-accent);
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .ds-tag-more:hover {
-    background: var(--theme-bg-hover);
-  }
-  .ds-tag-empty {
-    padding: 1rem 0.75rem;
-    font-size: 0.8125rem;
-    color: var(--theme-text-muted);
-    text-align: center;
-  }
-</style>

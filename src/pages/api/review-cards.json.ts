@@ -3,8 +3,18 @@ import { getImage } from 'astro:assets';
 import { getBandcampData } from '../../lib/bandcamp';
 import { getPostColor } from '../../lib/colors';
 import { getPublishedPosts } from '../../lib/blog-data.mjs';
+import { getAlbumGeoSlug, getGeo, getPlaceLabel, getPlaceNames } from '../../lib/geo';
+import type { GeoCardPayload } from '../../lib/geo';
 import { HOME_REVIEW_INITIAL_POSTS } from '../../lib/feed-limits.mjs';
 import { toReviewCardPost } from '../../lib/post-payloads.mjs';
+
+/** Place of an album, ready for the card geo link. */
+function geoFor(slug: string): GeoCardPayload | null {
+  const geoSlug = getAlbumGeoSlug(slug);
+  const place = getGeo(geoSlug);
+  if (!geoSlug || !place) return null;
+  return { name: getPlaceLabel(place), slug: geoSlug, names: getPlaceNames(place) };
+}
 
 export const GET: APIRoute = async () => {
   const publishedPosts = await getPublishedPosts();
@@ -29,11 +39,15 @@ export const GET: APIRoute = async () => {
         }
       }
 
-      return toReviewCardPost(post, {
-        coverLg,
-        colorDark: color.dark,
-        colorAccent: color.accent,
-      });
+      return toReviewCardPost(
+        post,
+        {
+          coverLg,
+          colorDark: color.dark,
+          colorAccent: color.accent,
+        },
+        geoFor(post.id),
+      );
     }),
   );
 

@@ -52,6 +52,17 @@ test('toReviewCardPost returns only review-card fields', () => {
       coverLg: '/cover.webp',
       colorDark: '#111111',
       colorAccent: '#eeeeee',
+      geo: null,
     },
   );
+});
+
+test('toReviewCardPost carries the place when given', () => {
+  const geo = { name: 'Berlin', slug: 'berlin' };
+  const card = toReviewCardPost(
+    post,
+    { coverLg: null, colorDark: '#111111', colorAccent: '#eeeeee' },
+    geo,
+  );
+  assert.deepEqual(card.geo, geo);
 });

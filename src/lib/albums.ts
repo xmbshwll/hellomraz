@@ -6,13 +6,15 @@ import data from '../data/albums.json';
 
 export interface AlbumEntry {
   bandcampUrl?: string;
-  albumId?: string;
-  coverUrl?: string;
-  artist?: string;
-  album?: string;
+  /** Scraped fields are null when the Bandcamp page had no value. */
+  albumId?: string | null;
+  coverUrl?: string | null;
+  artist?: string | null;
+  album?: string | null;
   bcTags?: string[];
   releaseDate?: string;
   streaming?: { service: string; url: string }[];
+  geo?: string;
 }
 
 const albums = data as Record<string, AlbumEntry>;

@@ -1,7 +1,7 @@
 ---
 title: 'Total Con - TOTAL CON - WHO NEEDS THE PEACE CORPS?'
 pubDate: 2025-04-01
-tags: ['punk', 'hardcore punk', 'total con', 'uk punk.', 'milwaukee']
+tags: ['punk', 'hardcore punk', 'total con', 'uk punk.']
 ---
 
 ПОЛНАЯ КОНСЕРВА - КОМУ НУЖНЫ МИРОТВОРЦЫ? (2025)

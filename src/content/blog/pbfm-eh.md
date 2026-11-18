@@ -1,7 +1,7 @@
 ---
 title: 'PlasticBag FaceMask - ..eh'
 pubDate: 2024-12-13
-tags: ['deathcore', 'metal', 'hardcore', 'mathcore', 'metalcore', 'rock', 'fresno']
+tags: ['deathcore', 'metal', 'hardcore', 'mathcore', 'metalcore', 'rock']
 ---
 
 МАСКА ИЗ ПЛАСТИКОВОГО ПАКЕТА - ЧЕ? (2024)

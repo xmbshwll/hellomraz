@@ -1,7 +1,7 @@
 ---
 title: 'SHXCXCHCXSH - QQQO EP'
 pubDate: 2025-11-05
-tags: ['electronic', 'techno', 'rotterdam']
+tags: ['electronic', 'techno']
 ---
 
 Свежее EP любимого шведского дуэта обскурных техно экспериментаторов.

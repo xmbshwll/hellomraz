@@ -1,7 +1,7 @@
 ---
 title: 'Witness Wounds (P/O Massacre + Tomorrow I Feel Wrong) - Witness Wounds'
 pubDate: 2025-12-12
-tags: ['experimental', 'extreme metal', 'drone', 'free improvisation', 'noise', 'postrock', 'lyon']
+tags: ['experimental', 'extreme metal', 'drone', 'free improvisation', 'noise', 'postrock']
 ---
 
 **Witness Wounds — Witness Wounds** (2025)**

@@ -1,16 +1,7 @@
 ---
 title: "gegenpress - Don't Live For Heaven"
 pubDate: 2026-09-09
-tags:
-  [
-    'alternative',
-    'alternative rock',
-    'math rock',
-    'noise rock',
-    'post-hardcore',
-    'post-rock',
-    'London',
-  ]
+tags: ['alternative', 'alternative rock', 'math rock', 'noise rock', 'post-hardcore', 'post-rock']
 ---
 
 СОВРЕМЕННЫЕ СМИ МОРАЛЬНЫЙ БАНКРОТ - ЖИВИ ПО КАЙФУ, БРАТ (2026)

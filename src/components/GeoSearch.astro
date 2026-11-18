@@ -1,0 +1,295 @@
+---
+/**
+ * GeoSearch — header picker that walks the geo hierarchy
+ * (country → region → city) and opens a location's /geo listing.
+ *
+ * Reuses the tag picker panel look (src/styles/picker-dropdown.css).
+ *
+ * Props:
+ *   base – site base path, e.g. "/" (from import.meta.env.BASE_URL)
+ */
+interface Props {
+  base: string;
+}
+
+const { base } = Astro.props;
+---
+
+<div class="geo-search" data-base={base}>
+  <button
+    class="header-control-btn"
+    type="button"
+    data-geo-btn
+    aria-expanded="false"
+    aria-haspopup="listbox"
+  >
+    <span>#geo</span>
+    <span class="header-control-arrow" data-geo-arrow>▾</span>
+  </button>
+</div>
+
+<script>
+  import '../styles/picker-dropdown.css';
+  import type { GeoSearchEntry } from '../lib/geo';
+  import { pickPlaceName } from '../lib/geo-i18n.mjs';
+  import { navigateInternal } from '../lib/navigate';
+  import { getCurrentSiteLang, getSiteCopy } from '../lib/site-i18n.mjs';
+  import {
+    createPickerCrumbs,
+    createPickerFooter,
+    createPickerPanel,
+    createPickerPanelDom,
+    createPickerRow,
+    loadJsonCached,
+  } from '../lib/picker-panel';
+
+  type GeoEntry = GeoSearchEntry;
+
+  interface GeoRoot extends HTMLElement {
+    __geoBound?: boolean;
+    __geoPanel?: HTMLElement | null;
+    /** Re-render of the current panel, used by the language switch. */
+    __rerenderPanel?: () => void;
+  }
+
+  type GeoWindow = Window & { __geoSearchPageLoadBound?: boolean };
+
+  /** Countries shown at the root level. */
+  const ROOT = '';
+
+  const geoDataCache = new Map<string, Promise<GeoEntry[]>>();
+
+  function loadPlaces(base: string) {
+    return loadJsonCached(geoDataCache, `${base}api/geo.json`);
+  }
+
+  /** Localised name, used for ordering and rendering. */
+  function placeName(place?: GeoEntry): string {
+    return pickPlaceName(place?.names);
+  }
+
+  /** Biggest first, then alphabetical in the current language. */
+  function byCountThenName(a: GeoEntry, b: GeoEntry) {
+    return b.count - a.count || placeName(a).localeCompare(placeName(b));
+  }
+
+  function ensurePanel(root: GeoRoot, places: GeoEntry[], close: () => void) {
+    if (root.__geoPanel?.isConnected) {
+      return root.__geoPanel;
+    }
+
+    const base = root.dataset.base || '/';
+    const bySlug = new Map(places.map((place) => [place.slug, place]));
+    /** Drill-down stack: [] = countries, [country] = regions and cities, … */
+    let path: string[] = [];
+
+    function copy() {
+      return getSiteCopy('geoPicker', getCurrentSiteLang());
+    }
+
+    const { panel, searchInput, listEl } = createPickerPanelDom(copy().placeholder);
+
+    const crumbs = createPickerCrumbs(
+      () => copy().rootLabel,
+      (depth) => {
+        path = path.slice(0, depth);
+        searchInput.value = '';
+        render();
+      },
+    );
+    panel.insertBefore(crumbs.el, listEl);
+
+    // Static entry: the map page is reached from here, not from the sidebar.
+    const footer = createPickerFooter(`${base}map`, copy().footer, close);
+    panel.appendChild(footer);
+
+    /** Direct children of a place: regions first, then region-less cities. */
+    function childrenOf(parentSlug: string): GeoEntry[] {
+      if (parentSlug === ROOT) {
+        return places.filter((place) => place.type === 'country').sort(byCountThenName);
+      }
+      return places
+        .filter(
+          (place) =>
+            place.regionSlug === parentSlug ||
+            (place.countrySlug === parentSlug && !place.regionSlug),
+        )
+        .sort(byCountThenName);
+    }
+
+    function pathLabel() {
+      return path.map((slug) => placeName(bySlug.get(slug)) || slug);
+    }
+
+    /** Full location path for a search hit, e.g. "Germany / Bavaria". */
+    function trailFor(place: GeoEntry): string {
+      const parts = [placeName(bySlug.get(place.countrySlug)) || place.country];
+      if (place.regionSlug) parts.push(placeName(bySlug.get(place.regionSlug)));
+      // City-states repeat their own name as country and region.
+      const unique = parts.filter((part, index) => part && parts.indexOf(part) === index);
+      return unique.join(' / ');
+    }
+
+    /**
+     * Countries and regions always drill, so a click never closes the panel.
+     * A level without nested places shows a link to its listing instead.
+     */
+    function canDrill(place: GeoEntry): boolean {
+      return place.type !== 'city';
+    }
+
+    function appendRow(place: GeoEntry, meta: string) {
+      const drill = canDrill(place);
+      const link = createPickerRow({
+        href: `${base}geo/${encodeURIComponent(place.slug)}`,
+        name: placeName(place),
+        meta,
+        count: place.count,
+        drill,
+      });
+
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (drill) {
+          // The re-render removes this anchor, so stop the click here.
+          // Otherwise the floating dropdown sees a detached target and closes.
+          event.stopPropagation();
+          path = [...path, place.slug];
+          searchInput.value = '';
+          render();
+          return;
+        }
+        close();
+        navigateInternal(link.href);
+      });
+
+      listEl.appendChild(link);
+    }
+
+    function renderList(items: GeoEntry[], metaFor: (place: GeoEntry) => string) {
+      listEl.innerHTML = '';
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'picker-empty';
+        empty.textContent = copy().empty;
+        listEl.appendChild(empty);
+        return;
+      }
+      for (const place of items) appendRow(place, metaFor(place));
+    }
+
+    function render() {
+      const query = searchInput.value.toLowerCase().trim();
+      if (query) {
+        // Search ignores the current level and matches every place by name,
+        // country, or region.
+        const typeOrder: Record<string, number> = { country: 0, state: 1, city: 2 };
+        const matches = places
+          .filter((place) => {
+            const haystack = [
+              place.names.en,
+              place.names.ru,
+              place.names.de,
+              place.country,
+              placeName(bySlug.get(place.countrySlug)),
+              placeName(bySlug.get(place.regionSlug)),
+            ];
+            return haystack.some((value) => (value ?? '').toLowerCase().includes(query));
+          })
+          .sort(
+            (a, b) =>
+              byCountThenName(a, b) ||
+              (typeOrder[a.type] ?? 9) - (typeOrder[b.type] ?? 9) ||
+              placeName(a).localeCompare(placeName(b)),
+          );
+        crumbs.setTrail([]);
+        renderList(matches, (place) => (place.type === 'country' ? 'country' : trailFor(place)));
+        return;
+      }
+
+      crumbs.setTrail(pathLabel());
+      const parent = path[path.length - 1] ?? ROOT;
+      const children = childrenOf(parent);
+      renderList(children, () => '');
+      // Nothing nested here (for example a country whose albums are tagged at
+      // country level): offer its listing so the click still leads somewhere.
+      if (!children.length) {
+        const place = bySlug.get(parent);
+        const link = document.createElement('a');
+        link.href = `${base}geo/${encodeURIComponent(parent)}`;
+        link.className = 'picker-item picker-item--listing';
+        link.innerHTML = '<span class="picker-item__label"><span class="picker-item__name">open listing</span></span><span class="picker-item__chevron">›</span>';
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          close();
+          navigateInternal(link.href);
+        });
+        if (place) listEl.replaceChildren(link);
+      }
+    }
+
+    searchInput.addEventListener('input', render);
+
+    searchInput.addEventListener('keydown', (event) => {
+      const first = listEl.querySelector('.picker-item') as HTMLAnchorElement | null;
+      if (event.key === 'Enter' && first) {
+        event.preventDefault();
+        first.click();
+        return;
+      }
+      if (event.key === 'Backspace' && !searchInput.value && path.length) {
+        event.preventDefault();
+        path = path.slice(0, -1);
+        render();
+      }
+    });
+
+    render();
+    root.__geoPanel = panel;
+    // Language switch refreshes chrome and, while open, the list.
+    root.__rerenderPanel = () => {
+      searchInput.placeholder = copy().placeholder;
+      footer.textContent = copy().footer;
+      if (!panel.hidden) render();
+    };
+    return panel;
+  }
+
+  function bindGeoSearch(root: GeoRoot) {
+    if (root.__geoBound) return;
+    root.__geoBound = true;
+
+    const button = root.querySelector<HTMLButtonElement>('[data-geo-btn]');
+    const arrow = root.querySelector<HTMLElement>('[data-geo-arrow]');
+    if (!button || !arrow) return;
+
+    const dropdown = createPickerPanel({
+      button,
+      arrow,
+      getPanel: () => root.__geoPanel ?? null,
+    });
+
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const places = await loadPlaces(root.dataset.base || '/');
+      ensurePanel(root, places, () => dropdown.close());
+      dropdown.toggle();
+    });
+
+    // One listener per picker: the panel itself is rebuilt on navigation.
+    window.addEventListener('lang-changed', () => {
+      root.__rerenderPanel?.();
+    });
+  }
+
+  function initGeoSearch() {
+    document.querySelectorAll<GeoRoot>('.geo-search').forEach(bindGeoSearch);
+  }
+
+  if (!(window as GeoWindow).__geoSearchPageLoadBound) {
+    (window as GeoWindow).__geoSearchPageLoadBound = true;
+    document.addEventListener('astro:page-load', initGeoSearch);
+  }
+  initGeoSearch();
+</script>

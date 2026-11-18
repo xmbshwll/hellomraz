@@ -1,7 +1,7 @@
 ---
 title: 'INTERMISSION - Power Corrupts'
 pubDate: 2025-03-11
-tags: ['alternative', 'punk', 'san diego', 'garage', 'rock']
+tags: ['alternative', 'punk', 'garage', 'rock']
 ---
 
 ПЕРЕРЫВЧИК - ВЛАСТЬ РАЗВРАЩАЕТ (2025)

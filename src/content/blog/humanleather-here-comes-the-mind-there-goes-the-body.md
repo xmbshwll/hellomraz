@@ -1,7 +1,7 @@
 ---
 title: 'Human Leather - Here Comes The Mind, There Goes The Body'
 pubDate: 2025-09-05
-tags: ['punk', 'noise punk', 'noise rock', 'post-hardcore', 'post-punk', 'sludge', 'brighton']
+tags: ['punk', 'noise punk', 'noise rock', 'post-hardcore', 'post-punk', 'sludge']
 ---
 
 ЧЕЛОВЕЧЬЯ ШКУРА - ВНАЧАЛЕ МОЗГИ, ПОТОМ ТУЛОВИЩЕ (2025)

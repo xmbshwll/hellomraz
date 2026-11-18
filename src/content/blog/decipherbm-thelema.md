@@ -9,12 +9,10 @@ tags:
     'black thrash metal',
     'death metal',
     'dissonant black metal',
-    'greece',
     'greek black metal',
     'heavy metal',
     'melodic black metal',
     'thrash metal',
-    'Greece',
   ]
 ---
 

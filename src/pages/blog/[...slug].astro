@@ -12,6 +12,8 @@ import { getPostColor } from '../../lib/colors';
 import { getBandcampData } from '../../lib/bandcamp';
 import { getStreamingLinks } from '../../lib/streaming';
 import { getAlbum, getCoverThumb, parseArtistAlbum } from '../../lib/albums';
+import { getAlbumGeoSlug, getGeo, getPlaceLabel, placeNameAttr } from '../../lib/geo';
+import { globeIcon } from '../../lib/icons';
 import { getDateIndex, getLinkedTagNames, getPublishedPosts } from '../../lib/blog-data.mjs';
 import { encodeTagParam } from '../../lib/tag-path';
 import '../../layouts/styles/markdown.css';
@@ -66,6 +68,9 @@ const bcCover = bc?.coverUrl;
 const playerCover = getCoverThumb(slug, 'md') ?? bcCover;
 
 const albumEntry = getAlbum(slug);
+const geoSlug = getAlbumGeoSlug(slug);
+const geoPlace = getGeo(geoSlug);
+const geoLabel = getPlaceLabel(geoPlace);
 const albumTags = albumEntry?.bcTags;
 const parsed = parseArtistAlbum(postTitle);
 const albumArtist = albumEntry?.artist || parsed?.artist;
@@ -101,8 +106,6 @@ if (bcCover) {
 }
 
 const postDescription = post.data.description || `${postTitle} — music review on poeba.lu`;
-const wordCount = (post.body ?? '').trim().split(/\s+/).filter(Boolean).length;
-const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 const lightboxCover = bcCover?.replace(/_5\.jpg$/, '_2.jpg') ?? bcCover;
 const articleSchema = {
   '@context': 'https://schema.org',
@@ -192,8 +195,21 @@ const articleSchema = {
             );
           })}
         </div>
-        <div class="text-xs theme-text-muted">
-          {formattedDate} · {readingMinutes} min read
+        <div class="post-meta text-xs theme-text-muted">
+          <span>{formattedDate}</span>
+          {geoPlace && geoSlug && (
+            <>
+              <span class="post-meta__sep">·</span>
+              <a
+                class="post-geo"
+                href={`${base}geo/${geoSlug}`}
+                title="View all albums from this location"
+              >
+                <Fragment set:html={globeIcon()} />
+                <span data-geo-names={placeNameAttr(geoPlace)}>{geoLabel}</span>
+              </a>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -327,6 +343,33 @@ const articleSchema = {
     color: var(--theme-text-secondary);
     text-decoration: none;
   }
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+  }
+  @media (min-width: 768px) {
+    .post-meta {
+      justify-content: flex-start;
+    }
+  }
+  .post-geo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--theme-text-muted);
+    text-decoration: none;
+  }
+  .post-geo svg {
+    width: 0.8125rem;
+    height: 0.8125rem;
+    flex-shrink: 0;
+  }
+  .post-geo:hover {
+    color: var(--theme-accent);
+  }
   .post-tag-text,
   .post-tag-separator {
     color: var(--theme-text-muted);
@@ -343,10 +386,6 @@ const articleSchema = {
     width: min(100%, 70rem);
     margin-inline: auto;
     padding: 2.25rem 1rem 3rem;
-  }
-  /* Date jump widgets are noisy on single post pages */
-  .post-page :global(.date-selector) {
-    display: none;
   }
   .post-page-player-slot,
   .post-page-content {

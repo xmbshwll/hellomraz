@@ -1,7 +1,7 @@
 ---
 title: 'Le Pré Où Je Suis Mort - Le Pré Où Je Suis Mort (2025 Remaster)'
 pubDate: 2025-07-17
-tags: ['rock', 'emo', 'french', 'french screamo', 'post-hardcore', 'post-rock', 'screamo', 'geneva']
+tags: ['rock', 'emo', 'french', 'french screamo', 'post-hardcore', 'post-rock', 'screamo']
 ---
 
 Подгон для любителей фрэнч-скримо: группа **Le Pré Où Je Suis Mort** обзавелась бэндкэмпом, на который выложена отремастеренная версия их одноименной EP, выпущенной в 2008м году.

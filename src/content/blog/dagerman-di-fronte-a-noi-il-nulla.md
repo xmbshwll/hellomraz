@@ -1,8 +1,7 @@
 ---
 title: 'dagerman. - Di fronte a noi il nulla'
 pubDate: 2026-05-19
-tags:
-  ['diy', 'post-harcore', 'punk', 'diy punk', 'emoviolence', 'hardcore punk', 'screamo', 'Milan']
+tags: ['diy', 'post-harcore', 'punk', 'diy punk', 'emoviolence', 'hardcore punk', 'screamo']
 ---
 
 Анархо-миланцы со вторым полноформатником. Большое явное влияние итальянской школы скримо (что ожидаемо).

@@ -1,7 +1,7 @@
 ---
 title: 'KNEECAP - FENIAN'
 pubDate: 2026-05-04
-tags: ['hip hop', 'hip-hop/rap', 'irish rap', 'punk', 'rap', 'Belfast']
+tags: ['hip hop', 'hip-hop/rap', 'irish rap', 'punk', 'rap']
 ---
 
 Новый релиз главных возмутителей общественного спокойствия в Великобритании. Альбом с внушительной промо кампанией - рекламный баннер висит даже около моей работы в Берлине.

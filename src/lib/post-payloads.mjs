@@ -37,8 +37,9 @@ export function toTagPost(post) {
 /**
  * @param {BlogPost} post
  * @param {{ coverLg: string | null; colorDark: string; colorAccent: string }} media
+ * @param {{ name: string; slug: string } | null} [geo] place, when the album has one
  */
-export function toReviewCardPost(post, media) {
+export function toReviewCardPost(post, media, geo = null) {
   return {
     slug: post.id,
     title: post.data.title,
@@ -47,5 +48,6 @@ export function toReviewCardPost(post, media) {
     coverLg: media.coverLg,
     colorDark: media.colorDark,
     colorAccent: media.colorAccent,
+    geo,
   };
 }

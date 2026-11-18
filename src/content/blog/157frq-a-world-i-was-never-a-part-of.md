@@ -1,7 +1,7 @@
 ---
 title: '157frq - A World I Was Never a Part Of'
 pubDate: 2026-04-29
-tags: ['metal', 'metalcore', 'metalcore.', 'nu metal.', 'nu-metal', 'nu-metalcore', 'Michigan']
+tags: ['metal', 'metalcore', 'metalcore.', 'nu metal.', 'nu-metal', 'nu-metalcore']
 ---
 
 МАЗАФАКА РЕВАЙВАЛ АБСОЛЮТНО РЕАЛЕН

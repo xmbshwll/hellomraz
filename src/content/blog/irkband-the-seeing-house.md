@@ -1,16 +1,7 @@
 ---
 title: 'Irk - The Seeing House'
 pubDate: 2025-09-29
-tags:
-  [
-    'metal',
-    'nefarious industries',
-    'experimental rock',
-    'math rock',
-    'mathcore',
-    'noise rock',
-    'leeds',
-  ]
+tags: ['metal', 'nefarious industries', 'experimental rock', 'math rock', 'mathcore', 'noise rock']
 ---
 
 Довольно неожиданный второй альбом шумового трио из Лидса, на 7 лет замолчавших с релизами после выдающегося дебюта 18го года. Закрывается песней, посвященный не самому воспеваемому в массовой культуре берлинскому району Веддинг - там сейчас пиздатая площадь с героиновыми наркоманами сформировалась, скоро можно будет писать детей с станции Леопольдплац.

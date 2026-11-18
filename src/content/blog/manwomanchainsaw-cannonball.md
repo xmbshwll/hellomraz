@@ -1,17 +1,7 @@
 ---
 title: 'Man/Woman/Chainsaw - Cannonball'
 pubDate: 2026-08-07
-tags:
-  [
-    'alterantive',
-    'punk',
-    'alternative rock',
-    'art punk',
-    'art rock',
-    'indie rock',
-    'post-punk',
-    'London',
-  ]
+tags: ['alterantive', 'punk', 'alternative rock', 'art punk', 'art rock', 'indie rock', 'post-punk']
 ---
 
 Мощнейший долгожданный дебют британской шестерки, вписывающейся в последний тренд сложносочиненных арт рок коллективов, составленных из выпускников музыкальных учебных заведений - Black Midi, BCNR и иже с ними. Красивый, цельный и очень сложносочиненный релиз о сложностях жизни и отношений.

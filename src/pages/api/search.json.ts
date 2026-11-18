@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getAlbum, parseArtistAlbum } from '../../lib/albums';
+import { getGeo } from '../../lib/geo';
 import { getPublishedPosts } from '../../lib/blog-data.mjs';
 
 export const GET: APIRoute = async () => {
@@ -9,12 +10,15 @@ export const GET: APIRoute = async () => {
     const parsed = parseArtistAlbum(post.data.title);
     const artist = albumEntry?.artist?.trim() || parsed?.artist || '';
     const album = albumEntry?.album?.trim() || parsed?.album || post.data.title;
+    const geoSlug = albumEntry && typeof albumEntry.geo === 'string' ? albumEntry.geo : undefined;
+    const geo = getGeo(geoSlug);
 
     return {
       slug: post.id,
       title: post.data.title,
       artist,
       album,
+      geo: geo?.name ?? '',
     };
   });
 

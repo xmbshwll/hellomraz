@@ -1,7 +1,7 @@
 ---
 title: 'UltraNothing - UltraNothing s/t E.P.'
 pubDate: 2025-01-30
-tags: ['punk', 'melanchopunk', 'noise', 'noise rock', 'post-punk', 'shoegaze', 'luxembourg']
+tags: ['punk', 'melanchopunk', 'noise', 'noise rock', 'post-punk', 'shoegaze']
 ---
 
 УЛЬТРАНИХУЯ - ВООБЩЕ НИХУЯ (2024)

@@ -1,8 +1,7 @@
 ---
 title: 'Yersin - Born Alone, Die Alone'
 pubDate: 2026-07-10
-tags:
-  ['crust punk', 'grindcore', 'metal', 'thrash', 'crust punk', 'grindcore', 'thrash', 'Sunderland']
+tags: ['crust punk', 'grindcore', 'metal', 'thrash', 'crust punk', 'grindcore', 'thrash']
 ---
 
 Британцы издавна знали толк в хорошем красте и метале - как известно еще Король Артур сказал знаменитую фразу "Жизнь это просто мгновение между рождением и смертью, в которое мы хуярим краст и получаем по ебалу". Третий альбом хорошего трио из Сандерленда с чумных островов.

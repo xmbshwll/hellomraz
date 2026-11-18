@@ -1,7 +1,7 @@
 ---
 title: "trait d'union - tristesse préventive"
 pubDate: 2026-08-27
-tags: ['punk', 'cold wave', 'coldwave', 'new wave', 'post-punk', 'Toulouse']
+tags: ['punk', 'cold wave', 'coldwave', 'new wave', 'post-punk']
 ---
 
 Отличный сумрачный колдвейв из Тулузы, в наличии трек с названем ХОРНИПОСТИНГ - 11 из 10.

@@ -1,7 +1,7 @@
 ---
 title: 'Barren Path - Grieving'
 pubDate: 2025-11-07
-tags: ['metal', 'deathgrind', 'grindcore', 'kyoto']
+tags: ['metal', 'deathgrind', 'grindcore']
 ---
 
 Отличный, очень быстрый и бьющий прямо куда надо грайндкор от перезапуска GRINDLINK в виде новой команды с заменой вокалиста. Мощнейший дебют, 12 песен, 14 минут, все как надо.

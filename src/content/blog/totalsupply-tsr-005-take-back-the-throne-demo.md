@@ -1,7 +1,7 @@
 ---
 title: "King's Command - Take Back the Throne: Deluxe Edition"
 pubDate: 2026-10-07
-tags: ['punk', 'hardcore', 'Detroit']
+tags: ['punk', 'hardcore']
 ---
 
 ВСЯ КОРОЛЕВСКАЯ РАТЬ - ИГРА ПРЕСТОЛОВ (2026)

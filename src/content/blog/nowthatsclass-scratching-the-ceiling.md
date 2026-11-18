@@ -1,7 +1,7 @@
 ---
 title: 'Class - Scratching the Ceiling'
 pubDate: 2026-11-13
-tags: ['punk', 'garage', 'glam', 'power pop', 'proto punk', "rock'n'roll", 'United States']
+tags: ['punk', 'garage', 'glam', 'power pop', 'proto punk', 'rock''n''roll']
 ---
 
 Классовую борьбу то еще никто не отменял.

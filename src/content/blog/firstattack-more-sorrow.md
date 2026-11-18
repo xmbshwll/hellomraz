@@ -1,7 +1,7 @@
 ---
 title: 'FIRST ATTACK - MORE SORROW'
 pubDate: 2026-09-28
-tags: ['oi!', 'punk', 'canada', 'canada punk', 'skinhead', 'Vancouver']
+tags: ['oi!', 'punk', 'canada punk', 'skinhead']
 ---
 
 Второй альбом ванкуверского скинья, играющего отличный Oi!. Несмотря на название - запись на удивления оставляет жизнеутверждающее ощущение после прослушивания.

@@ -37,7 +37,9 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
 <script>
   import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
+  import { navigateInternal } from '../lib/navigate';
   import {
+    getSearchResultGeoLabel,
     getSearchResultPrimaryLabel,
     getSearchResultSecondaryLabel,
     prepareSearchEntries,
@@ -49,6 +51,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     title: string;
     artist?: string;
     album?: string;
+    geo?: string;
   }
 
   interface PreparedSearchEntry extends SearchRawEntry {
@@ -56,6 +59,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     titleSearch: string;
     artistSearch: string;
     albumSearch: string;
+    geoSearch: string;
     searchText: string;
   }
 
@@ -64,21 +68,6 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   let cachedBase = '';
   let cachedEntries: PreparedSearchEntry[] | null = null;
   let loadingPromise: Promise<PreparedSearchEntry[]> | null = null;
-
-  function navigateInternal(url: string) {
-    const navigate = (
-      window as Window & {
-        __hellomrazNavigate?: (href: string) => Promise<void> | void;
-      }
-    ).__hellomrazNavigate;
-
-    if (typeof navigate === 'function') {
-      void navigate(url);
-      return;
-    }
-
-    window.location.assign(url);
-  }
 
   async function loadSearchIndex(base: string): Promise<PreparedSearchEntry[]> {
     if (cachedEntries && cachedBase === base) return cachedEntries;
@@ -145,6 +134,14 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
         meta.className = 'header-search-result-meta';
         meta.textContent = secondary;
         link.appendChild(meta);
+      }
+
+      const geoLabel = getSearchResultGeoLabel(entry);
+      if (geoLabel) {
+        const geo = document.createElement('span');
+        geo.className = 'header-search-result-geo';
+        geo.textContent = `◉ ${geoLabel}`;
+        link.appendChild(geo);
       }
 
       list.appendChild(link);
@@ -535,6 +532,11 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     display: block;
     font-size: 0.75rem;
     color: var(--theme-text-muted);
+  }
+  .header-search-result-geo {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--theme-accent);
   }
   .header-search-message {
     display: block;

@@ -1,7 +1,7 @@
 ---
 title: 'paper hats (UK) - "Once was enough"'
 pubDate: 2026-09-10
-tags: ['alternative', 'ep', 'extended play', 'math rock', 'noise rock', 'post-hardcore', 'London']
+tags: ['alternative', 'ep', 'extended play', 'math rock', 'noise rock', 'post-hardcore']
 ---
 
 Когда возраст и здоровье уже не позволяют круглосуточно пить пиво и слушать гринду, то становится понятно, что наиболее подходящий музыкальный жанр для думающего мужчины 35+ лет - это нойз рок. Посему продолжаем - дебютное EP подающей надежды четверки из Лондона.

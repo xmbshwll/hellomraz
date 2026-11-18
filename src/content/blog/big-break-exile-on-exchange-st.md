@@ -1,7 +1,7 @@
 ---
 title: 'Big Break - Exile On Exchange St'
 pubDate: 2025-06-05
-tags: ['punk', 'garage punk', 'sheffield']
+tags: ['punk', 'garage punk']
 ---
 
 Шеффилдцы вылезли из своего гаража, чтобы порадовать нас свежим 4 трековым EP. Больше классической гараж панк структуры в песнях, чем в предыдущем творчестве.

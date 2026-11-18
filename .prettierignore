@@ -5,3 +5,6 @@ node_modules
 package-lock.json
 src/data/albums.json
 src/data/videos.json
+src/data/geo.geojson
+src/data/world.geojson
+src/data/regions.geojson

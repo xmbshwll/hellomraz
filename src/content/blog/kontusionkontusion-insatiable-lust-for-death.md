@@ -1,7 +1,7 @@
 ---
 title: 'KONTUSION - Insatiable Lust For Death'
 pubDate: 2025-08-19
-tags: ['metal', 'death metal', 'metalpunk', 'united states']
+tags: ['metal', 'death metal', 'metalpunk']
 ---
 
 КОНТУЗИЯ - ВОТ БЫ СДОХНУТЬ ПОСКОРЕЕ УЖЕ (2025)

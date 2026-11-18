@@ -1,7 +1,7 @@
 ---
 title: 'Citizen - Halcyon Blues'
 pubDate: 2026-08-11
-tags: ['punk', 'rock', 'emo', 'punk rock', 'Michigan']
+tags: ['punk', 'rock', 'emo', 'punk rock']
 ---
 
 Новый альбом уже ветеранов поп-эмо сцены с 17летней историей, родом из Мичигана. Коллектив никогда не ронял планку, так и здесь - хорошая жанровая запись.

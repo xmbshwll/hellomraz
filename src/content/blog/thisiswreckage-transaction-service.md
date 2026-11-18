@@ -1,16 +1,7 @@
 ---
 title: 'This Is Wreckage - Transaction/Service'
 pubDate: 2025-02-21
-tags:
-  [
-    'alternative',
-    'alternative rock',
-    'amphetamine reptile',
-    'noise rock',
-    'post-punk',
-    'touch and go',
-    'cardiff',
-  ]
+tags: ['alternative', 'alternative rock', 'amphetamine reptile', 'noise rock', 'post-punk', 'touch and go']
 ---
 
 ЭТО ПИЗДАРИКИ - ТРАНЗАКЦИОННЫЙ СЕРВИС (2025)

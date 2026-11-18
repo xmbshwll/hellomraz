@@ -1,7 +1,7 @@
 ---
 title: 'XBONGX - XBONGX'
 pubDate: 2026-09-23
-tags: ['metal', 'emoviolence', 'grindcore', 'mathcore', 'mathgrind', 'screamo', 'Massachusetts']
+tags: ['metal', 'emoviolence', 'grindcore', 'mathcore', 'mathgrind', 'screamo']
 ---
 
 И еще эмоционального насилия, теперь из Массачусетса.

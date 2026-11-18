@@ -1,7 +1,7 @@
 ---
 title: 'Artificial Go - Musical Chairs'
 pubDate: 2025-05-20
-tags: ['punk', 'post-punk', 'cincinnati']
+tags: ['punk', 'post-punk']
 ---
 
 Многообещающее трио из Цинцинатти возвращается через год после дебюта с порцией из еще 10 отличных треков на стыке артового пост панка и бедрум попа.

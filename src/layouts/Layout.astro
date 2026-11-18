@@ -125,6 +125,13 @@ const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-daw
         });
       })();
     </script>
+    <!-- Place labels follow the language switcher. -->
+    <script>
+      import { initPlaceNameSwitching } from '../lib/geo-i18n.mjs';
+
+      initPlaceNameSwitching();
+    </script>
+
     <!-- Analytics loads after first interaction or idle time in production. -->
     <script>
       if (import.meta.env.PROD) {

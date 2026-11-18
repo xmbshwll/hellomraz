@@ -1,8 +1,7 @@
 ---
 title: 'Pardoner - Target Practice'
 pubDate: 2026-10-16
-tags:
-  ['alternative', 'punk', 'rock', 'indie rock', 'jangle', 'punk', 'san francisco', 'San Francisco']
+tags: ['alternative', 'punk', 'rock', 'indie rock', 'jangle', 'punk']
 ---
 
 Любимые инди лузеры с заднего двора где-то в Сан Франциско с новым альбомам. Не устану повторять - невероятно хуковая и хитовая группа, с таким качеством песенного материала коллектив уже давно должен попасть в высшую лигу и заслуживает куда большей популярности.

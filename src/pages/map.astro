@@ -1,0 +1,981 @@
+---
+import PageHeader from '../components/PageHeader.astro';
+import Layout from '../layouts/Layout.astro';
+import { getDateIndex } from '../lib/blog-data.mjs';
+import {
+  getAllGeoPlaces,
+  getGeo,
+  getGeoCounts,
+  getPlaceNameList,
+  getPopulatedGeoSugs,
+} from '../lib/geo';
+import {
+  MAP_HEIGHT,
+  MAP_WIDTH,
+  areaToSvgPath,
+  projectToMap,
+  type AreaCollection,
+} from '../lib/geojson';
+import worldGeo from '../data/world.geojson';
+import regionsGeo from '../data/regions.geojson';
+
+const dateIndex = await getDateIndex();
+const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+
+const W = MAP_WIDTH;
+const H = MAP_HEIGHT;
+
+/** Country and region shapes, drawn with the shared equirectangular projection. */
+const countryShapes = (worldGeo as AreaCollection).features.map((feature) => ({
+  name: feature.properties.name,
+  d: areaToSvgPath(feature.geometry),
+}));
+const regionShapes = (regionsGeo as AreaCollection).features.map((feature) => ({
+  name: feature.properties.name,
+  // Region outlines carry the geo slug as id, so the link target is exact.
+  slug: feature.id,
+  d: areaToSvgPath(feature.geometry),
+}));
+
+const populated = new Set(getPopulatedGeoSugs());
+const geoPlaces = getAllGeoPlaces();
+/** Album count per place, descendants included, computed in one pass. */
+const geoCounts = getGeoCounts();
+
+/** Build a clickable entry (dot or polygon target) for a geo slug. */
+function toEntry(slug: string) {
+  const place = getGeo(slug) ?? { name: slug, lat: 0, lng: 0, cc: '', type: 'city' as const };
+  const [x, y] = projectToMap([place.lng, place.lat]);
+  return {
+    slug,
+    type: place.type,
+    x,
+    y,
+    count: geoCounts.get(slug) ?? 0,
+    href: `${base}geo/${slug}`,
+    region: place.region,
+    country: place.country,
+    // Dot labels and tooltips build from this one triple.
+    names: getPlaceNameList(place),
+  };
+}
+
+// Only cities with albums get a dot, so seeded places stay out of the payload.
+// Regions (states) and countries are polygons.
+const markers = Object.keys(geoPlaces)
+  .filter((slug) => geoPlaces[slug].type === 'city' && (geoCounts.get(slug) ?? 0) > 0)
+  .map(toEntry);
+const states = [...populated].filter((slug) => getGeo(slug)?.type === 'state').map(toEntry);
+const countries = [...populated].filter((slug) => getGeo(slug)?.type === 'country').map(toEntry);
+
+const litMarkers = markers.length;
+const totalBands = countries.reduce((sum, country) => sum + country.count, 0);
+const markerPayload = JSON.stringify([...markers, ...states, ...countries]);
+
+/** Normalize a name for loose country-polygon → geo-slug matching. */
+function normalizeName(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function nameMatches(a: string, b: string): boolean {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  return na === nb || na.includes(nb) || nb.includes(na);
+}
+
+const geoCountryNameToSlug: Record<string, string> = {};
+const geoStateNameToSlug: Record<string, string> = {};
+for (const [slug, place] of Object.entries(geoPlaces)) {
+  if (place.type === 'country') geoCountryNameToSlug[place.name] = slug;
+  if (place.type === 'state') geoStateNameToSlug[place.name] = slug;
+}
+const polygonExactAliases: Record<string, string> = {
+  'Czech Republic': 'czechia',
+  Czechia: 'czechia',
+};
+
+/** Geo slug for a drawn polygon, or undefined when the country has no data. */
+function polygonGeoSlug(name: string): string | undefined {
+  let resolved =
+    polygonExactAliases[name] ??
+    geoCountryNameToSlug[name] ??
+    (() => {
+      const hit = Object.values(geoPlaces).find(
+        (place) => place.type === 'country' && nameMatches(place.name, name),
+      );
+      return hit ? geoCountryNameToSlug[hit.name] : undefined;
+    })();
+  return resolved && populated.has(resolved) ? resolved : undefined;
+}
+
+/** Geo slug for a drawn region (US state) polygon, or undefined when inert.
+ * Uses an exact name match so region names never conflate (e.g. West
+ * Virginia vs Virginia). */
+function regionGeoSlug(name: string): string | undefined {
+  const hit = Object.values(geoPlaces).find(
+    (place) => place.type === 'state' && normalizeName(place.name) === normalizeName(name),
+  );
+  const slug = hit ? geoStateNameToSlug[hit.name] : undefined;
+  return slug && populated.has(slug) ? slug : undefined;
+}
+---
+
+<Layout title="Geo map" description={`${litMarkers} cities with reviews · ${totalBands} bands`}>
+  <div class="map-page min-h-full theme-surface" data-map-page>
+    <PageHeader dateIndex={dateIndex} />
+
+    <div class="map-page__content">
+      <div class="map-page__header">
+        <h1 class="map-page__title theme-text-primary">$ geo</h1>
+        <p class="map-page__subtitle theme-text-muted">
+          {litMarkers} cities with reviews · {totalBands} bands — scroll or ± to zoom, click a place
+        </p>
+      </div>
+
+      <div class="map-wrap theme-elevated" data-map-wrap data-base={base}>
+        <svg
+          class="world-map"
+          viewBox={`0 0 ${W} ${H}`}
+          role="application"
+          aria-label="Zoomable world map of reviewed bands by location"
+        >
+          <g class="map-zoom">
+            <g class="world-land">
+              {countryShapes.map((country) => {
+                const slug = polygonGeoSlug(country.name);
+                return (
+                  <path
+                    class:list={['world-country', { 'is-link': !!slug }]}
+                    d={country.d}
+                    vector-effect="non-scaling-stroke"
+                    data-geo={slug ?? undefined}
+                    data-name={country.name}
+                  />
+                );
+              })}
+            </g>
+
+            <g class="world-regions">
+              {regionShapes.map((region) => {
+                const slug = populated.has(region.slug) ? region.slug : regionGeoSlug(region.name);
+                return (
+                  <path
+                    class:list={['world-region', { 'is-link': !!slug }]}
+                    d={region.d}
+                    fill-rule="evenodd"
+                    vector-effect="non-scaling-stroke"
+                    data-geo={slug ?? undefined}
+                    data-name={region.name}
+                  />
+                );
+              })}
+            </g>
+
+            <g class="geo-markers"></g>
+          </g>
+        </svg>
+
+        <div class="map-zoom-controls" aria-label="Map zoom controls">
+          <button type="button" class="map-zoom-btn" data-map-zoom="in" aria-label="Zoom in">
+            +
+          </button>
+          <button type="button" class="map-zoom-btn" data-map-zoom="out" aria-label="Zoom out">
+            −
+          </button>
+        </div>
+
+        <div class="map-tooltip" hidden data-map-tooltip></div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { pickPlaceName } from '../lib/geo-i18n.mjs';
+  import { joinPlaceLabel } from '../lib/place-label.mjs';
+
+  const W = 960;
+  const H = 480; // worldmap.json dimensions (svg viewBox)
+
+  interface MapEntry {
+    slug: string;
+    type: string;
+    x: number;
+    y: number;
+    count: number;
+    href: string;
+    region?: string;
+    country?: string;
+    /** Place name per language. */
+    names: { en: string; ru: string; de: string };
+  }
+
+  const markersPayload = (() => {
+    const script = document.getElementById('__geo_payload') as HTMLScriptElement | null;
+    if (!script?.textContent) return [];
+    try {
+      return JSON.parse(script.textContent) as MapEntry[];
+    } catch {
+      return [];
+    }
+  })();
+  // Only cities that actually have albums are drawn; "huge city" bookmarks
+  // with no reviews are skipped (their /geo pages still exist).
+  const cityEntries = markersPayload.filter((entry) => entry.type === 'city' && entry.count > 0);
+
+  function findEntry(slug: string): MapEntry | undefined {
+    return markersPayload.find((m) => m.slug === slug);
+  }
+
+  function navigateTo(href: string) {
+    const navigate = (
+      window as Window & { __hellomrazNavigate?: (href: string) => void | Promise<void> }
+    ).__hellomrazNavigate;
+    if (typeof navigate === 'function') {
+      void navigate(href);
+    } else {
+      window.location.href = href;
+    }
+  }
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /** City names shown in a cluster tooltip before the list is cut off. */
+  const CLUSTER_NAME_LIMIT = 8;
+
+  /** Tooltip is informational only: a name plus the band amount, no links. */
+  function tooltipBody(title: string, count: number, hint = ''): string {
+    return `
+      <div class="map-tooltip__title">${escapeHtml(title)}</div>
+      <div class="map-tooltip__count">${count} band${count === 1 ? '' : 's'}${hint}</div>
+    `;
+  }
+
+  function placeName(entry: MapEntry): string {
+    return pickPlaceName(entry.names);
+  }
+
+  /** Tooltips and cluster lists use "City, Country", cities only. */
+  function placeLabel(entry: MapEntry): string {
+    const name = pickPlaceName(entry.names);
+    if (entry.type !== 'city') return name;
+    const countryName = pickPlaceName(findEntry(entry.country ?? '')?.names);
+    return joinPlaceLabel(name, countryName);
+  }
+
+  function renderTooltip(entry: MapEntry): string {
+    return tooltipBody(placeLabel(entry), entry.count);
+  }
+
+  /** Cluster tooltips list the cities merged into the dot, plus their total. */
+  function renderClusterTooltip(members: MapEntry[]): string {
+    const totalBands = members.reduce((sum, city) => sum + city.count, 0);
+    const names = members.map(placeLabel).sort((a, b) => a.localeCompare(b));
+    const shown = names.slice(0, CLUSTER_NAME_LIMIT);
+    const rest = names.length - shown.length;
+    const rows = shown
+      .map((name) => `<div class="map-tooltip__name">${escapeHtml(name)}</div>`)
+      .join('');
+    const more = rest > 0 ? `<div class="map-tooltip__name">+${rest} more</div>` : '';
+    // Coarse zoom clusters group regions and countries, not only cities.
+    const allCities = members.every((city) => city.type === 'city');
+    const title = `${members.length} ${allCities ? 'cities' : 'places'}`;
+    return `${tooltipBody(title, totalBands, ' · click to zoom in')}
+      <div class="map-tooltip__names">${rows}${more}</div>`;
+  }
+
+  /** Tooltip for a US state dot shown at coarse zoom (click zooms into its cities). */
+  function renderStateTooltip(entry: MapEntry): string {
+    return tooltipBody(placeLabel(entry), entry.count, ' · click to zoom in');
+  }
+
+  interface RenderMarker {
+    kind: 'city' | 'cluster' | 'state';
+    slug?: string;
+    /** Localised text drawn next to the dot. */
+    text?: string;
+    x: number;
+    y: number;
+    r: number;
+    /** Desired dot radius in screen px (independent of zoom). */
+    screenR: number;
+    members?: string[];
+    /** Badge number shown inside aggregate dots (city count). */
+    badge?: number;
+  }
+
+  function bindMap() {
+    const wrap = document.querySelector<HTMLElement>('[data-map-wrap]');
+    const svg = wrap?.querySelector<SVGSVGElement>('.world-map');
+    const tooltip = wrap?.querySelector<HTMLElement>('[data-map-tooltip]');
+    const zoomGroup = svg?.querySelector<SVGGElement>('.map-zoom');
+    const markersEl = svg?.querySelector<SVGGElement>('.geo-markers');
+    if (!wrap || !svg || !tooltip || !zoomGroup || !markersEl) return;
+    if (wrap.dataset.mapBound === 'true') return;
+    wrap.dataset.mapBound = 'true';
+
+    let k = 1;
+    let tx = 0;
+    let ty = 0;
+    const MIN_K = 1;
+    const MAX_K = 400;
+    // Below K_SPLIT the US is shown as one dot per state; above it states
+    // fall apart into their city dots. CLUSTER_PX is the screen distance at
+    // which markers merge (distance clustering → no overlapping dots).
+    const K_SPLIT = 3.5;
+    // Centers keep ≥ CLUSTER_PX (× uiScale) apart; max dot radius is 15 (× uiScale),
+    // so dots never cover each other. The distance is small enough that close
+    // pairs (Manchester and Salford) split apart while zooming in.
+    const CLUSTER_PX = 30;
+    /** CSS-pixel scale: how many screen px per svg user unit. */
+    function scale() {
+      return svg.getBoundingClientRect().width / W;
+    }
+    /**
+     * Adapts dot sizes (and clustering distance) to the rendered map width so
+     * the map looks right in any browser window: 1 at the 960px reference
+     * width, larger/smaller on wider/narrower viewports, clamped so dots stay
+     * tappable on phones and not oversized on wide screens.
+     */
+    function uiScale() {
+      const width = svg.getBoundingClientRect().width || W;
+      return Math.min(1.5, Math.max(0.7, width / W));
+    }
+
+    /** Convert a client point to svg user coordinates (hit tests, zoom). */
+    function toUserPoint(clientX: number, clientY: number) {
+      const rect = svg.getBoundingClientRect();
+      const s = scale();
+      return { x: (clientX - rect.left) / s, y: (clientY - rect.top) / s };
+    }
+
+    function zoomAt(sx: number, sy: number, factor: number) {
+      const cx = (sx - tx) / k;
+      const cy = (sy - ty) / k;
+      const next = Math.min(MAX_K, Math.max(MIN_K, k * factor));
+      if (next === k) return;
+      tx = sx - cx * next;
+      ty = sy - cy * next;
+      k = next;
+      applyTransform();
+    }
+
+    /** Cities belonging to a state/country dot (used for fit-to-bounds). */
+    function citiesFor(entry: MapEntry): MapEntry[] {
+      if (entry.type === 'state') return cityEntries.filter((c) => c.region === entry.slug);
+      if (entry.type === 'country') return cityEntries.filter((c) => c.country === entry.slug);
+      return [];
+    }
+
+    /**
+     * Zoom/pan so the given local-space points fill the viewport with padding —
+     * the SVG equivalent of map.fitBounds(cluster.bounds), so a click frames
+     * exactly the members of that cluster instead of guessing a zoom factor.
+     */
+    function fitToPoints(points: Array<{ x: number; y: number }>) {
+      if (!points.length) return false;
+      const xs = points.map((p) => p.x);
+      const ys = points.map((p) => p.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const padding = 1.6; // 80% margin around the bounds
+      const spanX = Math.max((maxX - minX) * padding, 6);
+      const spanY = Math.max((maxY - minY) * padding, 6);
+      const target = Math.min(W / spanX, H / spanY);
+      // Always make progress: don't zoom out on a click.
+      const next = Math.min(MAX_K, Math.max(k * 1.25, target));
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      tx = W / 2 - cx * next;
+      ty = H / 2 - cy * next;
+      k = next;
+      applyTransform();
+      return true;
+    }
+
+    // --- Markers: hierarchical clustering, split when zoomed ---
+    let rendered: RenderMarker[] = [];
+    let recomputeQueued = false;
+
+    const stateEntries = markersPayload.filter(
+      (entry) => entry.type === 'state' && entry.count > 0,
+    );
+    // Coarse view shows one dot per US state and one dot per (non-US) country,
+    // not individual cities. US is handled via its states, so its country dot
+    // is dropped here.
+    const countryEntries = markersPayload.filter(
+      (entry) => entry.type === 'country' && entry.count > 0 && entry.slug !== 'united-states',
+    );
+
+    function projectCity(entry: MapEntry) {
+      return { x: entry.x * k + tx, y: entry.y * k + ty };
+    }
+
+    /** Desired dot radius in SCREEN px; grows with albums, constant across zoom. */
+    function radiusFor(albums: number, max: number): number {
+      return Math.min(max, 4 + Math.sqrt(albums) * 0.7);
+    }
+
+    function recomputeMarkers() {
+      const s = scale();
+      // Coarse view: US = one dot per state; elsewhere city clusters.
+      // Fine view: cities (states fall apart into their city dots).
+      const sources = k < K_SPLIT ? [...stateEntries, ...countryEntries] : cityEntries;
+
+      // Connected-components clustering: merge any markers closer than a
+      // screen threshold. Because actual screen separation ≈ distance × zoom,
+      // the same threshold splits clusters apart as you zoom in.
+      const n = sources.length;
+      const parent = Array.from({ length: n }, (_, i) => i);
+      const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+      const union = (a: number, b: number) => {
+        const ra = find(a);
+        const rb = find(b);
+        if (ra !== rb) parent[ra] = rb;
+      };
+      const pos = sources.map(projectCity);
+      // Screen-px distances scale with the rendered map width too, so the
+      // clustering stays proportional in any window size.
+      const ui = uiScale();
+      const threshold = (CLUSTER_PX * ui) / s;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const dx = pos[i].x - pos[j].x;
+          const dy = pos[i].y - pos[j].y;
+          if (dx * dx + dy * dy < threshold * threshold) union(i, j);
+        }
+      }
+      const groups = new Map<number, number[]>();
+      for (let i = 0; i < n; i++) {
+        const root = find(i);
+        const list = groups.get(root) ?? [];
+        list.push(i);
+        groups.set(root, list);
+      }
+
+      // Markers carry LOCAL (pre-transform) coordinates; the zoom group applies
+      // translate/scale to them at render time. Dot SIZE is fixed in screen px
+      // (radius / zoomW) so dots never grow over each other as you zoom in.
+      const zoomW = k * scale();
+      rendered = [];
+      for (const idxs of groups.values()) {
+        const items = idxs.map((i) => sources[i]);
+        const albums = items.reduce((sum, c) => sum + c.count, 0);
+        if (idxs.length === 1) {
+          const c = items[0];
+          const screenR =
+            radiusFor(albums, c.type === 'state' || c.type === 'country' ? 15 : 12) * ui;
+          rendered.push({
+            kind: c.type === 'state' || c.type === 'country' ? 'state' : 'city',
+            slug: c.slug,
+            text: placeName(c),
+            x: c.x,
+            y: c.y,
+            r: screenR / zoomW,
+            screenR,
+          });
+        } else {
+          const total = items.reduce((sum, c) => sum + Math.max(1, c.count), 0);
+          let sx = 0;
+          let sy = 0;
+          for (const c of items) {
+            const w = Math.max(1, c.count);
+            sx += c.x * w;
+            sy += c.y * w;
+          }
+          // Aggregate dots always carry a count, so keep them large enough
+          // for the number to stay legible.
+          const screenR = Math.max(radiusFor(albums, 12), 8) * ui;
+          rendered.push({
+            kind: 'cluster',
+            x: sx / total,
+            y: sy / total,
+            r: screenR / zoomW,
+            screenR,
+            members: items.map((c) => c.slug),
+            badge: items.length,
+          });
+        }
+      }
+      renderMarkers();
+    }
+
+    function queueRecompute() {
+      if (recomputeQueued) return;
+      recomputeQueued = true;
+      requestAnimationFrame(() => {
+        recomputeQueued = false;
+        recomputeMarkers();
+      });
+    }
+
+    function renderMarkers() {
+      // Text sizes are given in user units. One user unit renders as zoomW px,
+      // so a label keeps a constant screen size at any zoom.
+      const zoomW = k * scale();
+      const ui = uiScale();
+      const html = rendered
+        .map((m) => {
+          const data =
+            m.slug !== undefined
+              ? `data-geo="${m.slug}"`
+              : `data-cluster="${(m.members ?? []).join(',')}"`;
+          const kinds = [
+            m.kind === 'cluster' ? 'geo-cluster' : '',
+            m.kind === 'state' ? 'geo-state' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          // Aggregate dots get a count badge (like a marker-clusterer label).
+          // Font size is expressed in user units so it stays ~constant on screen.
+          const badge =
+            m.badge !== undefined
+              ? `<text class="geo-marker-badge" y="0" font-size="${(m.r * 1.15).toFixed(3)}" text-anchor="middle" dominant-baseline="central">${m.badge}</text>`
+              : '';
+          // City names sit beside the dot. Aggregate dots show no label.
+          const label =
+            m.kind === 'city' && m.text
+              ? `<text class="geo-marker-label" x="${(m.r + 2 / zoomW).toFixed(3)}" y="0" font-size="${((8.5 * ui) / zoomW).toFixed(3)}" stroke-width="${((1.6 * ui) / zoomW).toFixed(3)}" dominant-baseline="central">${escapeHtml(m.text)}</text>`
+              : '';
+          return `<g class="geo-marker ${kinds}" ${data} tabindex="0" role="button" aria-label="${m.slug ?? `${m.members?.length} cities`}" transform="translate(${m.x} ${m.y})"><circle class="geo-marker-hit" r="${m.r + 6}"/><circle class="geo-marker-dot" r="${m.r}" vector-effect="non-scaling-stroke"/>${badge}${label}</g>`;
+        })
+        .join('');
+      markersEl.innerHTML = html;
+    }
+
+    function applyTransform() {
+      zoomGroup.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
+      queueRecompute();
+    }
+
+    // --- Interaction (markers are pointer-events:none; hit-test in code) ---
+    function projectMarker(m: RenderMarker) {
+      return { x: m.x * k + tx, y: m.y * k + ty };
+    }
+
+    function hitTest(clientX: number, clientY: number): RenderMarker | null {
+      const s = scale();
+      const pt = toUserPoint(clientX, clientY);
+      let best: RenderMarker | null = null;
+      let bestD = Infinity;
+      for (const m of rendered) {
+        const hit = (m.kind !== 'city' ? m.screenR + 12 : 16) / s;
+        const pos = projectMarker(m);
+        const dx = pos.x - pt.x;
+        const dy = pos.y - pt.y;
+        const dist = dx * dx + dy * dy;
+        if (dist < hit * hit && dist < bestD) {
+          bestD = dist;
+          best = m;
+        }
+      }
+      return best;
+    }
+
+    function markHover(index: number) {
+      Array.from(markersEl.children).forEach((el, i) => {
+        el.classList.toggle('is-hovered', i === index);
+      });
+    }
+
+    function positionTooltip(clientX: number, clientY: number, fallback: [number, number]) {
+      const rect = wrap.getBoundingClientRect();
+      const [px, py] = fallback;
+      const x = Math.min(clientX, rect.left + rect.width) - rect.left;
+      const y = Math.min(clientY, rect.top + rect.height) - rect.top;
+      const pad = 12;
+      const tw = tooltip.offsetWidth || 200;
+      const th = tooltip.offsetHeight || 160;
+      let left = x + pad;
+      let top = y + pad;
+      if (left + tw > rect.width) left = x - tw - pad;
+      if (top + th > rect.height) top = y - th - pad;
+      tooltip.style.left = `${Math.max(0, left)}px`;
+      tooltip.style.top = `${Math.max(0, top)}px`;
+    }
+
+    let pointerDown = false;
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+    let clickTarget: Element | null = null;
+
+    const onPointerDown = (event: PointerEvent) => {
+      pointerDown = true;
+      moved = false;
+      startX = event.clientX;
+      startY = event.clientY;
+      clickTarget = (event.target as Element).closest?.('[data-geo]') ?? null;
+      svg.setPointerCapture(event.pointerId);
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (!pointerDown) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+      if (moved) {
+        tx += dx;
+        ty += dy;
+        startX = event.clientX;
+        startY = event.clientY;
+        applyTransform();
+      }
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      if (!pointerDown) return;
+      pointerDown = false;
+      if (!moved) {
+        const hit = hitTest(event.clientX, event.clientY);
+        if (hit) {
+          if (hit.kind !== 'city') {
+            // Cluster or state/country dot: frame its members, like
+            // map.fitBounds(cluster.bounds).
+            const entry = hit.slug ? findEntry(hit.slug) : undefined;
+            const memberCities = entry
+              ? citiesFor(entry)
+              : (hit.members ?? [])
+                  .map((slug) => findEntry(slug))
+                  .filter((e): e is MapEntry => !!e);
+            const fitted = memberCities.length > 1 ? fitToPoints(memberCities) : false;
+            if (!fitted) {
+              const pt = toUserPoint(event.clientX, event.clientY);
+              zoomAt(pt.x, pt.y, 3);
+            }
+          } else if (hit.slug) {
+            const entry = findEntry(hit.slug);
+            if (entry) navigateTo(entry.href);
+          }
+        } else if (clickTarget) {
+          const slug = clickTarget.getAttribute('data-geo');
+          if (slug) navigateTo(`${wrap.dataset.base ?? ''}geo/${encodeURIComponent(slug)}`);
+        }
+      }
+      clickTarget = null;
+    };
+
+    function hideTooltip() {
+      tooltip.hidden = true;
+      markHover(-1);
+    }
+
+    const onMove = (event: MouseEvent) => {
+      if (pointerDown) return;
+      const hit = hitTest(event.clientX, event.clientY);
+      if (hit) {
+        const index = rendered.indexOf(hit);
+        markHover(index);
+        if (hit.kind === 'cluster') {
+          tooltip.innerHTML = renderClusterTooltip(
+            (hit.members ?? []).map((slug) => findEntry(slug)).filter((e): e is MapEntry => !!e),
+          );
+          positionTooltip(event.clientX, event.clientY, [hit.x, hit.y]);
+        } else if (hit.kind === 'state' && hit.slug) {
+          const entry = findEntry(hit.slug);
+          if (entry) {
+            tooltip.innerHTML = renderStateTooltip(entry);
+            positionTooltip(event.clientX, event.clientY, [hit.x, hit.y]);
+          }
+        } else if (hit.slug) {
+          const entry = findEntry(hit.slug);
+          if (entry) {
+            tooltip.innerHTML = renderTooltip(entry);
+            positionTooltip(event.clientX, event.clientY, [hit.x, hit.y]);
+          }
+        }
+        tooltip.hidden = false;
+        return;
+      }
+      markHover(-1);
+      const geoEl = (event.target as Element).closest?.('[data-geo]') ?? null;
+      if (geoEl) {
+        const entry = findEntry(geoEl.getAttribute('data-geo') ?? '');
+        if (entry) {
+          tooltip.innerHTML = renderTooltip(entry);
+          tooltip.hidden = false;
+          positionTooltip(event.clientX, event.clientY, [0, 0]);
+          return;
+        }
+      }
+      if (!tooltip.hidden) tooltip.hidden = true;
+    };
+    const onOut = () => {
+      hideTooltip();
+    };
+
+    svg.addEventListener('wheel', (event: WheelEvent) => {
+      event.preventDefault();
+      const pt = toUserPoint(event.clientX, event.clientY);
+      zoomAt(pt.x, pt.y, event.deltaY < 0 ? 1.16 : 1 / 1.16);
+    });
+    wrap.querySelectorAll<HTMLButtonElement>('[data-map-zoom]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // zoom centered on the svg (user-space center of the viewBox)
+        zoomAt(W / 2, H / 2, btn.dataset.mapZoom === 'in' ? 1.5 : 1 / 1.5);
+      });
+    });
+    window.addEventListener('resize', queueRecompute);
+    // Language switch: rebuild markers so labels use the new names.
+    wrap.addEventListener('map-relabel', () => recomputeMarkers());
+    svg.addEventListener('pointerdown', onPointerDown);
+    svg.addEventListener('pointermove', onPointerMove);
+    svg.addEventListener('pointerup', onPointerUp);
+    svg.addEventListener('pointercancel', () => {
+      pointerDown = false;
+    });
+    svg.addEventListener('mousemove', onMove);
+    svg.addEventListener('mouseleave', onOut);
+
+    // Keyboard: focus a marker → tooltip; Enter/Space → zoom (cluster) or open (city).
+    markersEl.addEventListener('focusin', (event) => {
+      const markerEl = event.target as SVGElement;
+      const match = markerEl
+        .getAttribute('transform')
+        ?.match(/translate\(([-\d.]+)[, ]+\s*([-\d.]+)\)/);
+      const index = Array.from(markersEl.children).indexOf(markerEl);
+      const marker = rendered[index];
+      if (!marker) return;
+      markHover(index);
+      const pt = { x: marker.x, y: marker.y };
+      if (marker.kind === 'cluster') {
+        tooltip.innerHTML = renderClusterTooltip(
+          (marker.members ?? []).map((slug) => findEntry(slug)).filter((e): e is MapEntry => !!e),
+        );
+      } else if (marker.kind === 'state' && marker.slug) {
+        const entry = findEntry(marker.slug);
+        if (!entry) return;
+        tooltip.innerHTML = renderStateTooltip(entry);
+      } else if (marker.slug) {
+        const entry = findEntry(marker.slug);
+        if (!entry) return;
+        tooltip.innerHTML = renderTooltip(entry);
+      } else {
+        return;
+      }
+      const wrapRect = wrap.getBoundingClientRect();
+      const markerRect = markerEl.getBoundingClientRect();
+      tooltip.hidden = false;
+      tooltip.style.left = `${markerRect.left - wrapRect.left + markerRect.width / 2}px`;
+      tooltip.style.top = `${markerRect.top - wrapRect.top + markerRect.height + 6}px`;
+    });
+    markersEl.addEventListener('focusout', (event) => {
+      if ((event.target as SVGElement).closest?.('.geo-marker')) hideTooltip();
+    });
+    markersEl.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      const target = event.target as SVGElement;
+      const index = Array.from(markersEl.children).indexOf(target);
+      const marker = rendered[index];
+      if (!marker) return;
+      if (marker.kind !== 'city') {
+        const pos = projectMarker(marker);
+        zoomAt(pos.x, pos.y, 3);
+      } else if (marker.slug) {
+        const entry = findEntry(marker.slug);
+        if (entry) navigateTo(entry.href);
+      }
+    });
+
+    applyTransform();
+    recomputeMarkers();
+  }
+
+  // Language switch: relabel dots and drop a tooltip in the old language.
+  window.addEventListener('lang-changed', () => {
+    document.querySelectorAll<HTMLElement>('[data-map-wrap]').forEach((wrap) => {
+      const tooltip = wrap.querySelector<HTMLElement>('[data-map-tooltip]');
+      if (tooltip) tooltip.hidden = true;
+      wrap.dispatchEvent(new CustomEvent('map-relabel'));
+    });
+  });
+
+  document.addEventListener('astro:page-load', bindMap);
+  bindMap();
+</script>
+
+<script id="__geo_payload" type="application/json" set:html={markerPayload} />
+<style>
+  .map-page {
+    min-height: 100%;
+    background-color: var(--theme-bg-surface);
+  }
+  .map-page__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+  .map-page__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .map-page__subtitle {
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0;
+  }
+  .map-wrap {
+    position: relative;
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-bg-elevated);
+    overflow: hidden;
+  }
+  .world-map {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+  }
+  .world-country {
+    fill: color-mix(in srgb, var(--theme-bg-hover) 55%, var(--theme-bg-base));
+    stroke: color-mix(in srgb, var(--theme-border) 80%, transparent);
+    stroke-width: 0.4;
+  }
+  .world-country.is-link {
+    cursor: pointer;
+    fill: color-mix(in srgb, var(--theme-bg-hover) 42%, var(--theme-bg-base));
+  }
+  .world-country.is-link:hover {
+    fill: color-mix(in srgb, var(--theme-accent) 28%, var(--theme-bg-hover));
+  }
+  .world-region {
+    fill: none;
+    stroke: color-mix(in srgb, var(--theme-border) 70%, transparent);
+    stroke-width: 0.5;
+    pointer-events: none;
+  }
+  .world-region.is-link {
+    pointer-events: auto;
+    fill: color-mix(in srgb, var(--theme-accent) 7%, transparent);
+    stroke: var(--theme-accent);
+    stroke-width: 0.8;
+  }
+  .world-region.is-link:hover {
+    fill: color-mix(in srgb, var(--theme-accent) 34%, transparent);
+  }
+  .map-zoom-controls {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    z-index: 5;
+  }
+  .map-zoom-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-surface);
+    color: var(--theme-text-primary);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .map-zoom-btn:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
+  .map-tooltip {
+    position: absolute;
+    min-width: 11rem;
+    max-width: 18rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    color: var(--theme-text-primary);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+
+<!-- Markers and tooltip children are created with innerHTML at runtime, so
+     they are NOT scoped with data-astro-cid — their styles must be global. -->
+<style is:global>
+  .geo-marker {
+    pointer-events: none;
+    outline: none;
+  }
+  .geo-marker-hit {
+    fill: transparent;
+  }
+  .geo-marker-dot {
+    fill: var(--theme-accent);
+    stroke: var(--theme-bg-base);
+    stroke-width: 0.6;
+  }
+  .geo-marker.geo-cluster .geo-marker-dot {
+    fill: color-mix(in srgb, var(--theme-accent) 72%, var(--theme-bg-base));
+  }
+  .geo-marker.geo-state .geo-marker-dot {
+    fill: var(--theme-accent);
+    stroke: var(--theme-bg-base);
+    stroke-width: 1.4;
+  }
+  .geo-marker-badge {
+    fill: var(--theme-bg-base);
+    font-weight: 700;
+    font-family: inherit;
+    pointer-events: none;
+    user-select: none;
+  }
+  .geo-marker-label {
+    fill: var(--theme-text-secondary);
+    font-family: inherit;
+    pointer-events: none;
+    user-select: none;
+    /* Halo width comes from the marker markup: it must scale with zoom, else
+       the stroke turns into a dark plate around the name. */
+    paint-order: stroke;
+    stroke: var(--theme-bg-surface);
+    stroke-linejoin: round;
+  }
+  .geo-marker.is-hovered .geo-marker-label,
+  .geo-marker:focus .geo-marker-label {
+    fill: var(--theme-accent);
+  }
+  .geo-marker.is-hovered .geo-marker-dot,
+  .geo-marker:focus .geo-marker-dot {
+    fill: var(--theme-accent-hover);
+    stroke-width: 1.6;
+  }
+</style>
+<style is:global>
+  .map-tooltip__title {
+    font-weight: 600;
+    color: var(--theme-accent);
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.6875rem;
+  }
+  .map-tooltip__count {
+    color: var(--theme-text-muted);
+    margin-bottom: 0.375rem;
+  }
+  .map-tooltip__names {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+  }
+  .map-tooltip__name {
+    color: var(--theme-text-secondary);
+  }
+</style>

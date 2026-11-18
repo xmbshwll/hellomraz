@@ -1,7 +1,7 @@
 ---
 title: 'LUME - Blinding Love'
 pubDate: 2026-09-08
-tags: ['rock', 'desert rock', 'indie', 'post-hardcore', 'post-rock', 'slowcore', 'Chicago']
+tags: ['rock', 'desert rock', 'indie', 'post-hardcore', 'post-rock', 'slowcore']
 ---
 
 Отличное чикагское трио возвращается после пятилетнего молчания. Тягучий, на грани с слоукором, пост-хардкор с грустными текстами о печальной жизни. Очень приятная запись.

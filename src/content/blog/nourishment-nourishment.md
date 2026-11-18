@@ -1,7 +1,7 @@
 ---
 title: 'Nourishment - Nourishment'
 pubDate: 2026-02-18
-tags: ['metal', 'black metal', 'deathrock', 'post-punk', 'united states']
+tags: ['metal', 'black metal', 'deathrock', 'post-punk']
 ---
 
 Очень производительные американцы (3 EP и дебютный полноформатник в 25ом году) со вторым лонгплеем. Занятная смесь колдвейва и постпанка с блэком - наверное так будут общаться люди, выживающие в канализации после ядерного апокалипсиса.

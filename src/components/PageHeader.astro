@@ -1,10 +1,12 @@
 ---
 import '../styles/selectable-dropdown.css';
 import DateSelector from './DateSelector.astro';
+import GeoSearch from './GeoSearch.astro';
 import HeaderSearch from './HeaderSearch.astro';
 import LangSwitcher from './LangSwitcher.astro';
 import ThemeChooser from './ThemeChooser.astro';
 import { BUY_ME_A_COFFEE_LINK, RSS_LINK, TELEGRAM_LINK, getSiteLinkHref } from '../lib/site-links';
+import { getMonthCounts } from '../lib/blog-data.mjs';
 
 interface Props {
   dateIndex: Record<string, number>;
@@ -13,6 +15,7 @@ interface Props {
 }
 
 const { dateIndex, currentYear, currentMonth } = Astro.props;
+const monthCounts = await getMonthCounts();
 const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const buyMeACoffeeHref = getSiteLinkHref(BUY_ME_A_COFFEE_LINK, base);
 const rssHref = getSiteLinkHref(RSS_LINK, base);
@@ -38,10 +41,13 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
     <HeaderSearch />
     <DateSelector
       dateIndex={dateIndex}
+      monthCounts={monthCounts}
       baseUrl={`${base}blog`}
       currentYear={currentYear}
       currentMonth={currentMonth}
-    />
+    >
+      <GeoSearch base={base} />
+    </DateSelector>
   </div>
 
   <div class="header-actions">
@@ -216,14 +222,11 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
       display: none;
     }
 
-    :global(.ds-label),
     :global(.ds-sep) {
       display: none;
     }
 
-    :global(.ds-select),
-    :global(.ds-go-btn),
-    :global(.ds-tag-picker) {
+    :global(.ds-picker) {
       flex: 0 0 auto;
     }
 

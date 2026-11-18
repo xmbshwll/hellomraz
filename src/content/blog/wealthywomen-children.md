@@ -1,7 +1,7 @@
 ---
 title: 'Wealthy Women - Children'
 pubDate: 2026-10-15
-tags: ['metal', 'rock', 'san francisco', 'noise', 'noise rock', 'sludge', 'San Francisco']
+tags: ['metal', 'rock', 'noise', 'noise rock', 'sludge']
 ---
 
 В трио из Сан Франциско под названием ОБЕСПЕЧЕННЫЕ ЖЕНЩИНЫ на самом деле нет ни одной женщины. Но это и пожалуй его единственный недостаток - это хороший фузовый немного шумный батя рок (но мог бы быть мама рок).
