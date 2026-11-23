@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hellomraz-runtime-v1';
+const CACHE_NAME = 'hellomraz-runtime-v2';
 const CORE_FILES = ['', 'offline.html', 'manifest.webmanifest', 'pwa-192.png', 'pwa-512.png'];
 
 function getScopeUrl(path = '') {
@@ -46,25 +46,48 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (!shouldCache(request)) return;
 
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
+  // The build hashes these assets, so the same URL always holds the same
+  // bytes. Serve them from cache and skip the revalidation round trip.
+  const url = new URL(request.url);
+  if (url.pathname.includes('/_astro/')) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
 
-        return response;
-      })
-      .catch(async () => {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-
-        if (request.mode === 'navigate') {
-          return caches.match(getScopeUrl('offline.html'));
-        }
-
-        throw new Error('Network error');
-      }),
-  );
+  event.respondWith(networkFirst(request));
 });
+
+function putInCache(request, response) {
+  if (!response.ok) return;
+
+  const copy = response.clone();
+  void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+}
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  const response = await fetch(request);
+  putInCache(request, response);
+
+  return response;
+}
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    putInCache(request, response);
+
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    if (request.mode === 'navigate') {
+      return caches.match(getScopeUrl('offline.html'));
+    }
+
+    throw new Error('Network error');
+  }
+}

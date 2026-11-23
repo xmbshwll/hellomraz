@@ -2,20 +2,9 @@
 import PageHeader from '../components/PageHeader.astro';
 import Layout from '../layouts/Layout.astro';
 import { getDateIndex } from '../lib/blog-data.mjs';
-import {
-  getAllGeoPlaces,
-  getGeo,
-  getGeoCounts,
-  getPlaceNameList,
-  getPopulatedGeoSugs,
-} from '../lib/geo';
-import {
-  MAP_HEIGHT,
-  MAP_WIDTH,
-  areaToSvgPath,
-  projectToMap,
-  type AreaCollection,
-} from '../lib/geojson';
+import { getAllGeoPlaces, getPopulatedGeoSugs } from '../lib/geo';
+import { MAP_HEIGHT, MAP_WIDTH, areaToSvgPath, type AreaCollection } from '../lib/geojson';
+import { buildGeoMarkers } from '../lib/geo-markers';
 import worldGeo from '../data/world.geojson';
 import regionsGeo from '../data/regions.geojson';
 
@@ -39,38 +28,8 @@ const regionShapes = (regionsGeo as AreaCollection).features.map((feature) => ({
 
 const populated = new Set(getPopulatedGeoSugs());
 const geoPlaces = getAllGeoPlaces();
-/** Album count per place, descendants included, computed in one pass. */
-const geoCounts = getGeoCounts();
-
-/** Build a clickable entry (dot or polygon target) for a geo slug. */
-function toEntry(slug: string) {
-  const place = getGeo(slug) ?? { name: slug, lat: 0, lng: 0, cc: '', type: 'city' as const };
-  const [x, y] = projectToMap([place.lng, place.lat]);
-  return {
-    slug,
-    type: place.type,
-    x,
-    y,
-    count: geoCounts.get(slug) ?? 0,
-    href: `${base}geo/${slug}`,
-    region: place.region,
-    country: place.country,
-    // Dot labels and tooltips build from this one triple.
-    names: getPlaceNameList(place),
-  };
-}
-
-// Only cities with albums get a dot, so seeded places stay out of the payload.
-// Regions (states) and countries are polygons.
-const markers = Object.keys(geoPlaces)
-  .filter((slug) => geoPlaces[slug].type === 'city' && (geoCounts.get(slug) ?? 0) > 0)
-  .map(toEntry);
-const states = [...populated].filter((slug) => getGeo(slug)?.type === 'state').map(toEntry);
-const countries = [...populated].filter((slug) => getGeo(slug)?.type === 'country').map(toEntry);
-
-const litMarkers = markers.length;
-const totalBands = countries.reduce((sum, country) => sum + country.count, 0);
-const markerPayload = JSON.stringify([...markers, ...states, ...countries]);
+/** Album counts shared with the map marker payload. */
+const { cityCount: litMarkers, bandCount: totalBands } = buildGeoMarkers();
 
 /** Normalize a name for loose country-polygon → geo-slug matching. */
 function normalizeName(value: string): string {
@@ -198,37 +157,37 @@ function regionGeoSlug(name: string): string | undefined {
 <script>
   import { pickPlaceName } from '../lib/geo-i18n.mjs';
   import { joinPlaceLabel } from '../lib/place-label.mjs';
+  import type { GeoMarkerEntry } from '../lib/geo-markers';
 
   const W = 960;
   const H = 480; // worldmap.json dimensions (svg viewBox)
 
-  interface MapEntry {
-    slug: string;
-    type: string;
-    x: number;
-    y: number;
-    count: number;
-    href: string;
-    region?: string;
-    country?: string;
-    /** Place name per language. */
-    names: { en: string; ru: string; de: string };
-  }
-
-  const markersPayload = (() => {
-    const script = document.getElementById('__geo_payload') as HTMLScriptElement | null;
-    if (!script?.textContent) return [];
-    try {
-      return JSON.parse(script.textContent) as MapEntry[];
-    } catch {
-      return [];
-    }
-  })();
+  let markersPayload: GeoMarkerEntry[] = [];
   // Only cities that actually have albums are drawn; "huge city" bookmarks
   // with no reviews are skipped (their /geo pages still exist).
-  const cityEntries = markersPayload.filter((entry) => entry.type === 'city' && entry.count > 0);
+  let cityEntries: GeoMarkerEntry[] = [];
 
-  function findEntry(slug: string): MapEntry | undefined {
+  let markersRequest: Promise<GeoMarkerEntry[]> | null = null;
+
+  /** Marker payload is fetched, not inlined, so the map HTML stays small. */
+  function loadMarkers(base: string): Promise<GeoMarkerEntry[]> {
+    if (!markersRequest) {
+      markersRequest = fetch(`${base}api/geo-markers.json`)
+        .then((response) => (response.ok ? response.json() : []))
+        .catch(() => []) as Promise<GeoMarkerEntry[]>;
+    }
+    return markersRequest;
+  }
+
+  async function initMap() {
+    const wrap = document.querySelector<HTMLElement>('[data-map-wrap]');
+    if (!wrap) return;
+    markersPayload = await loadMarkers(wrap.dataset.base || '/');
+    cityEntries = markersPayload.filter((entry) => entry.type === 'city' && entry.count > 0);
+    bindMap();
+  }
+
+  function findEntry(slug: string): GeoMarkerEntry | undefined {
     return markersPayload.find((m) => m.slug === slug);
   }
 
@@ -262,24 +221,24 @@ function regionGeoSlug(name: string): string | undefined {
     `;
   }
 
-  function placeName(entry: MapEntry): string {
+  function placeName(entry: GeoMarkerEntry): string {
     return pickPlaceName(entry.names);
   }
 
   /** Tooltips and cluster lists use "City, Country", cities only. */
-  function placeLabel(entry: MapEntry): string {
+  function placeLabel(entry: GeoMarkerEntry): string {
     const name = pickPlaceName(entry.names);
     if (entry.type !== 'city') return name;
     const countryName = pickPlaceName(findEntry(entry.country ?? '')?.names);
     return joinPlaceLabel(name, countryName);
   }
 
-  function renderTooltip(entry: MapEntry): string {
+  function renderTooltip(entry: GeoMarkerEntry): string {
     return tooltipBody(placeLabel(entry), entry.count);
   }
 
   /** Cluster tooltips list the cities merged into the dot, plus their total. */
-  function renderClusterTooltip(members: MapEntry[]): string {
+  function renderClusterTooltip(members: GeoMarkerEntry[]): string {
     const totalBands = members.reduce((sum, city) => sum + city.count, 0);
     const names = members.map(placeLabel).sort((a, b) => a.localeCompare(b));
     const shown = names.slice(0, CLUSTER_NAME_LIMIT);
@@ -296,7 +255,7 @@ function regionGeoSlug(name: string): string | undefined {
   }
 
   /** Tooltip for a US state dot shown at coarse zoom (click zooms into its cities). */
-  function renderStateTooltip(entry: MapEntry): string {
+  function renderStateTooltip(entry: GeoMarkerEntry): string {
     return tooltipBody(placeLabel(entry), entry.count, ' · click to zoom in');
   }
 
@@ -372,7 +331,7 @@ function regionGeoSlug(name: string): string | undefined {
     }
 
     /** Cities belonging to a state/country dot (used for fit-to-bounds). */
-    function citiesFor(entry: MapEntry): MapEntry[] {
+    function citiesFor(entry: GeoMarkerEntry): GeoMarkerEntry[] {
       if (entry.type === 'state') return cityEntries.filter((c) => c.region === entry.slug);
       if (entry.type === 'country') return cityEntries.filter((c) => c.country === entry.slug);
       return [];
@@ -420,7 +379,7 @@ function regionGeoSlug(name: string): string | undefined {
       (entry) => entry.type === 'country' && entry.count > 0 && entry.slug !== 'united-states',
     );
 
-    function projectCity(entry: MapEntry) {
+    function projectCity(entry: GeoMarkerEntry) {
       return { x: entry.x * k + tx, y: entry.y * k + ty };
     }
 
@@ -648,7 +607,7 @@ function regionGeoSlug(name: string): string | undefined {
               ? citiesFor(entry)
               : (hit.members ?? [])
                   .map((slug) => findEntry(slug))
-                  .filter((e): e is MapEntry => !!e);
+                  .filter((e): e is GeoMarkerEntry => !!e);
             const fitted = memberCities.length > 1 ? fitToPoints(memberCities) : false;
             if (!fitted) {
               const pt = toUserPoint(event.clientX, event.clientY);
@@ -679,7 +638,7 @@ function regionGeoSlug(name: string): string | undefined {
         markHover(index);
         if (hit.kind === 'cluster') {
           tooltip.innerHTML = renderClusterTooltip(
-            (hit.members ?? []).map((slug) => findEntry(slug)).filter((e): e is MapEntry => !!e),
+            (hit.members ?? []).map((slug) => findEntry(slug)).filter((e): e is GeoMarkerEntry => !!e),
           );
           positionTooltip(event.clientX, event.clientY, [hit.x, hit.y]);
         } else if (hit.kind === 'state' && hit.slug) {
@@ -751,7 +710,7 @@ function regionGeoSlug(name: string): string | undefined {
       const pt = { x: marker.x, y: marker.y };
       if (marker.kind === 'cluster') {
         tooltip.innerHTML = renderClusterTooltip(
-          (marker.members ?? []).map((slug) => findEntry(slug)).filter((e): e is MapEntry => !!e),
+          (marker.members ?? []).map((slug) => findEntry(slug)).filter((e): e is GeoMarkerEntry => !!e),
         );
       } else if (marker.kind === 'state' && marker.slug) {
         const entry = findEntry(marker.slug);
@@ -802,11 +761,12 @@ function regionGeoSlug(name: string): string | undefined {
     });
   });
 
-  document.addEventListener('astro:page-load', bindMap);
-  bindMap();
+  document.addEventListener('astro:page-load', () => {
+    void initMap();
+  });
+  void initMap();
 </script>
 
-<script id="__geo_payload" type="application/json" set:html={markerPayload} />
 <style>
   .map-page {
     min-height: 100%;

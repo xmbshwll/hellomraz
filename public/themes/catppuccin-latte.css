@@ -1,0 +1,41 @@
+/* Theme: Catppuccin Latte (Light). Extracted from src/styles/themes.css. */
+/* === Catppuccin Latte (Light) === */
+html[data-theme='catppuccin-latte'] {
+  --theme-bg-base: #eff1f5;
+  --theme-bg-surface: #e6e9ef;
+  --theme-bg-elevated: #dce0e8;
+  --theme-bg-hover: #ccd0da;
+  --theme-bg-active: #bcc0cc;
+
+  --theme-text-primary: #4c4f69;
+  --theme-text-secondary: #5c5f77;
+  --theme-text-muted: #7c7f93;
+  --theme-text-inverted: #eff1f5;
+
+  --theme-border: #ccd0da;
+  --theme-border-subtle: #dce0e8;
+
+  --theme-accent: #1e66f5;
+  --theme-accent-hover: #209fb5;
+  --theme-accent-tag-bg: #dce0e8;
+  --theme-accent-tag-text: #4c4f69;
+
+  --theme-code-bg: #303446;
+  --theme-code-text: #c6d0f5;
+  --theme-code-inline-bg: #dce0e8;
+  --theme-code-inline-text: #d20f39;
+
+  --theme-blockquote-bg: #dce0e8;
+  --theme-blockquote-border: #1e66f5;
+
+  --theme-success: #40a02b;
+  --theme-warning: #df8e1d;
+  --theme-error: #d20f39;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #ccd0da;
+  --theme-scrollbar-thumb-hover: #bcc0cc;
+
+  color-scheme: light;
+}

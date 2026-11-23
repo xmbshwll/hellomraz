@@ -1,0 +1,41 @@
+/* Theme: Catppuccin Frappé (Dark). Extracted from src/styles/themes.css. */
+/* === Catppuccin Frappé (Dark) === */
+html[data-theme='catppuccin-frappe'] {
+  --theme-bg-base: #303446;
+  --theme-bg-surface: #414559;
+  --theme-bg-elevated: #51576d;
+  --theme-bg-hover: #626880;
+  --theme-bg-active: #626880;
+
+  --theme-text-primary: #c6d0f5;
+  --theme-text-secondary: #b5bfe2;
+  --theme-text-muted: #737994;
+  --theme-text-inverted: #303446;
+
+  --theme-border: #51576d;
+  --theme-border-subtle: #414559;
+
+  --theme-accent: #8caaee;
+  --theme-accent-hover: #85c1dc;
+  --theme-accent-tag-bg: #51576d;
+  --theme-accent-tag-text: #c6d0f5;
+
+  --theme-code-bg: #303446;
+  --theme-code-text: #c6d0f5;
+  --theme-code-inline-bg: #414559;
+  --theme-code-inline-text: #e78284;
+
+  --theme-blockquote-bg: #414559;
+  --theme-blockquote-border: #8caaee;
+
+  --theme-success: #a6d189;
+  --theme-warning: #e5c890;
+  --theme-error: #e78284;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #51576d;
+  --theme-scrollbar-thumb-hover: #626880;
+
+  color-scheme: dark;
+}

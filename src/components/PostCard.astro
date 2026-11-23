@@ -95,6 +95,8 @@ const geoPlace = getGeo(geoSlug);
 <style is:global>
   /* PostCard styles — global so both server-rendered and JS-injected cards match */
   .post-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
     position: relative;
     display: flex;
     flex-direction: column;

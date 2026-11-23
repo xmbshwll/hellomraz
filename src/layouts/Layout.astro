@@ -3,10 +3,12 @@ import { ClientRouter } from 'astro:transitions';
 import './layout.css';
 import '../styles/global.css';
 import '../styles/themes.css';
+import '../styles/fonts.css';
 import SideMenu from '../components/Side/SideMenu.astro';
 import FloatingPlayerDock from '../components/FloatingPlayerDock.astro';
 import { getPublishedPostCount, getRecentPosts } from '../lib/blog-data.mjs';
 import { SIDEBAR_INITIAL_POSTS } from '../lib/feed-limits.mjs';
+import { themeStylesheetUrls } from '../lib/theme-files.mjs';
 import { SITE_TITLE } from '../consts';
 
 interface Props {
@@ -42,6 +44,7 @@ const [recentPosts, totalPosts] = await Promise.all([
 ]);
 const hasMoreRecentPosts = totalPosts > SIDEBAR_INITIAL_POSTS;
 const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-dawn'];
+const themeStylesheetMap = themeStylesheetUrls(base);
 ---
 
 <!doctype html>
@@ -92,19 +95,25 @@ const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-daw
     <meta name="telegram:channel" content="@hellomraz" />
     <link rel="preconnect" href="https://f4.bcbits.com" crossorigin />
     <link rel="dns-prefetch" href="https://f4.bcbits.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    />
     <ClientRouter fallback="swap" />
     <!-- Apply saved theme before first paint to prevent flash -->
-    <script is:inline define:vars={{ lightThemeIds }}>
+    <link id="theme-css" rel="stylesheet" />
+    <script is:inline define:vars={{ lightThemeIds, themeStylesheetMap }}>
       (function () {
         var lightThemes = new Set(lightThemeIds || []);
+        var stylesheetUrls = themeStylesheetMap || {};
+
+        function applyStylesheet(theme) {
+          var themeLink = document.getElementById('theme-css');
+          if (!themeLink) return;
+          var href = stylesheetUrls[theme];
+          if (href) {
+            themeLink.setAttribute('href', href);
+          } else {
+            themeLink.removeAttribute('href');
+          }
+        }
+
         window.__hellomrazApplyTheme = function (nextTheme) {
           var theme = nextTheme || localStorage.getItem('color-theme') || 'dark';
           var html = document.documentElement;
@@ -114,6 +123,7 @@ const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-daw
           } else {
             html.classList.add('dark');
           }
+          applyStylesheet(theme);
         };
 
         document.documentElement.classList.add('no-transition');
@@ -202,6 +212,7 @@ const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-daw
 
     <script>
       import { navigate } from 'astro:transitions/client';
+      import { applyThemeStylesheet } from '../lib/theme-files.mjs';
 
       type LayoutWindow = Window & {
         __hellomrazApplyTheme?: (theme?: string | null) => void;
@@ -220,6 +231,7 @@ const lightThemeIds = ['light', 'nord-light', 'catppuccin-latte', 'rose-pine-daw
 
         const fallbackTheme = localStorage.getItem('color-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', fallbackTheme);
+        applyThemeStylesheet(fallbackTheme);
       }
 
       if (!layoutWindow.__hellomrazNavigate) {

@@ -205,7 +205,7 @@ const latestExcerpt = latestPost
 </script>
 
 <script>
-  import { geoNameAttr, type GeoCardPayload } from '../lib/geo';
+  import type { GeoCardPayload } from '../lib/geo';
   import { applyPlaceNames } from '../lib/geo-i18n.mjs';
   import { globeIcon } from '../lib/icons';
 
@@ -254,7 +254,7 @@ const latestExcerpt = latestPost
 
     const tags = post.tags.slice(0, 3).join(' · ');
     const geo = post.geo
-      ? `<a class="post-card-geo" href="${base}geo/${post.geo.slug}">${globeIcon()}<span data-geo-names="${escapeHtml(geoNameAttr(post.geo.names))}">${escapeHtml(post.geo.name)}</span></a>`
+      ? `<a class="post-card-geo" href="${base}geo/${post.geo.slug}">${globeIcon()}<span data-geo-names="${escapeHtml(JSON.stringify(post.geo.names))}">${escapeHtml(post.geo.name)}</span></a>`
       : '';
 
     return `<div class="post-card playlist-item" data-color="${post.colorDark}">
@@ -288,6 +288,26 @@ const latestExcerpt = latestPost
     loaded = 0;
     wrap.hidden = false;
     btn.textContent = 'load more';
+
+    const prefetch = () => {
+      if (allPosts) return;
+      void fetchPosts().catch(() => undefined);
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer.disconnect();
+            prefetch();
+          }
+        },
+        { rootMargin: '200px' },
+      );
+      // Warm the load-more payload as the button nears the viewport.
+      observer.observe(wrap);
+      document.addEventListener('astro:before-swap', () => observer.disconnect(), { once: true });
+    }
 
     btn.addEventListener('click', async () => {
       btn.textContent = 'loading…';

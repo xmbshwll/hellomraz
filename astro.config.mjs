@@ -32,6 +32,18 @@ export default defineConfig({
         protocol: 'https',
         hostname: '**.bcbits.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.scdn.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.spotifycdn.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'is1-ssl.mzstatic.com',
+      },
     ],
   },
 });

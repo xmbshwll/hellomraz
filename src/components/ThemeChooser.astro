@@ -15,6 +15,7 @@
 
 <script>
   import { mountSelectableDropdown } from '../lib/selectable-dropdown.mjs';
+  import { applyThemeStylesheet } from '../lib/theme-files.mjs';
 
   const themes = [
     { id: 'dark', label: 'dark', bg: '#2E3440', accent: '#88C0D0' },
@@ -48,6 +49,7 @@
 
     localStorage.setItem('color-theme', theme);
     localStorage.setItem('theme', mode);
+    applyThemeStylesheet(theme);
   }
 
   function renderThemeSwatch(theme: {

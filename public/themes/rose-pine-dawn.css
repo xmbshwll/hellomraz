@@ -1,0 +1,41 @@
+/* Theme: Rosé Pine Dawn (Light). Extracted from src/styles/themes.css. */
+/* === Rosé Pine Dawn (Light) === */
+html[data-theme='rose-pine-dawn'] {
+  --theme-bg-base: #faf4ed;
+  --theme-bg-surface: #fffaf3;
+  --theme-bg-elevated: #f2e9e1;
+  --theme-bg-hover: #dfdad9;
+  --theme-bg-active: #cecacd;
+
+  --theme-text-primary: #575279;
+  --theme-text-secondary: #797593;
+  --theme-text-muted: #9893a5;
+  --theme-text-inverted: #faf4ed;
+
+  --theme-border: #cecacd;
+  --theme-border-subtle: #dfdad9;
+
+  --theme-accent: #286983;
+  --theme-accent-hover: #56949f;
+  --theme-accent-tag-bg: #f2e9e1;
+  --theme-accent-tag-text: #575279;
+
+  --theme-code-bg: #f2e9e1;
+  --theme-code-text: #575279;
+  --theme-code-inline-bg: #f2e9e1;
+  --theme-code-inline-text: #b4637a;
+
+  --theme-blockquote-bg: #f2e9e1;
+  --theme-blockquote-border: #56949f;
+
+  --theme-success: #286983;
+  --theme-warning: #ea9d34;
+  --theme-error: #b4637a;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #dfdad9;
+  --theme-scrollbar-thumb-hover: #cecacd;
+
+  color-scheme: light;
+}

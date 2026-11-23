@@ -1,0 +1,41 @@
+/* Theme: Catppuccin Macchiato (Dark). Extracted from src/styles/themes.css. */
+/* === Catppuccin Macchiato (Dark) === */
+html[data-theme='catppuccin-macchiato'] {
+  --theme-bg-base: #24273a;
+  --theme-bg-surface: #363a4f;
+  --theme-bg-elevated: #494d64;
+  --theme-bg-hover: #5b6078;
+  --theme-bg-active: #5b6078;
+
+  --theme-text-primary: #cad3f5;
+  --theme-text-secondary: #b8c0e0;
+  --theme-text-muted: #6e738d;
+  --theme-text-inverted: #24273a;
+
+  --theme-border: #494d64;
+  --theme-border-subtle: #363a4f;
+
+  --theme-accent: #8aadf4;
+  --theme-accent-hover: #7dc4e4;
+  --theme-accent-tag-bg: #494d64;
+  --theme-accent-tag-text: #cad3f5;
+
+  --theme-code-bg: #24273a;
+  --theme-code-text: #cad3f5;
+  --theme-code-inline-bg: #363a4f;
+  --theme-code-inline-text: #ed8796;
+
+  --theme-blockquote-bg: #363a4f;
+  --theme-blockquote-border: #8aadf4;
+
+  --theme-success: #a6da95;
+  --theme-warning: #eed49f;
+  --theme-error: #ed8796;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #494d64;
+  --theme-scrollbar-thumb-hover: #5b6078;
+
+  color-scheme: dark;
+}

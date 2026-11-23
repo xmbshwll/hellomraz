@@ -1,0 +1,41 @@
+/* Theme: Catppuccin Mocha (Dark). Extracted from src/styles/themes.css. */
+/* === Catppuccin Mocha (Dark) === */
+html[data-theme='catppuccin-mocha'] {
+  --theme-bg-base: #1e1e2e;
+  --theme-bg-surface: #313244;
+  --theme-bg-elevated: #45475a;
+  --theme-bg-hover: #585b70;
+  --theme-bg-active: #585b70;
+
+  --theme-text-primary: #cdd6f4;
+  --theme-text-secondary: #bac2de;
+  --theme-text-muted: #6c7086;
+  --theme-text-inverted: #1e1e2e;
+
+  --theme-border: #45475a;
+  --theme-border-subtle: #313244;
+
+  --theme-accent: #89b4fa;
+  --theme-accent-hover: #74c7ec;
+  --theme-accent-tag-bg: #45475a;
+  --theme-accent-tag-text: #cdd6f4;
+
+  --theme-code-bg: #1e1e2e;
+  --theme-code-text: #cdd6f4;
+  --theme-code-inline-bg: #313244;
+  --theme-code-inline-text: #f38ba8;
+
+  --theme-blockquote-bg: #313244;
+  --theme-blockquote-border: #89b4fa;
+
+  --theme-success: #a6e3a1;
+  --theme-warning: #f9e2af;
+  --theme-error: #f38ba8;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #45475a;
+  --theme-scrollbar-thumb-hover: #585b70;
+
+  color-scheme: dark;
+}

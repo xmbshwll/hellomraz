@@ -1,0 +1,41 @@
+/* Theme: Rosé Pine (Dark). Extracted from src/styles/themes.css. */
+/* === Rosé Pine (Dark) === */
+html[data-theme='rose-pine'] {
+  --theme-bg-base: #191724;
+  --theme-bg-surface: #1f1d2e;
+  --theme-bg-elevated: #26233a;
+  --theme-bg-hover: #403d52;
+  --theme-bg-active: #524f67;
+
+  --theme-text-primary: #e0def4;
+  --theme-text-secondary: #908caa;
+  --theme-text-muted: #6e6a86;
+  --theme-text-inverted: #191724;
+
+  --theme-border: #524f67;
+  --theme-border-subtle: #403d52;
+
+  --theme-accent: #31748f;
+  --theme-accent-hover: #9ccfd8;
+  --theme-accent-tag-bg: #26233a;
+  --theme-accent-tag-text: #e0def4;
+
+  --theme-code-bg: #191724;
+  --theme-code-text: #e0def4;
+  --theme-code-inline-bg: #1f1d2e;
+  --theme-code-inline-text: #eb6f92;
+
+  --theme-blockquote-bg: #1f1d2e;
+  --theme-blockquote-border: #9ccfd8;
+
+  --theme-success: #31748f;
+  --theme-warning: #f6c177;
+  --theme-error: #eb6f92;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #403d52;
+  --theme-scrollbar-thumb-hover: #524f67;
+
+  color-scheme: dark;
+}

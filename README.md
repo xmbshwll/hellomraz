@@ -11,21 +11,24 @@ A static music review blog built with [Astro](https://astro.build) for [Опус
 
 ## Highlights
 
-- 1,100+ review posts powered by Astro content collections
+- 1,900+ review posts powered by Astro content collections
 - Persistent pinned streaming player across internal navigation
-- Multi-theme interface with dark, light, nord, catppuccin, and rose-pine variants
+- Eleven themes, split into per-theme stylesheets that load on demand
 - RU / EN / DE reading experience with client-side translation loading
 - Tag pages, date navigation, and client-side search
+- Self-hosted JetBrains Mono, so the page makes no third-party font request
+- Cover art optimized to local webp files at build time
 - Centralized album metadata and streaming links in `src/data/albums.json`
 
 ## Stack
 
 - **Astro 7** — static site generation, routing, layouts
 - **TypeScript** — typed utilities and content helpers
-- **Tailwind CSS 3** — layout and utility styling
+- **Tailwind CSS 4** — layout and utility styling
 - **CSS custom properties** — theme system and component styling
 - **Markdown + Astro content collections** — review content management
 - **JSON album metadata** — release info, covers, Bandcamp IDs, and streaming links
+- **Service worker** — cache-first for hashed assets, network-first for pages
 - **GitHub Actions + GitHub Pages** — automated static deployment
 
 ## Development
@@ -44,20 +47,24 @@ npm run test:e2e
 
 ```text
 src/
+  assets/          Self-hosted fonts
   components/      UI building blocks, player, header, sidebar
   content/blog/    Markdown review posts
   data/            Unified album metadata
   layouts/         Base layout and shared styles
   lib/             Content, player, search, and i18n helpers
   pages/           Astro routes, tag pages, and JSON endpoints
+  styles/          Global, theme, and font styles
 scripts/           Metadata, translation, and scraping utilities
-public/            Static assets and generated translations
+public/            Static assets, translations, and theme stylesheets
 ```
 
 ## Notes
 
 - Reviews live in `src/content/blog/*.md`
-- Album / streaming metadata lives in `src/data/albums.json`
+- Album and streaming metadata lives in `src/data/albums.json`
+- Theme stylesheets live in `public/themes/*.css`. The default dark theme stays in the bundled CSS.
+- The build downloads remote cover art from Bandcamp, Spotify, and Apple, then serves it as local webp files.
 - The site is deployed on GitHub Pages and served via the custom domain `poeba.lu`
 - The UI design was originally inspired by [williamcachamwri/astro-blog](https://github.com/williamcachamwri/astro-blog)
 
@@ -84,4 +91,4 @@ Please keep changes small and consistent with the existing Astro, TypeScript, an
 
 ## License
 
-MIT License — feel free to use and modify.
+MIT License — free to use and change.

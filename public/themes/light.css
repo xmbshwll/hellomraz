@@ -1,0 +1,42 @@
+/* Theme: Light Theme (Nord Light). Extracted from src/styles/themes.css. */
+/* === Light Theme (Nord Light) === */
+html[data-theme='light'],
+html[data-theme='nord-light'] {
+  --theme-bg-base: #eceff4;
+  --theme-bg-surface: #e5e9f0;
+  --theme-bg-elevated: #d8dee9;
+  --theme-bg-hover: #c2c8d4;
+  --theme-bg-active: #b8bfcc;
+
+  --theme-text-primary: #2e3440;
+  --theme-text-secondary: #3b4252;
+  --theme-text-muted: #4c566a;
+  --theme-text-inverted: #eceff4;
+
+  --theme-border: #c2c8d4;
+  --theme-border-subtle: #d8dee9;
+
+  --theme-accent: #5e81ac;
+  --theme-accent-hover: #81a1c1;
+  --theme-accent-tag-bg: #d8dee9;
+  --theme-accent-tag-text: #2e3440;
+
+  --theme-code-bg: #2e3440;
+  --theme-code-text: #d8dee9;
+  --theme-code-inline-bg: #d8dee9;
+  --theme-code-inline-text: #bf616a;
+
+  --theme-blockquote-bg: #d8dee9;
+  --theme-blockquote-border: #5e81ac;
+
+  --theme-success: #a3be8c;
+  --theme-warning: #ebcb8b;
+  --theme-error: #bf616a;
+  --theme-shadow: none;
+
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #c2c8d4;
+  --theme-scrollbar-thumb-hover: #b0b8c8;
+
+  color-scheme: light;
+}
