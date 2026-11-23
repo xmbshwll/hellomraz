@@ -267,6 +267,8 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
 </style>
 
 <script>
+  import { bindOnce } from '../lib/page-bindings.mjs';
+
   interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
     userChoice: Promise<{
@@ -277,7 +279,6 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
 
   type PwaWindow = Window & {
     __deferredPwaPrompt?: BeforeInstallPromptEvent | null;
-    __pwaInstallButtonBound?: boolean;
   };
 
   const pwaWindow = window as PwaWindow;
@@ -321,12 +322,11 @@ const telegramHref = getSiteLinkHref(TELEGRAM_LINK, base);
     syncInstallButtons();
   }
 
-  if (!pwaWindow.__pwaInstallButtonBound) {
-    pwaWindow.__pwaInstallButtonBound = true;
+  bindOnce('pageheader:pwa', () => {
     document.addEventListener('astro:page-load', initPwaInstallButtons);
     window.addEventListener('pwa-install-available', syncInstallButtons);
     window.addEventListener('pwa-installed', syncInstallButtons);
-  }
+  });
 
   initPwaInstallButtons();
 

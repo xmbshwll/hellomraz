@@ -75,6 +75,9 @@ function fmtDate(d: string): string {
 
 <script>
   import { VIDEO_PAGE_LOAD_MORE } from '../../lib/video-config.mjs';
+  import { escapeHtml } from '../../lib/escape-html.mjs';
+  import { bindOnce } from '../../lib/page-bindings.mjs';
+  import { loadTranslationText } from '../../lib/translation.mjs';
 
   interface VideoItem {
     slug: string;
@@ -87,14 +90,6 @@ function fmtDate(d: string): string {
   const BATCH = VIDEO_PAGE_LOAD_MORE;
   let allVideos: VideoItem[] | null = null;
   let loaded = 0;
-
-  function escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
 
   function fmtDate(d: string): string {
     try {
@@ -151,10 +146,10 @@ function fmtDate(d: string): string {
     const wrap = document.getElementById('load-more-videos-wrap') as HTMLElement | null;
     const list = document.getElementById('videos-list') as HTMLElement | null;
     if (!btn || !wrap || !list) return;
+    if (!bindOnce('videos:load-more', () => bindLoadMoreList(btn, wrap, list))) return;
+  }
 
-    if ((btn as any).__bound) return;
-    (btn as any).__bound = true;
-
+  function bindLoadMoreList(btn: HTMLButtonElement, wrap: HTMLElement, list: HTMLElement) {
     // Reset — SSR rendered VIDEO_STRIP_INITIAL items
     loaded = list.children.length;
     wrap.hidden = false;
@@ -193,29 +188,17 @@ function fmtDate(d: string): string {
     if (lang === 'ru') return null;
     const key = `${lang}:${slug}`;
     if (txtCache.has(key)) return txtCache.get(key);
-    try {
-      const meta = document.querySelector('meta[name="base-url"]');
-      const base = meta?.getAttribute('content') || '/';
-      const res = await fetch(`${base}i18n/${lang}/videos/${slug}.txt`);
-      if (!res.ok) {
-        txtCache.set(key, null);
-        return null;
-      }
-      const text = (await res.text()).trim();
-      if (!text) {
-        txtCache.set(key, null);
-        return null;
-      }
-      const parts = text.split(/\n\s*\n/);
-      const title = (parts.shift() || '').trim();
-      const description = parts.join('\n\n').trim();
-      const parsed = { title, description };
-      txtCache.set(key, parsed);
-      return parsed;
-    } catch {
+    const text = (await loadTranslationText(slug, 'videos', lang))?.trim() ?? '';
+    if (!text) {
       txtCache.set(key, null);
       return null;
     }
+    const parts = text.split(/\n\s*\n/);
+    const title = (parts.shift() || '').trim();
+    const description = parts.join('\n\n').trim();
+    const parsed = { title, description };
+    txtCache.set(key, parsed);
+    return parsed;
   }
 
   function stashOriginals(row: HTMLElement) {

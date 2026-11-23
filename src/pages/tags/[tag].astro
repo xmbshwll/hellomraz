@@ -295,6 +295,9 @@ const encodedTag = encodeTagParam(tag);
 </style>
 
 <script>
+  import { bindOnce } from '../../lib/page-bindings.mjs';
+  import { getSiteBase } from '../../lib/site-base.mjs';
+
   function initTagPostControls() {
     const list = document.getElementById('tag-posts-list');
     const input = document.getElementById('tag-post-filter') as HTMLInputElement | null;
@@ -326,20 +329,20 @@ const encodedTag = encodeTagParam(tag);
   }
 
   function initTagShowMore() {
-    const btn = document.getElementById('tag-show-more-btn') as
-      (HTMLButtonElement & { __tagShowMoreBound?: boolean }) | null;
+    const btn = document.getElementById('tag-show-more-btn') as HTMLButtonElement | null;
     const list = document.getElementById('tag-posts-list');
     const wrap = document.getElementById('tag-show-more-wrap');
-    if (!btn || !list || !wrap || btn.__tagShowMoreBound) return;
+    if (!btn || !list || !wrap) return;
+    if (!bindOnce('tag:show-more', () => bindTagShowMore(btn, list, wrap))) return;
+  }
 
-    btn.__tagShowMoreBound = true;
+  function bindTagShowMore(btn: HTMLButtonElement, list: HTMLElement, wrap: HTMLElement) {
     const tagParam = btn.dataset.tagParam!;
 
     btn.addEventListener('click', async () => {
       btn.textContent = 'loading…';
       try {
-        const base =
-          document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
+        const base = getSiteBase();
         const res = await fetch(`${base}api/tag-posts/${tagParam}.json`);
         const remainingPosts: {
           slug: string;

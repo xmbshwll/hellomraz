@@ -52,43 +52,34 @@ const latestExcerpt = latestPost
         <div class="featured-review">
           <PostCard post={latestPost} index={0} excerpt={latestExcerpt} />
         </div>
-        <script is:inline>
-          (() => {
-            const section = document.currentScript?.closest('[data-latest-slug]');
-            if (!section || section.dataset.languageBound === '1') return;
-            section.dataset.languageBound = '1';
+        <script>
+          import { loadTranslationText } from '../lib/translation.mjs';
 
-            let requestId = 0;
-            const updateExcerpt = async () => {
-              const currentRequest = ++requestId;
-              const excerpt = section.querySelector('.post-card-excerpt');
-              if (!excerpt) return;
+          /** Latest card excerpt, in the site language. */
+          let excerptRequest = 0;
 
-              const { latestSlug: slug = '', latestExcerpt: original = '' } = section.dataset;
-              const lang = localStorage.getItem('site-lang') || 'ru';
-              const applyExcerpt = (text) => {
-                if (currentRequest === requestId) excerpt.textContent = text;
-              };
+          async function updateExcerpt() {
+            const section = document.querySelector<HTMLElement>('[data-latest-slug]');
+            const excerpt = section?.querySelector('.post-card-excerpt');
+            if (!section || !excerpt) return;
 
-              if (lang === 'ru') {
-                applyExcerpt(original);
-                return;
-              }
+            const request = ++excerptRequest;
+            const { latestSlug: slug = '', latestExcerpt: original = '' } = section.dataset;
+            const lang = localStorage.getItem('site-lang') || 'ru';
+            const translated = (await loadTranslationText(slug, 'posts', lang))?.trim() ?? '';
 
-              try {
-                const base =
-                  document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
-                const response = await fetch(`${base}i18n/${lang}/posts/${slug}.txt`);
-                const translated = response.ok ? (await response.text()).trim() : '';
-                applyExcerpt(translated || original);
-              } catch {
-                applyExcerpt(original);
-              }
-            };
+            // A slower earlier request must not overwrite the newer text.
+            if (request === excerptRequest) excerpt.textContent = translated || original;
+          }
 
-            window.addEventListener('lang-changed', updateExcerpt);
-            updateExcerpt();
-          })();
+          // The module body runs once, so bind per page load to cover view transitions.
+          document.addEventListener('astro:page-load', () => {
+            void updateExcerpt();
+          });
+          window.addEventListener('lang-changed', () => {
+            void updateExcerpt();
+          });
+          void updateExcerpt();
         </script>
       </section>
     )}
@@ -205,9 +196,11 @@ const latestExcerpt = latestPost
 </script>
 
 <script>
+  import { escapeHtml } from '../lib/escape-html.mjs';
   import type { GeoCardPayload } from '../lib/geo';
   import { applyPlaceNames } from '../lib/geo-i18n.mjs';
   import { globeIcon } from '../lib/icons';
+  import { bindOnce } from '../lib/page-bindings.mjs';
 
   interface ReviewPost {
     slug: string;
@@ -223,14 +216,6 @@ const latestExcerpt = latestPost
   const BATCH = 12;
   let allPosts: ReviewPost[] | null = null;
   let loaded = 0;
-
-  function escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
 
   function renderCard(post: ReviewPost, base: string): string {
     const safeTitle = escapeHtml(post.title);
@@ -281,10 +266,10 @@ const latestExcerpt = latestPost
     const wrap = document.getElementById('load-more-reviews-wrap');
     const grid = document.getElementById('more-reviews-grid');
     if (!btn || !wrap || !grid) return;
+    if (!bindOnce('home:load-more', () => bindMoreReviews(btn, wrap, grid))) return;
+  }
 
-    if ((btn as any).__bound) return;
-    (btn as any).__bound = true;
-
+  function bindMoreReviews(btn: HTMLElement, wrap: HTMLElement, grid: HTMLElement) {
     loaded = 0;
     wrap.hidden = false;
     btn.textContent = 'load more';

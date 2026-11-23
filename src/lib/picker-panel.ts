@@ -47,7 +47,11 @@ export function createPickerPanelDom(placeholder: string, withSearch = true): Pi
 }
 
 /** Footer entry at the bottom of a picker panel; closes the panel, then navigates. */
-export function createPickerFooter(href: string, label: string, close: () => void): HTMLAnchorElement {
+export function createPickerFooter(
+  href: string,
+  label: string,
+  close: () => void,
+): HTMLAnchorElement {
   const link = document.createElement('a');
   link.className = 'picker-more';
   link.href = href;
@@ -116,6 +120,8 @@ export interface PickerRow {
   count?: number | string;
   /** Show a chevron: the row drills into another level instead of navigating. */
   drill?: boolean;
+  /** Alternate row look. 'listing' adds the picker-item--listing class. */
+  variant?: 'listing';
 }
 
 export interface PickerCrumbs {
@@ -185,10 +191,11 @@ export function createPickerRow({
   meta,
   count,
   drill = false,
+  variant,
 }: PickerRow): HTMLAnchorElement {
   const link = document.createElement('a');
   link.href = href;
-  link.className = 'picker-item';
+  link.className = variant === 'listing' ? 'picker-item picker-item--listing' : 'picker-item';
 
   const label = document.createElement('span');
   label.className = 'picker-item__label';
@@ -204,17 +211,215 @@ export function createPickerRow({
   }
   link.appendChild(label);
 
-  if (count !== undefined) {
+  if (count !== undefined && variant !== 'listing') {
     const countEl = document.createElement('span');
     countEl.className = 'picker-item__count';
     countEl.textContent = String(count);
     link.appendChild(countEl);
   }
-  if (drill) {
+  if (drill || variant === 'listing') {
     const chevron = document.createElement('span');
     chevron.className = 'picker-item__chevron';
     chevron.textContent = '›';
     link.appendChild(chevron);
   }
   return link;
+}
+
+/** One row source for mountPicker. It is plain data, not DOM. */
+export interface PickerRowDescriptor {
+  href: string;
+  name: string;
+  meta?: string;
+  count?: number | string;
+  /** Chevron row that drills into another level. */
+  drill?: boolean;
+  /** Item identifier handed to onDrill. */
+  value?: unknown;
+  /** Alternate row look; 'listing' adds the picker-item--listing class. */
+  variant?: 'listing';
+}
+
+/** Live panel parts handed to the picker callbacks. */
+export interface PickerMountContext<Item> {
+  root: HTMLElement;
+  base: string;
+  panel: HTMLDivElement;
+  searchInput: HTMLInputElement;
+  listEl: HTMLDivElement;
+  /** Footer element, or null when the picker has no footer. */
+  footer: HTMLElement | null;
+  /** Loaded items. This is the render source for buildRows. */
+  items: Item[];
+  /** Close the panel. */
+  close: () => void;
+}
+
+export interface MountPickerOptions<Item> {
+  root: HTMLElement;
+  button: HTMLButtonElement;
+  arrow: HTMLElement;
+  /** Root property that stores the panel element. */
+  panelKey: string;
+  /** Root property that stores the refresh callback. */
+  refreshKey: string;
+  load: (base: string) => Promise<Item[]>;
+  buildFooter: (ctx: PickerMountContext<Item>) => HTMLElement | null;
+  buildRows: (items: Item[], query: string) => PickerRowDescriptor[];
+  /** Drill re-render hook. The caller moves its own level state here. */
+  onDrill?: (
+    value: unknown,
+    descriptor: PickerRowDescriptor,
+    ctx: PickerMountContext<Item>,
+  ) => void;
+  crumbs?: PickerCrumbs;
+  withSearch?: boolean;
+  searchPlaceholder?: string | (() => string);
+  emptyText: string | (() => string);
+}
+
+/**
+ * Bound picker roots for this session.
+ * The guard is element-scoped on purpose. A global string key would re-bind the
+ * persisted header node after every navigation.
+ */
+const mountedPickerRoots = new WeakSet<HTMLElement>();
+
+/** Read a literal or a getter, so i18n text stays current. */
+function readPickerText(value: string | (() => string)): string {
+  return typeof value === 'function' ? value() : value;
+}
+
+/**
+ * Bind one header picker: button, panel, search, rows, and footer.
+ * The tag picker and the geo picker share this code.
+ *
+ * @param options
+ */
+export function mountPicker<Item>(options: MountPickerOptions<Item>): void {
+  const { root, button, arrow, panelKey, refreshKey, load, buildFooter, buildRows, crumbs } =
+    options;
+  const withSearch = options.withSearch ?? true;
+
+  if (mountedPickerRoots.has(root)) return;
+  mountedPickerRoots.add(root);
+
+  const base = root.dataset.base || '';
+  // SAFETY: The root element carries picker state as ad-hoc properties.
+  // TypeScript cannot type the dynamic keys.
+  const store = root as unknown as Record<string, unknown>;
+  let ctx: PickerMountContext<Item> | null = null;
+
+  const dropdown = createPickerPanel({
+    button,
+    arrow,
+    getPanel: () => (store[panelKey] as HTMLElement | null) ?? null,
+  });
+
+  function render(): void {
+    if (!ctx) return;
+    ctx.searchInput.placeholder = readPickerText(options.searchPlaceholder ?? '');
+    ctx.listEl.innerHTML = '';
+    const descriptors = buildRows(ctx.items, ctx.searchInput.value.trim());
+
+    if (descriptors.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'picker-empty';
+      empty.textContent = readPickerText(options.emptyText);
+      ctx.listEl.appendChild(empty);
+      return;
+    }
+
+    for (const descriptor of descriptors) {
+      const row = createPickerRow({
+        href: descriptor.href,
+        name: descriptor.name,
+        meta: descriptor.meta,
+        count: descriptor.count,
+        drill: descriptor.drill,
+        variant: descriptor.variant,
+      });
+      row.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (descriptor.drill) {
+          // The re-render removes this anchor, so stop the click here.
+          // Otherwise the floating dropdown sees a detached target and closes.
+          event.stopPropagation();
+          const current = ctx;
+          if (!current) return;
+          options.onDrill?.(descriptor.value, descriptor, current);
+          current.searchInput.value = '';
+          render();
+          return;
+        }
+        dropdown.close();
+        navigateInternal(row.href);
+      });
+      ctx.listEl.appendChild(row);
+    }
+  }
+
+  function ensurePanel(items: Item[]): void {
+    const existing = store[panelKey] as HTMLElement | null;
+    if (existing?.isConnected) return;
+
+    const { panel, searchInput, listEl } = createPickerPanelDom(
+      readPickerText(options.searchPlaceholder ?? ''),
+      withSearch,
+    );
+    const panelCtx: PickerMountContext<Item> = {
+      root,
+      base,
+      panel,
+      searchInput,
+      listEl,
+      footer: null,
+      items,
+      close: () => dropdown.close(),
+    };
+
+    if (crumbs) panel.insertBefore(crumbs.el, listEl);
+
+    const footer = buildFooter(panelCtx);
+    if (footer) {
+      panel.appendChild(footer);
+      panelCtx.footer = footer;
+    }
+
+    if (withSearch) {
+      searchInput.addEventListener('input', () => render());
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        const first = listEl.querySelector('.picker-item') as HTMLAnchorElement | null;
+        first?.click();
+      });
+    }
+
+    ctx = panelCtx;
+    render();
+    store[panelKey] = panel;
+  }
+
+  store[refreshKey] = () => {
+    render();
+  };
+
+  window.addEventListener('lang-changed', () => {
+    if (ctx && !ctx.panel.hidden) render();
+  });
+
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    void (async () => {
+      const items = await load(base);
+      if (ctx) {
+        ctx.items = items;
+        render();
+      } else {
+        ensurePanel(items);
+      }
+      dropdown.toggle();
+    })();
+  });
 }

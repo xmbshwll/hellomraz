@@ -295,10 +295,7 @@ function getLinkProps(link: SiteLink) {
 
 <script>
   import { getCurrentSiteLang, getSiteCopy } from '../lib/site-i18n.mjs';
-
-  type AboutPageWindow = Window & {
-    __aboutPageBindingsReady?: boolean;
-  };
+  import { bindOnce } from '../lib/page-bindings.mjs';
 
   function renderParagraphs(container: HTMLElement, paragraphs: string[]) {
     container.replaceChildren(
@@ -328,12 +325,10 @@ function getLinkProps(link: SiteLink) {
     if (paragraphs) renderParagraphs(paragraphs, copy.paragraphs);
   }
 
-  const aboutWindow = window as AboutPageWindow;
-  if (!aboutWindow.__aboutPageBindingsReady) {
-    aboutWindow.__aboutPageBindingsReady = true;
+  bindOnce('about:init', () => {
     document.addEventListener('astro:page-load', updateAboutPage);
     window.addEventListener('lang-changed', updateAboutPage);
-  }
+  });
 
   updateAboutPage();
 </script>

@@ -11,6 +11,7 @@ import {
   getPopulatedGeoSugs,
 } from './geo';
 import { projectToMap } from './geojson';
+import type { PlaceNameList } from './geo-names';
 
 export interface GeoMarkerEntry {
   slug: string;
@@ -21,7 +22,7 @@ export interface GeoMarkerEntry {
   href: string;
   region?: string;
   country?: string;
-  names: { en: string; ru: string; de: string };
+  names: PlaceNameList;
 }
 
 export interface GeoMarkerData {

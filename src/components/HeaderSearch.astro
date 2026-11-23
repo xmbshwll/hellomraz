@@ -38,59 +38,14 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 <script>
   import { createFloatingDropdown } from '../lib/floating-dropdown.mjs';
   import { navigateInternal } from '../lib/navigate';
-  import {
-    getSearchResultGeoLabel,
-    getSearchResultPrimaryLabel,
-    getSearchResultSecondaryLabel,
-    prepareSearchEntries,
-    searchEntries,
-  } from '../lib/search.mjs';
-
-  interface SearchRawEntry {
-    slug: string;
-    title: string;
-    artist?: string;
-    album?: string;
-    geo?: string;
-  }
-
-  interface PreparedSearchEntry extends SearchRawEntry {
-    order: number;
-    titleSearch: string;
-    artistSearch: string;
-    albumSearch: string;
-    geoSearch: string;
-    searchText: string;
-  }
+  import { searchEntries } from '../lib/search.mjs';
+  import { loadSearchIndex } from '../lib/search-index.mjs';
+  import { createSearchResultRow } from '../lib/search-row.mjs';
 
   const SEARCH_INPUT_DEBOUNCE_MS = 120;
 
-  let cachedBase = '';
-  let cachedEntries: PreparedSearchEntry[] | null = null;
-  let loadingPromise: Promise<PreparedSearchEntry[]> | null = null;
-
-  async function loadSearchIndex(base: string): Promise<PreparedSearchEntry[]> {
-    if (cachedEntries && cachedBase === base) return cachedEntries;
-
-    if (!loadingPromise || cachedBase !== base) {
-      cachedBase = base;
-      loadingPromise = fetch(`${base}api/search.json`)
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error('Failed to load search index');
-          }
-          const raw = (await response.json()) as SearchRawEntry[];
-          cachedEntries = prepareSearchEntries(raw) as PreparedSearchEntry[];
-          return cachedEntries;
-        })
-        .catch(() => {
-          cachedEntries = [];
-          return [];
-        });
-    }
-
-    return loadingPromise;
-  }
+  /** True once the shared index request settles for this page load. */
+  let searchIndexReady = false;
 
   function renderMessage(resultsEl: HTMLElement, message: string, kind = 'info') {
     resultsEl.innerHTML = '';
@@ -103,7 +58,7 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
   function renderResults(
     resultsEl: HTMLElement,
-    matches: SearchRawEntry[],
+    matches: Array<{ slug: string }>,
     base: string,
     query: string,
   ) {
@@ -122,27 +77,13 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
       link.className = 'header-search-result';
       link.dataset.searchResultIndex = String(index);
       link.href = `${base}blog/${entry.slug}`;
-
-      const title = document.createElement('span');
-      title.className = 'header-search-result-title';
-      title.textContent = getSearchResultPrimaryLabel(entry);
-      link.appendChild(title);
-
-      const secondary = getSearchResultSecondaryLabel(entry);
-      if (secondary) {
-        const meta = document.createElement('span');
-        meta.className = 'header-search-result-meta';
-        meta.textContent = secondary;
-        link.appendChild(meta);
-      }
-
-      const geoLabel = getSearchResultGeoLabel(entry);
-      if (geoLabel) {
-        const geo = document.createElement('span');
-        geo.className = 'header-search-result-geo';
-        geo.textContent = `◉ ${geoLabel}`;
-        link.appendChild(geo);
-      }
+      link.appendChild(
+        createSearchResultRow(entry, {
+          titleClass: 'header-search-result-title',
+          secondaryClass: 'header-search-result-meta',
+          geoClass: 'header-search-result-geo',
+        }),
+      );
 
       list.appendChild(link);
     }
@@ -278,8 +219,9 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     async function findMatches(query: string) {
       const trimmed = query.trim();
       if (!trimmed) return [];
-      const entries = await loadSearchIndex(base);
-      return searchEntries(entries, trimmed, 8) as PreparedSearchEntry[];
+      const entries = await loadSearchIndex(base).catch(() => []);
+      searchIndexReady = true;
+      return searchEntries(entries, trimmed, 8);
     }
 
     async function updateResults(query: string) {
@@ -289,16 +231,16 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 
       if (!trimmed) {
         resetResults();
-        return [] as PreparedSearchEntry[];
+        return [];
       }
 
-      if (!cachedEntries) {
+      if (!searchIndexReady) {
         renderMessage(resultsEl, 'searching…', 'loading');
         floatingSearchResults.open();
       }
 
       const matches = await findMatches(trimmed);
-      if (currentRequest !== requestId) return [] as PreparedSearchEntry[];
+      if (currentRequest !== requestId) return [];
 
       renderResults(resultsEl, matches, base, trimmed);
       floatingSearchResults.open();
@@ -329,8 +271,8 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     });
 
     input.addEventListener('focus', () => {
-      if (!cachedEntries) {
-        void loadSearchIndex(base);
+      if (!searchIndexReady) {
+        void loadSearchIndex(base).catch(() => {});
       }
       if (input.value.trim()) {
         void updateResults(input.value);

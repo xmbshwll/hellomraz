@@ -76,11 +76,13 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     createPickerPanelDom,
     createPickerRow,
     loadJsonCached,
+    mountPicker,
     type PickerCrumbs,
   } from '../lib/picker-panel';
   import { navigateInternal } from '../lib/navigate';
   import { getCurrentSiteLang, getSiteCopy } from '../lib/site-i18n.mjs';
   import { encodeTagParam } from '../lib/tag-path';
+  import { bindOnce } from '../lib/page-bindings.mjs';
 
   interface TagSummary {
     name: string;
@@ -88,17 +90,14 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   }
 
   interface DateSelectorRoot extends HTMLElement {
-    __tagPickerBound?: boolean;
-    __tagDropdown?: HTMLElement | null;
-    __dateBound?: boolean;
     __datePanel?: HTMLElement | null;
     /** Refresh chrome and rows after the language changes. */
     __refreshDatePanel?: () => void;
+    /** The header persists across view transitions, so guard per element. */
+    __dateBound?: boolean;
+    /** Stored by mountPicker: re-renders the tag panel. */
+    __refreshTagPanel?: () => void;
   }
-
-  type DateSelectorWindow = Window & {
-    __dateSelectorTagPageLoadBound?: boolean;
-  };
 
   const INITIAL_SHOW = 10;
   const tagDataCache = new Map<string, Promise<TagSummary[]>>();
@@ -111,101 +110,45 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
     return loadJsonCached(tagDataCache, `${base}api/tags.json`);
   }
 
-  function ensureDropdown(root: DateSelectorRoot, tags: TagSummary[], closeDropdown: () => void) {
-    if (root.__tagDropdown?.isConnected) {
-      return root.__tagDropdown;
-    }
-
-    const { panel: dropdown, searchInput, listEl } = createPickerPanelDom('search tags…');
-
-    const moreBtn = createPickerFooter(
-      `${getBase(root)}tags/`,
-      `all ${tags.length} tags →`,
-      closeDropdown,
-    );
-    dropdown.appendChild(moreBtn);
-
-    function renderTags(filter: string) {
-      listEl.innerHTML = '';
-      const query = filter.toLowerCase().trim();
-      let items = tags;
-
-      if (query) {
-        items = tags.filter((tag) => tag.name.toLowerCase().includes(query));
-        moreBtn.hidden = true;
-      } else {
-        items = tags.slice(0, INITIAL_SHOW);
-        moreBtn.hidden = false;
-      }
-
-      if (items.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'picker-empty';
-        empty.textContent = 'no matching tags';
-        listEl.appendChild(empty);
-        return;
-      }
-
-      for (const tag of items) {
-        const link = createPickerRow({
-          href: `${getBase(root)}tags/${encodeTagParam(tag.name)}`,
-          name: `#${tag.name}`,
-          count: tag.count,
-        });
-
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          closeDropdown();
-          navigateInternal(link.href);
-        });
-
-        listEl.appendChild(link);
-      }
-    }
-
-    searchInput.addEventListener('input', () => {
-      renderTags(searchInput.value);
-    });
-
-    searchInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const first = listEl.querySelector('.picker-item') as HTMLAnchorElement | null;
-        if (first) {
-          closeDropdown();
-          navigateInternal(first.href);
-        }
-      }
-    });
-
-    renderTags('');
-    root.__tagDropdown = dropdown;
-    return dropdown;
-  }
-
   function bindTagPicker(root: DateSelectorRoot) {
-    if (root.__tagPickerBound) {
-      return;
-    }
-    root.__tagPickerBound = true;
-
     const button = root.querySelector<HTMLButtonElement>('[data-ds-tag-btn]');
     const arrow = root.querySelector<HTMLElement>('[data-ds-tag-arrow]');
-    if (!button || !arrow) {
-      return;
-    }
+    if (!button || !arrow) return;
 
-    const floatingTagDropdown = createPickerPanel({
+    const base = getBase(root);
+    let footer: HTMLElement | null = null;
+
+    mountPicker<TagSummary>({
+      root,
       button,
       arrow,
-      getPanel: () => root.__tagDropdown ?? null,
-    });
+      panelKey: '__tagDropdown',
+      refreshKey: '__refreshTagPanel',
+      searchPlaceholder: 'search tags…',
+      emptyText: 'no matching tags',
+      load: (baseUrl) => loadTags(baseUrl),
+      buildFooter(ctx) {
+        footer = createPickerFooter(`${base}tags/`, `all ${ctx.items.length} tags →`, ctx.close);
+        return footer;
+      },
+      buildRows(items, query) {
+        const normalized = query.toLowerCase().trim();
+        let visible = items;
 
-    button.addEventListener('click', async (event) => {
-      event.stopPropagation();
-      const tags = await loadTags(getBase(root));
-      ensureDropdown(root, tags, () => floatingTagDropdown.close());
-      floatingTagDropdown.toggle();
+        if (normalized) {
+          visible = items.filter((tag) => tag.name.toLowerCase().includes(normalized));
+          if (footer) footer.hidden = true;
+        } else {
+          visible = items.slice(0, INITIAL_SHOW);
+          if (footer) footer.hidden = false;
+        }
+
+        return visible.map((tag) => ({
+          href: `${base}tags/${encodeTagParam(tag.name)}`,
+          name: `#${tag.name}`,
+          count: tag.count,
+        }));
+      },
     });
   }
 
@@ -240,9 +183,6 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   }
 
   function bindDatePicker(root: DateSelectorRoot) {
-    if (root.__dateBound) return;
-    root.__dateBound = true;
-
     const button = root.querySelector<HTMLButtonElement>('[data-ds-date-btn]');
     const arrow = root.querySelector<HTMLElement>('[data-ds-date-arrow]');
     if (!button || !arrow) return;
@@ -357,20 +297,25 @@ const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   }
 
   function initDatePickers() {
-    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach(bindDatePicker);
+    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach((root) => {
+      if (root.__dateBound) return;
+      root.__dateBound = true;
+      bindDatePicker(root);
+    });
   }
 
   function initTagPickers() {
-    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach(bindTagPicker);
+    document.querySelectorAll<DateSelectorRoot>('.date-selector').forEach((root) => {
+      bindTagPicker(root);
+    });
   }
 
-  if (!(window as DateSelectorWindow).__dateSelectorTagPageLoadBound) {
-    (window as DateSelectorWindow).__dateSelectorTagPageLoadBound = true;
+  bindOnce('dateselector:init', () => {
     document.addEventListener('astro:page-load', () => {
       initDatePickers();
       initTagPickers();
     });
-  }
+  });
   initDatePickers();
   initTagPickers();
 </script>

@@ -256,6 +256,8 @@ const themeStylesheetMap = themeStylesheetUrls(base);
     </script>
 
     <script>
+      import { getSiteBase } from '../lib/site-base.mjs';
+
       interface BeforeInstallPromptEvent extends Event {
         prompt(): Promise<void>;
         userChoice: Promise<{
@@ -287,8 +289,7 @@ const themeStylesheetMap = themeStylesheetUrls(base);
 
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
-            const baseUrl =
-              document.querySelector('meta[name="base-url"]')?.getAttribute('content') || '/';
+            const baseUrl = getSiteBase();
 
             navigator.serviceWorker
               .register(`${baseUrl}sw.js`, { scope: baseUrl })

@@ -28,3 +28,5 @@ scripts/
 AGENTS.md
 
 test-results
+.pi
+.ruff_cache

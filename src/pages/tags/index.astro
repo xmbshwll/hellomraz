@@ -67,9 +67,10 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
 </Layout>
 
 <script>
+  import { bindOnce } from '../../lib/page-bindings.mjs';
+
   function initTagFilter() {
-    const input = document.getElementById('tag-filter') as
-      (HTMLInputElement & { __tagFilterBound?: boolean }) | null;
+    const input = document.getElementById('tag-filter') as HTMLInputElement | null;
     const grid = document.getElementById('tag-grid');
     const countEl = document.getElementById('tag-filter-count');
     const noResults = document.getElementById('tag-no-results');
@@ -97,10 +98,9 @@ const [dateIndex, tagObjects, totalTags] = await Promise.all([
       }
     }
 
-    if (!input.__tagFilterBound) {
-      input.__tagFilterBound = true;
+    bindOnce('tags:filter', () => {
       input.addEventListener('input', filter);
-    }
+    });
 
     filter();
   }

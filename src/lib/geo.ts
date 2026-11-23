@@ -1,18 +1,21 @@
 /**
- * Geographic association helpers — reads canonical place definitions from
- * src/data/geo.json and links them to albums via albums.json `geo`.
- *
- * Geo entries form a country → region(state/province) → city hierarchy:
- * each entry carries its `country` slug, and cities in a state additionally
- * carry `region` (the state slug). Countries and states without a region use
- * their own slug as the parent.
+ * Geographic association helpers — links the canonical places in
+ * geo-places.ts to albums via albums.json `geo`.
  */
 import albums from './albums';
-import geoCollection from '../data/geo.geojson';
-import { indexFeatures, type PlaceCollection } from './geojson';
+import { getAllGeoPlaces, getAllGeoSugs, getGeo, type GeoPlace, type GeoType } from './geo-places';
+import {
+  byLanguage,
+  geoNameAttr,
+  getPlaceName,
+  getPlaceNameList,
+  type PlaceNameList,
+  type SiteLang,
+} from './geo-names';
 import { joinPlaceLabel } from './place-label.mjs';
 
-export type GeoType = 'city' | 'state' | 'country';
+export { getAllGeoPlaces, getAllGeoSugs, getGeo, type GeoPlace, type GeoType };
+export { getPlaceNameList };
 
 /** One row of the geo search payload served by src/pages/api/geo.json.ts. */
 export interface GeoSearchEntry {
@@ -27,80 +30,7 @@ export interface GeoSearchEntry {
   /** Country name, shown under cities and regions. */
   country: string;
   /** Localised names, English included. */
-  names: { en: string; ru: string; de: string };
-}
-
-export interface GeoPlace {
-  name: string;
-  /** Localised names; English lives in `name`. */
-  nameRu?: string;
-  nameDe?: string;
-  lat: number;
-  lng: number;
-  cc: string;
-  type: GeoType;
-  country?: string;
-  region?: string;
-}
-
-const places = indexFeatures(geoCollection as PlaceCollection);
-
-/** Place registry, keyed by geo slug, built from the GeoJSON collection. */
-const geo: Record<string, GeoPlace> = Object.fromEntries(
-  Object.entries(places).map(([slug, feature]) => {
-    const [lng, lat] = feature.geometry.coordinates;
-    const { name, nameRu, nameDe, type, cc, country, region } = feature.properties;
-    return [slug, { name, nameRu, nameDe, lat, lng, cc, type: type as GeoType, country, region }];
-  }),
-);
-
-type SiteLang = 'ru' | 'en' | 'de';
-
-const LOCALISED_NAME_KEYS: Record<SiteLang, 'name' | 'nameRu' | 'nameDe'> = {
-  ru: 'nameRu',
-  de: 'nameDe',
-  en: 'name',
-};
-
-/** Name of a place in the given site language, English as the fallback. */
-function getPlaceName(place?: GeoPlace | null, lang: SiteLang = 'en'): string {
-  if (!place) return '';
-  return place[LOCALISED_NAME_KEYS[lang]] || place.name;
-}
-
-type PlaceNameList = { en: string; ru: string; de: string };
-
-const SITE_LANGS: SiteLang[] = ['en', 'ru', 'de'];
-
-/** Build a { en, ru, de } triple with the given per-language mapper. */
-function byLanguage(
-  place: GeoPlace | null | undefined,
-  map: (place: GeoPlace | null | undefined, lang: SiteLang) => string,
-): PlaceNameList {
-  return Object.fromEntries(SITE_LANGS.map((lang) => [lang, map(place, lang)])) as PlaceNameList;
-}
-
-/** Label per language, for the client-side language switcher. */
-export function getPlaceNames(place?: GeoPlace | null): PlaceNameList {
-  return byLanguage(place, getPlaceLabel);
-}
-
-/** Bare name per language, without the country suffix. */
-export function getPlaceNameList(place?: GeoPlace | null): PlaceNameList {
-  return byLanguage(place, getPlaceName);
-}
-
-/**
- * Value for the `data-geo-names` attribute. Templates use it so the encoding
- * lives in one place, and the client switcher reads the same dataset.
- */
-export function geoNameAttr(names: PlaceNameList): string {
-  return JSON.stringify(names);
-}
-
-/** Same attribute value, straight from a place. */
-export function placeNameAttr(place?: GeoPlace | null): string {
-  return geoNameAttr(getPlaceNames(place));
+  names: PlaceNameList;
 }
 
 /** Geo part of a review card payload (see src/pages/api/review-cards.json.ts). */
@@ -122,20 +52,14 @@ export function getPlaceLabel(place?: GeoPlace | null, lang: SiteLang = 'en'): s
   return joinPlaceLabel(name, getPlaceName(getGeo(place.country), lang));
 }
 
-/** Raw geo registry (slug → place). */
-export function getAllGeoPlaces(): Record<string, GeoPlace> {
-  return geo;
+/** Label per language, for the client-side language switcher. */
+export function getPlaceNames(place?: GeoPlace | null): PlaceNameList {
+  return byLanguage(place, getPlaceLabel);
 }
 
-/** Every registered geo slug, including places with no albums yet. */
-export function getAllGeoSugs(): string[] {
-  return Object.keys(geo).sort((a, b) => geo[a].name.localeCompare(geo[b].name));
-}
-
-/** Canonical place definition for a geo slug, if known. */
-export function getGeo(geoSlug?: string | null): GeoPlace | undefined {
-  if (!geoSlug) return undefined;
-  return geo[geoSlug];
+/** Same attribute value, straight from a place. */
+export function placeNameAttr(place?: GeoPlace | null): string {
+  return geoNameAttr(getPlaceNames(place));
 }
 
 /** Geo slug assigned to an album (albums.json `geo`), if any. */
@@ -190,7 +114,7 @@ let geoPostGroups: GeoPostGroups | null = null;
 
 /**
  * One post per album, grouped by its assigned geo slug. Ordered by slug for
- * stable output; posts within a location are ordered by title.
+ * stable output. Posts within a location are ordered by title.
  *
  * The result is cached and shared, so callers must treat it as read only.
  */
@@ -200,7 +124,7 @@ function getGeoPosts(): GeoPostGroups {
 
   for (const [slug, entry] of Object.entries(albums)) {
     const geoSlug = typeof entry.geo === 'string' ? entry.geo : undefined;
-    if (!geoSlug || !geo[geoSlug]) continue;
+    if (!geoSlug || !getGeo(geoSlug)) continue;
 
     const title = entry.album && entry.artist ? `${entry.artist} — ${entry.album}` : slug;
     const post: GeoAlbumPost = {
@@ -230,7 +154,7 @@ function getGeoPosts(): GeoPostGroups {
  * city when grouping.
  */
 function coveredSlugs(geoSlug: string): Set<string> {
-  const place = geo[geoSlug];
+  const place = getGeo(geoSlug);
   const set = new Set([geoSlug]);
   if (!place) return set;
   if (place.region) set.add(place.region);
@@ -278,5 +202,7 @@ export function getGeoCounts(): Map<string, number> {
  * the /geo listings.
  */
 export function getPopulatedGeoSugs(): string[] {
-  return [...getGeoCounts().keys()].sort((a, b) => geo[a].name.localeCompare(geo[b].name));
+  return [...getGeoCounts().keys()].sort((a, b) =>
+    (getGeo(a)?.name ?? a).localeCompare(getGeo(b)?.name ?? b),
+  );
 }

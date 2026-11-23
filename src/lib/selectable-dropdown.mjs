@@ -1,3 +1,4 @@
+import { bindOnce } from './page-bindings.mjs';
 import { createFloatingDropdown } from './floating-dropdown.mjs';
 
 /**
@@ -8,7 +9,7 @@ import { createFloatingDropdown } from './floating-dropdown.mjs';
  * }} SelectableDropdownOption
  *
  * @typedef {{
- *   readyFlag: string;
+ *   bindKey: string;
  *   buttonId: string;
  *   labelId: string;
  *   arrowId: string;
@@ -31,9 +32,13 @@ import { createFloatingDropdown } from './floating-dropdown.mjs';
  * @param {SelectableDropdownConfig} config
  */
 export function mountSelectableDropdown(config) {
-  if (window[config.readyFlag]) return;
-  window[config.readyFlag] = true;
+  bindOnce(config.bindKey, () => mountSelectableDropdownBody(config));
+}
 
+/**
+ * @param {SelectableDropdownConfig} config
+ */
+function mountSelectableDropdownBody(config) {
   /** @type {HTMLElement | null} */
   let panel = null;
 

@@ -1,21 +1,5 @@
-/**
- * @typedef {{
- *   slug: string;
- *   title: string;
- *   artist?: string;
- *   album?: string;
- *   geo?: string;
- * }} RawSearchEntry
- *
- * @typedef {RawSearchEntry & {
- *   order: number;
- *   titleSearch: string;
- *   artistSearch: string;
- *   albumSearch: string;
- *   geoSearch: string;
- *   searchText: string;
- * }} PreparedSearchEntry
- */
+/** @typedef {import('./search-index.mjs').RawSearchEntry} RawSearchEntry */
+/** @typedef {import('./search-index.mjs').PreparedSearchEntry} PreparedSearchEntry */
 
 /**
  * Normalize text for simple client-side matching.

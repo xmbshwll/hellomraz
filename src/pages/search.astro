@@ -37,33 +37,9 @@ const dateIndex = await getDateIndex();
 </Layout>
 
 <script>
-  import {
-    getSearchResultPrimaryLabel,
-    getSearchResultSecondaryLabel,
-    prepareSearchEntries,
-    searchEntries,
-  } from '../lib/search.mjs';
-
-  type SearchEntry = {
-    slug: string;
-    title: string;
-    artist?: string;
-    album?: string;
-  };
-
-  function escapeHtml(value: string) {
-    return value.replace(
-      /[&<>"']/g,
-      (character) =>
-        ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-        })[character] ?? character,
-    );
-  }
+  import { searchEntries } from '../lib/search.mjs';
+  import { createSearchResultRow } from '../lib/search-row.mjs';
+  import { loadSearchIndex } from '../lib/search-index.mjs';
 
   async function initSearchPage() {
     const root = document.querySelector<HTMLElement>('[data-search-page]');
@@ -79,11 +55,10 @@ const dateIndex = await getDateIndex();
     const base = root.dataset.base || '/';
     const initialQuery = new URLSearchParams(window.location.search).get('q') || '';
     input.value = initialQuery;
-    let entries: ReturnType<typeof prepareSearchEntries> = [];
+    let entries = [];
 
     try {
-      const response = await fetch(`${base}api/search.json`);
-      entries = prepareSearchEntries((await response.json()) as SearchEntry[]);
+      entries = await loadSearchIndex(base);
     } catch {
       summary.textContent = 'Search unavailable.';
       return;
@@ -95,20 +70,31 @@ const dateIndex = await getDateIndex();
       summary.textContent = query
         ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
         : 'Type to search all reviews.';
-      results.innerHTML = matches.length
-        ? matches
-            .map((entry) => {
-              const primary = escapeHtml(getSearchResultPrimaryLabel(entry));
-              const secondary = escapeHtml(getSearchResultSecondaryLabel(entry));
-              return `<a class="search-page-result" href="${base}blog/${encodeURIComponent(entry.slug).replace(/%2F/g, '/')}">
-              <span class="search-page-result-title">${primary}</span>
-              ${secondary ? `<span class="search-page-result-secondary">${secondary}</span>` : ''}
-            </a>`;
-            })
-            .join('')
-        : query
-          ? '<p class="search-empty theme-text-muted">No matching reviews.</p>'
-          : '';
+      results.replaceChildren();
+
+      if (!matches.length) {
+        if (!query) return;
+        const empty = document.createElement('p');
+        empty.className = 'search-empty theme-text-muted';
+        empty.textContent = 'No matching reviews.';
+        results.appendChild(empty);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      for (const entry of matches) {
+        const link = document.createElement('a');
+        link.className = 'search-page-result';
+        link.href = `${base}blog/${encodeURIComponent(entry.slug).replace(/%2F/g, '/')}`;
+        link.appendChild(
+          createSearchResultRow(entry, {
+            titleClass: 'search-page-result-title',
+            secondaryClass: 'search-page-result-secondary',
+          }),
+        );
+        fragment.appendChild(link);
+      }
+      results.appendChild(fragment);
     }
 
     form.addEventListener('submit', (event) => {

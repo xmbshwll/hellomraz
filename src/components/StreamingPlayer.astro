@@ -143,44 +143,14 @@ function iframeChromeStyle(service: string): string {
 
 <script>
   import {
-    getStreamingPlayerUiState,
-    shouldAutoRestoreStreamingPlayer,
-  } from '../lib/streaming-player.mjs';
-
-  interface StreamingPlayerDockState {
-    slug: string;
-    title: string;
-    service: string;
-    index: number;
-    mode: 'inline' | 'floating';
-    pinned: boolean;
-    expanded: boolean;
-  }
-
-  interface StreamingPlayerDockApi {
-    activate: (payload: {
-      slug: string;
-      title: string;
-      service: string;
-      index: number;
-      embedUrl: string;
-      coverUrl?: string;
-      chromeStyle: string;
-      mode?: 'inline' | 'floating';
-      allowReplace?: boolean;
-      expand?: boolean;
-      pinned?: boolean;
-    }) => boolean;
-    close: () => void;
-    showInline: (slug?: string) => boolean;
-    showFloating: (options?: { expand?: boolean; pinned?: boolean }) => boolean;
-    toggleExpanded: (force?: boolean) => void;
-    refresh: () => void;
-    getState: () => StreamingPlayerDockState | null;
-  }
+    describeDockSession,
+    getStreamingDock,
+    type StreamingPlayerDockApi,
+    type StreamingPlayerDockState,
+  } from '../lib/streaming-dock.mjs';
 
   function getDockApi(): StreamingPlayerDockApi | null {
-    return ((window as any).__streamingPlayerDock as StreamingPlayerDockApi | undefined) ?? null;
+    return getStreamingDock();
   }
 
   function getTabs(container: HTMLElement): HTMLButtonElement[] {
@@ -224,15 +194,15 @@ function iframeChromeStyle(service: string): string {
     const dock = getDockApi();
     const state = dock?.getState?.() ?? null;
     const slug = container.dataset.playerSlug || '';
-    const uiState = getStreamingPlayerUiState(state, slug);
+    const session = describeDockSession(state, slug);
 
     if (state?.slug === slug) {
       setActiveIndex(container, state.index);
     }
 
     syncTabState(container, getActiveIndex(container));
-    container.classList.toggle('is-floating-session', uiState === 'floating');
-    container.classList.toggle('is-inline-session', uiState === 'inline');
+    container.classList.toggle('is-floating-session', session.isFloating);
+    container.classList.toggle('is-inline-session', session.uiState === 'inline');
 
     const note = container.querySelector<HTMLElement>('.player-dock-note');
     const noteTitle = container.querySelector<HTMLElement>('.player-dock-note-title');
@@ -240,52 +210,34 @@ function iframeChromeStyle(service: string): string {
     const serviceEl = container.querySelector<HTMLElement>('[data-player-dock-service]');
     const pinBtn = container.querySelector<HTMLButtonElement>('[data-player-pin]');
     const pinLabel = container.querySelector<HTMLElement>('[data-player-pin-label]');
-    const isFloatingSession = uiState === 'floating';
-    const isPinnedSession = isFloatingSession && !!state?.pinned;
 
     if (placeholder) {
-      placeholder.hidden = uiState === 'inline';
+      placeholder.hidden = session.placeholderHidden;
     }
     if (note) {
-      note.hidden = !isFloatingSession;
+      note.hidden = session.noteHidden;
     }
     if (noteTitle) {
-      noteTitle.textContent = isPinnedSession
-        ? 'player pinned in widget'
-        : 'playing in floating widget';
+      noteTitle.textContent = session.noteTitle;
     }
     if (serviceEl) {
-      serviceEl.textContent = isFloatingSession
-        ? `${state?.service || 'Streaming service'} · use the widget controls to hide or close it`
-        : '';
+      serviceEl.textContent = session.serviceText;
     }
     if (pinBtn) {
-      const pinButtonLabel = isPinnedSession ? 'pinned' : 'pin';
-      let pinButtonTitle = 'Pin player to floating widget';
-
-      if (isPinnedSession) {
-        pinButtonTitle = 'Player pinned in floating widget';
-      } else if (isFloatingSession) {
-        pinButtonTitle = 'Pin this floating player so it stays in the widget';
-      }
-
-      pinBtn.classList.toggle('is-active', isFloatingSession);
-      pinBtn.classList.toggle('is-pinned', isPinnedSession);
-      pinBtn.setAttribute('aria-pressed', isFloatingSession ? 'true' : 'false');
-      pinBtn.setAttribute('aria-label', pinButtonTitle);
-      pinBtn.title = pinButtonTitle;
+      pinBtn.classList.toggle('is-active', session.isFloating);
+      pinBtn.classList.toggle('is-pinned', session.isPinned);
+      pinBtn.setAttribute('aria-pressed', session.pinAriaPressed);
+      pinBtn.setAttribute('aria-label', session.pinTitle);
+      pinBtn.title = session.pinTitle;
 
       if (pinLabel) {
-        pinLabel.textContent = pinButtonLabel;
+        pinLabel.textContent = session.pinLabel;
       }
     }
 
     const stageMessage = container.querySelector<HTMLElement>('[data-player-stage-message]');
     if (stageMessage) {
-      stageMessage.textContent =
-        uiState === 'blocked'
-          ? 'Another album is already playing in the floating widget. Click any tab to switch here.'
-          : 'Playback stays alive while you browse this site.';
+      stageMessage.textContent = session.stageMessage;
     }
   }
 
@@ -334,6 +286,15 @@ function iframeChromeStyle(service: string): string {
     });
   }
 
+  /**
+   * True when this page's player should (re)claim the stage: no session yet, or
+   * a session inline on a different post. One rule, used on load and on change.
+   */
+  function shouldAdoptStage(state: StreamingPlayerDockState | null, slug: string): boolean {
+    if (!state) return true;
+    return state.mode === 'inline' && state.slug !== slug;
+  }
+
   function initPlayerSession(container: HTMLElement) {
     const dock = getDockApi();
     if (!dock) return;
@@ -341,19 +302,14 @@ function iframeChromeStyle(service: string): string {
     const state = dock.getState?.() ?? null;
     const slug = container.dataset.playerSlug || '';
 
-    if (!state) {
-      activateInitialPlayer(container);
+    if (shouldAdoptStage(state, slug)) {
+      activateInitialPlayer(container, !!state);
       return;
     }
 
-    if (state.mode === 'inline' && state.slug !== slug) {
-      activateInitialPlayer(container, true);
-      return;
-    }
-
-    if (state.slug === slug) {
+    if (state && state.slug === slug) {
       setActiveIndex(container, state.index);
-      if (shouldAutoRestoreStreamingPlayer(state, slug)) {
+      if (dock.shouldRestoreInline(slug)) {
         dock.showInline(slug);
       } else {
         dock.refresh();
@@ -442,7 +398,7 @@ function iframeChromeStyle(service: string): string {
 
       const state = getDockApi()?.getState?.() ?? null;
       const slug = container.dataset.playerSlug || '';
-      if (!state || (state.mode === 'inline' && state.slug !== slug)) {
+      if (shouldAdoptStage(state, slug)) {
         activateInitialPlayer(container, !!state);
         return;
       }

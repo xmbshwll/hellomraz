@@ -1,5 +1,10 @@
 import { getCollection } from 'astro:content';
-import { buildDateIndex, buildMonthCounts, buildTagCounts, sortPostsByDateDesc } from './blog-derived.mjs';
+import {
+  buildDateIndex,
+  buildMonthCounts,
+  buildTagCounts,
+  sortPostsByDateDesc,
+} from './blog-derived.mjs';
 
 /** @typedef {import('astro:content').CollectionEntry<'blog'>} BlogPost */
 /** @typedef {{ name: string; count: number }} QualifiedTag */
@@ -17,9 +22,12 @@ let snapshotPromise = null;
 const dateIndexCache = new Map();
 
 /**
+ * One shared published-post snapshot: sorted posts, tag counts, qualified
+ * tags, and posts grouped by normalized tag.
+ *
  * @returns {Promise<BlogSnapshot>}
  */
-async function loadBlogSnapshot() {
+async function getBlogSnapshot() {
   if (!snapshotPromise) {
     snapshotPromise = getCollection('blog', ({ data }) => !data.draft).then((posts) => {
       const sortedPosts = sortPostsByDateDesc(posts);
@@ -56,14 +64,14 @@ async function loadBlogSnapshot() {
  * @returns {Promise<BlogPost[]>}
  */
 export async function getPublishedPosts() {
-  return (await loadBlogSnapshot()).posts;
+  return (await getBlogSnapshot()).posts;
 }
 
 /**
  * @returns {Promise<number>}
  */
 export async function getPublishedPostCount() {
-  return (await loadBlogSnapshot()).posts.length;
+  return (await getBlogSnapshot()).posts.length;
 }
 
 /**
@@ -71,7 +79,7 @@ export async function getPublishedPostCount() {
  * @returns {Promise<BlogPost[]>}
  */
 export async function getRecentPosts(limit = 12) {
-  return (await getPublishedPosts()).slice(0, limit);
+  return (await getBlogSnapshot()).posts.slice(0, limit);
 }
 
 /**
@@ -101,7 +109,7 @@ export async function getMonthCounts() {
  * @returns {Promise<QualifiedTag[]>}
  */
 export async function getQualifiedTags(minCount = 2) {
-  const snapshot = await loadBlogSnapshot();
+  const snapshot = await getBlogSnapshot();
   if (minCount === 2) return snapshot.qualifiedTags;
 
   return [...snapshot.tagCounts.entries()]
@@ -119,18 +127,10 @@ export async function getLinkedTagNames(minCount = 2) {
 }
 
 /**
- * @param {number} [minCount=2]
- * @returns {Promise<Set<string>>}
- */
-export async function getLinkedTagSet(minCount = 2) {
-  return new Set(await getLinkedTagNames(minCount));
-}
-
-/**
  * @returns {Promise<number>}
  */
 export async function getTotalTagCount() {
-  return (await loadBlogSnapshot()).tagCounts.size;
+  return (await getBlogSnapshot()).tagCounts.size;
 }
 
 /**
@@ -138,7 +138,7 @@ export async function getTotalTagCount() {
  * @returns {Promise<BlogPost[]>}
  */
 export async function getPostsForTag(tag) {
-  const snapshot = await loadBlogSnapshot();
+  const snapshot = await getBlogSnapshot();
   return snapshot.postsByNormalizedTag.get(String(tag ?? '').toLowerCase()) ?? [];
 }
 
@@ -149,7 +149,7 @@ export async function getPostsForTag(tag) {
 export async function getQualifiedTagPages(minCount = 2) {
   const [qualifiedTags, snapshot] = await Promise.all([
     getQualifiedTags(minCount),
-    loadBlogSnapshot(),
+    getBlogSnapshot(),
   ]);
 
   return qualifiedTags.map(({ name, count }) => ({

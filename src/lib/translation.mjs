@@ -3,6 +3,7 @@
  * Applied to any element with .markdown-content that needs i18n.
  */
 import { getCurrentSiteLang, setCurrentSiteLang, SITE_LANGS } from './site-i18n.mjs';
+import { getSiteBase } from './site-base.mjs';
 
 const FALLBACK_MESSAGES = {
   en: 'Translation not yet available — showing original Russian.',
@@ -35,6 +36,28 @@ function showFallbackBanner(lang, customMessages = {}) {
 }
 
 /**
+ * Read the raw translation file for a slug.
+ * For 'ru' it returns null before any fetch.
+ * The Russian original lives in the markdown.
+ *
+ * @param {string} slug - Post slug or youtube id.
+ * @param {'posts' | 'videos'} type - Translation subfolder.
+ * @param {string} lang - One of 'en', 'de', or 'ru'.
+ * @returns {Promise<string | null>} Raw file text. Null when missing.
+ */
+export async function loadTranslationText(slug, type, lang) {
+  if (!slug || lang === 'ru') return null;
+  try {
+    const base = getSiteBase();
+    const response = await fetch(`${base}i18n/${lang}/${type}/${slug}.txt`);
+    if (!response.ok) return null;
+    return await response.text();
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Apply a translation to a content element.
  * @param {HTMLElement} contentEl - element with .markdown-content
  * @param {string} slug - post slug or youtubeId
@@ -63,15 +86,10 @@ export async function applyTranslationToElement(contentEl, slug, opts = {}) {
 
   contentEl.classList.add('is-translating');
 
-  try {
-    const meta = document.querySelector('meta[name="base-url"]');
-    const base = meta?.getAttribute('content') || '/';
-    const type = opts.type || 'posts';
-    const response = await fetch(`${base}i18n/${lang}/${type}/${slug}.txt`);
-
-    if (!response.ok) throw new Error('Translation not found');
-
-    const markdown = await response.text();
+  const markdown = await loadTranslationText(slug, opts.type || 'posts', lang);
+  if (markdown === null) {
+    showFallbackBanner(lang, opts.fallbackMessages);
+  } else {
     contentEl.innerHTML = markdown
       .trim()
       .split(/\n\n+/)
@@ -80,28 +98,9 @@ export async function applyTranslationToElement(contentEl, slug, opts = {}) {
       .join('\n');
 
     removeFallbackBanner();
-  } catch {
-    showFallbackBanner(lang, opts.fallbackMessages);
-  } finally {
-    contentEl.classList.remove('is-translating');
   }
-}
 
-/**
- * Initialize translation for the current page.
- * Reads slug from [data-post-slug] attribute.
- */
-export function initTranslation() {
-  const lang = getCurrentSiteLang();
-  if (lang === 'ru') return; // nothing to do
-
-  const contentEl = document.querySelector('.markdown-content');
-  if (!contentEl) return;
-
-  const slug = contentEl.closest('[data-post-slug]')?.getAttribute('data-post-slug');
-  if (!slug) return;
-
-  applyTranslationToElement(contentEl, slug);
+  contentEl.classList.remove('is-translating');
 }
 
 /**
@@ -135,20 +134,13 @@ export { getCurrentSiteLang, setCurrentSiteLang, SITE_LANGS };
  * @returns {Promise<{ title: string, description: string } | null>}
  */
 export async function fetchTitledTranslation(slug, type, lang) {
-  if (!slug || lang === 'ru') return null;
-  try {
-    const meta = document.querySelector('meta[name="base-url"]');
-    const base = meta?.getAttribute('content') || '/';
-    const res = await fetch(`${base}i18n/${lang}/${type}/${slug}.txt`);
-    if (!res.ok) return null;
-    const text = (await res.text()).trim();
-    if (!text) return null;
-    // Split on first blank line. Title = everything before, description = everything after.
-    const parts = text.split(/\n\s*\n/);
-    const title = (parts.shift() || '').trim();
-    const description = parts.join('\n\n').trim();
-    return { title, description };
-  } catch {
-    return null;
-  }
+  const raw = await loadTranslationText(slug, type, lang);
+  if (raw === null) return null;
+  const text = raw.trim();
+  if (!text) return null;
+  // Split on first blank line. Title = everything before, description = everything after.
+  const parts = text.split(/\n\s*\n/);
+  const title = (parts.shift() || '').trim();
+  const description = parts.join('\n\n').trim();
+  return { title, description };
 }

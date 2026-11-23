@@ -155,8 +155,12 @@ function regionGeoSlug(name: string): string | undefined {
 </Layout>
 
 <script>
+  import { escapeHtml } from '../lib/escape-html.mjs';
+  import { navigateInternal } from '../lib/navigate';
   import { pickPlaceName } from '../lib/geo-i18n.mjs';
   import { joinPlaceLabel } from '../lib/place-label.mjs';
+  import { clusterByDistance, fitToPoints as computeFitPoints, hitTestMarkers } from '../lib/map-view.mjs';
+  import { createMapViewport, MAX_K } from '../lib/map-viewport.mjs';
   import type { GeoMarkerEntry } from '../lib/geo-markers';
 
   const W = 960;
@@ -189,25 +193,6 @@ function regionGeoSlug(name: string): string | undefined {
 
   function findEntry(slug: string): GeoMarkerEntry | undefined {
     return markersPayload.find((m) => m.slug === slug);
-  }
-
-  function navigateTo(href: string) {
-    const navigate = (
-      window as Window & { __hellomrazNavigate?: (href: string) => void | Promise<void> }
-    ).__hellomrazNavigate;
-    if (typeof navigate === 'function') {
-      void navigate(href);
-    } else {
-      window.location.href = href;
-    }
-  }
-
-  function escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   /** City names shown in a cluster tooltip before the list is cut off. */
@@ -284,11 +269,6 @@ function regionGeoSlug(name: string): string | undefined {
     if (wrap.dataset.mapBound === 'true') return;
     wrap.dataset.mapBound = 'true';
 
-    let k = 1;
-    let tx = 0;
-    let ty = 0;
-    const MIN_K = 1;
-    const MAX_K = 400;
     // Below K_SPLIT the US is shown as one dot per state; above it states
     // fall apart into their city dots. CLUSTER_PX is the screen distance at
     // which markers merge (distance clustering → no overlapping dots).
@@ -297,38 +277,18 @@ function regionGeoSlug(name: string): string | undefined {
     // so dots never cover each other. The distance is small enough that close
     // pairs (Manchester and Salford) split apart while zooming in.
     const CLUSTER_PX = 30;
-    /** CSS-pixel scale: how many screen px per svg user unit. */
-    function scale() {
-      return svg.getBoundingClientRect().width / W;
-    }
-    /**
-     * Adapts dot sizes (and clustering distance) to the rendered map width so
-     * the map looks right in any browser window: 1 at the 960px reference
-     * width, larger/smaller on wider/narrower viewports, clamped so dots stay
-     * tappable on phones and not oversized on wide screens.
-     */
-    function uiScale() {
-      const width = svg.getBoundingClientRect().width || W;
-      return Math.min(1.5, Math.max(0.7, width / W));
-    }
 
-    /** Convert a client point to svg user coordinates (hit tests, zoom). */
-    function toUserPoint(clientX: number, clientY: number) {
-      const rect = svg.getBoundingClientRect();
-      const s = scale();
-      return { x: (clientX - rect.left) / s, y: (clientY - rect.top) / s };
-    }
-
-    function zoomAt(sx: number, sy: number, factor: number) {
-      const cx = (sx - tx) / k;
-      const cy = (sy - ty) / k;
-      const next = Math.min(MAX_K, Math.max(MIN_K, k * factor));
-      if (next === k) return;
-      tx = sx - cx * next;
-      ty = sy - cy * next;
-      k = next;
-      applyTransform();
-    }
+    // The viewport owns the transform. The callbacks bridge it to the DOM: the
+    // rectangle source, and the sink that writes the transform and re-clusters.
+    const viewport = createMapViewport({
+      getRect: () => svg.getBoundingClientRect(),
+      onApply: () => {
+        const { k, tx, ty } = viewport.getTransform();
+        zoomGroup.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
+        queueRecompute();
+      },
+    });
+    const { scale, uiScale, toUserPoint, applyTransform, zoomAt, projectMarker } = viewport;
 
     /** Cities belonging to a state/country dot (used for fit-to-bounds). */
     function citiesFor(entry: GeoMarkerEntry): GeoMarkerEntry[] {
@@ -338,29 +298,15 @@ function regionGeoSlug(name: string): string | undefined {
     }
 
     /**
-     * Zoom/pan so the given local-space points fill the viewport with padding —
-     * the SVG equivalent of map.fitBounds(cluster.bounds), so a click frames
-     * exactly the members of that cluster instead of guessing a zoom factor.
+     * Zoom/pan so the given local-space points fill the viewport, the SVG
+     * equivalent of map.fitBounds(cluster.bounds). A click frames exactly the
+     * members of that cluster instead of guessing a zoom factor.
      */
     function fitToPoints(points: Array<{ x: number; y: number }>) {
-      if (!points.length) return false;
-      const xs = points.map((p) => p.x);
-      const ys = points.map((p) => p.y);
-      const minX = Math.min(...xs);
-      const maxX = Math.max(...xs);
-      const minY = Math.min(...ys);
-      const maxY = Math.max(...ys);
-      const padding = 1.6; // 80% margin around the bounds
-      const spanX = Math.max((maxX - minX) * padding, 6);
-      const spanY = Math.max((maxY - minY) * padding, 6);
-      const target = Math.min(W / spanX, H / spanY);
-      // Always make progress: don't zoom out on a click.
-      const next = Math.min(MAX_K, Math.max(k * 1.25, target));
-      const cx = (minX + maxX) / 2;
-      const cy = (minY + maxY) / 2;
-      tx = W / 2 - cx * next;
-      ty = H / 2 - cy * next;
-      k = next;
+      const { k } = viewport.getTransform();
+      const next = computeFitPoints(points, { k, width: W, height: H, maxK: MAX_K });
+      if (!next) return false;
+      viewport.setTransform(next);
       applyTransform();
       return true;
     }
@@ -380,7 +326,7 @@ function regionGeoSlug(name: string): string | undefined {
     );
 
     function projectCity(entry: GeoMarkerEntry) {
-      return { x: entry.x * k + tx, y: entry.y * k + ty };
+      return projectMarker(entry);
     }
 
     /** Desired dot radius in SCREEN px; grows with albums, constant across zoom. */
@@ -389,6 +335,7 @@ function regionGeoSlug(name: string): string | undefined {
     }
 
     function recomputeMarkers() {
+      const { k } = viewport.getTransform();
       const s = scale();
       // Coarse view: US = one dot per state; elsewhere city clusters.
       // Fine view: cities (states fall apart into their city dots).
@@ -397,40 +344,19 @@ function regionGeoSlug(name: string): string | undefined {
       // Connected-components clustering: merge any markers closer than a
       // screen threshold. Because actual screen separation ≈ distance × zoom,
       // the same threshold splits clusters apart as you zoom in.
-      const n = sources.length;
-      const parent = Array.from({ length: n }, (_, i) => i);
-      const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
-      const union = (a: number, b: number) => {
-        const ra = find(a);
-        const rb = find(b);
-        if (ra !== rb) parent[ra] = rb;
-      };
       const pos = sources.map(projectCity);
       // Screen-px distances scale with the rendered map width too, so the
       // clustering stays proportional in any window size.
       const ui = uiScale();
       const threshold = (CLUSTER_PX * ui) / s;
-      for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-          const dx = pos[i].x - pos[j].x;
-          const dy = pos[i].y - pos[j].y;
-          if (dx * dx + dy * dy < threshold * threshold) union(i, j);
-        }
-      }
-      const groups = new Map<number, number[]>();
-      for (let i = 0; i < n; i++) {
-        const root = find(i);
-        const list = groups.get(root) ?? [];
-        list.push(i);
-        groups.set(root, list);
-      }
+      const groups = clusterByDistance(pos, threshold);
 
       // Markers carry LOCAL (pre-transform) coordinates; the zoom group applies
       // translate/scale to them at render time. Dot SIZE is fixed in screen px
       // (radius / zoomW) so dots never grow over each other as you zoom in.
       const zoomW = k * scale();
       rendered = [];
-      for (const idxs of groups.values()) {
+      for (const idxs of groups) {
         const items = idxs.map((i) => sources[i]);
         const albums = items.reduce((sum, c) => sum + c.count, 0);
         if (idxs.length === 1) {
@@ -484,7 +410,7 @@ function regionGeoSlug(name: string): string | undefined {
     function renderMarkers() {
       // Text sizes are given in user units. One user unit renders as zoomW px,
       // so a label keeps a constant screen size at any zoom.
-      const zoomW = k * scale();
+      const zoomW = viewport.getTransform().k * scale();
       const ui = uiScale();
       const html = rendered
         .map((m) => {
@@ -515,33 +441,13 @@ function regionGeoSlug(name: string): string | undefined {
       markersEl.innerHTML = html;
     }
 
-    function applyTransform() {
-      zoomGroup.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
-      queueRecompute();
-    }
 
     // --- Interaction (markers are pointer-events:none; hit-test in code) ---
-    function projectMarker(m: RenderMarker) {
-      return { x: m.x * k + tx, y: m.y * k + ty };
-    }
-
     function hitTest(clientX: number, clientY: number): RenderMarker | null {
+      const { k, tx, ty } = viewport.getTransform();
       const s = scale();
       const pt = toUserPoint(clientX, clientY);
-      let best: RenderMarker | null = null;
-      let bestD = Infinity;
-      for (const m of rendered) {
-        const hit = (m.kind !== 'city' ? m.screenR + 12 : 16) / s;
-        const pos = projectMarker(m);
-        const dx = pos.x - pt.x;
-        const dy = pos.y - pt.y;
-        const dist = dx * dx + dy * dy;
-        if (dist < hit * hit && dist < bestD) {
-          bestD = dist;
-          best = m;
-        }
-      }
-      return best;
+      return hitTestMarkers(pt, rendered, { k, tx, ty, scale: s }) as RenderMarker | null;
     }
 
     function markHover(index: number) {
@@ -586,8 +492,8 @@ function regionGeoSlug(name: string): string | undefined {
       const dy = event.clientY - startY;
       if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
       if (moved) {
-        tx += dx;
-        ty += dy;
+        const t = viewport.getTransform();
+        viewport.setTransform({ k: t.k, tx: t.tx + dx, ty: t.ty + dy });
         startX = event.clientX;
         startY = event.clientY;
         applyTransform();
@@ -615,11 +521,11 @@ function regionGeoSlug(name: string): string | undefined {
             }
           } else if (hit.slug) {
             const entry = findEntry(hit.slug);
-            if (entry) navigateTo(entry.href);
+            if (entry) navigateInternal(entry.href);
           }
         } else if (clickTarget) {
           const slug = clickTarget.getAttribute('data-geo');
-          if (slug) navigateTo(`${wrap.dataset.base ?? ''}geo/${encodeURIComponent(slug)}`);
+          if (slug) navigateInternal(`${wrap.dataset.base ?? ''}geo/${encodeURIComponent(slug)}`);
         }
       }
       clickTarget = null;
@@ -744,7 +650,7 @@ function regionGeoSlug(name: string): string | undefined {
         zoomAt(pos.x, pos.y, 3);
       } else if (marker.slug) {
         const entry = findEntry(marker.slug);
-        if (entry) navigateTo(entry.href);
+        if (entry) navigateInternal(entry.href);
       }
     });
 

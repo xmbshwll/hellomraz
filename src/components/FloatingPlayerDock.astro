@@ -254,47 +254,12 @@
 </style>
 
 <script>
+  import { buildStreamingPlayerFrameStyle, supportsFloatingTracklistScroll } from '../lib/streaming-player.mjs';
   import {
-    buildStreamingPlayerFrameStyle,
-    resolveStreamingPlayerActivation,
-    shouldAutoRestoreStreamingPlayer,
-    supportsFloatingTracklistScroll,
-  } from '../lib/streaming-player.mjs';
-
-  interface StreamingPlayerDockState {
-    slug: string;
-    title: string;
-    service: string;
-    index: number;
-    mode: 'inline' | 'floating';
-    pinned: boolean;
-    expanded: boolean;
-    embedUrl: string;
-    coverUrl?: string;
-    chromeStyle: string;
-  }
-
-  interface StreamingPlayerDockApi {
-    activate: (payload: {
-      slug: string;
-      title: string;
-      service: string;
-      index: number;
-      embedUrl: string;
-      coverUrl?: string;
-      chromeStyle: string;
-      mode?: 'inline' | 'floating';
-      allowReplace?: boolean;
-      expand?: boolean;
-      pinned?: boolean;
-    }) => boolean;
-    close: () => void;
-    showInline: (slug?: string) => boolean;
-    showFloating: (options?: { expand?: boolean; pinned?: boolean }) => boolean;
-    toggleExpanded: (force?: boolean) => void;
-    refresh: () => void;
-    getState: () => StreamingPlayerDockState | null;
-  }
+    createStreamingDock,
+    type StreamingPlayerDockApi,
+    type StreamingPlayerDockState,
+  } from '../lib/streaming-dock.mjs';
 
   type DockWindow = Window & {
     __floatingPlayerDockReady?: boolean;
@@ -345,9 +310,6 @@
     }
     win.__floatingPlayerDockReady = true;
 
-    let state: StreamingPlayerDockState | null = null;
-    let activeIframe: HTMLIFrameElement | null = null;
-    let refreshQueued = false;
     let dockRoot = resolveDockRoot();
 
     function ensureDockRoot(): HTMLElement | null {
@@ -387,15 +349,11 @@
       return getRoot()?.querySelector<HTMLImageElement>('#floating-player-dock-cover') ?? null;
     }
 
-    function getInlineAnchor(slug = state?.slug || ''): HTMLElement | null {
+    function getInlineAnchor(slug: string): HTMLElement | null {
       if (!slug) return null;
       return document.querySelector(
         `[data-streaming-player-anchor="${slug}"]`,
       ) as HTMLElement | null;
-    }
-
-    function snapshotState() {
-      return state ? JSON.stringify(state) : 'null';
     }
 
     function getServiceKey(service = '') {
@@ -414,35 +372,22 @@
       }
     }
 
-    function ensureActiveIframe(nextState: StreamingPlayerDockState | null) {
-      const embedUrl = nextState?.embedUrl;
-      if (!embedUrl) return;
-
-      const chromeStyle = nextState?.chromeStyle || '';
-      const currentUrl = activeIframe ? normalizeUrl(activeIframe.src) : '';
-      const nextUrl = normalizeUrl(embedUrl);
-      const currentChromeStyle = activeIframe?.dataset.chromeStyle || '';
-
-      if (activeIframe && currentUrl === nextUrl && currentChromeStyle === chromeStyle) {
-        return;
-      }
-
-      if (activeIframe) {
-        activeIframe.remove();
-      }
-
-      activeIframe = createIframe(nextState);
-      activeIframe.dataset.chromeStyle = chromeStyle;
+    function applyIframeStyle(iframe: HTMLIFrameElement, state: StreamingPlayerDockState) {
+      iframe.style.cssText = buildStreamingPlayerFrameStyle(
+        state.service,
+        state.mode,
+        state.chromeStyle,
+      );
     }
 
-    function emitChange() {
-      window.dispatchEvent(
-        new CustomEvent('streaming-player-dock-change', {
-          detail: {
-            state: state ? { ...state } : null,
-          },
-        }),
-      );
+    function createIframe(state: StreamingPlayerDockState): HTMLIFrameElement {
+      const iframe = document.createElement('iframe');
+      iframe.src = state.embedUrl;
+      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      iframe.loading = 'eager';
+      iframe.setAttribute('seamless', '');
+      applyIframeStyle(iframe, state);
+      return iframe;
     }
 
     function clearInlinePosition() {
@@ -455,7 +400,7 @@
       root.style.height = '';
     }
 
-    function applyInlinePosition(anchor: HTMLElement) {
+    function applyInlinePosition(anchor: HTMLElement): boolean {
       const root = getRoot();
       if (!root) return false;
 
@@ -471,27 +416,27 @@
       return true;
     }
 
-    function applyIframeStyle(iframe: HTMLIFrameElement, nextState: StreamingPlayerDockState) {
-      iframe.style.cssText = buildStreamingPlayerFrameStyle(
-        nextState.service,
-        nextState.mode,
-        nextState.chromeStyle,
+    function emitChange() {
+      window.dispatchEvent(
+        new CustomEvent('streaming-player-dock-change', {
+          detail: { state: dock.getState() },
+        }),
       );
     }
 
-    function applyActiveIframeStyle(nextState: StreamingPlayerDockState | null) {
-      if (!activeIframe || !nextState) return;
-      applyIframeStyle(activeIframe, nextState);
+    function getCurrentPagePlayerSlug() {
+      return (
+        document.querySelector<HTMLElement>('.streaming-player[data-player-slug]')?.dataset
+          .playerSlug || ''
+      );
     }
 
-    function createIframe(nextState: StreamingPlayerDockState) {
-      const iframe = document.createElement('iframe');
-      iframe.src = nextState.embedUrl;
-      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-      iframe.loading = 'eager';
-      iframe.setAttribute('seamless', '');
-      applyIframeStyle(iframe, nextState);
-      return iframe;
+    function requestInlineReset(slug: string) {
+      window.dispatchEvent(
+        new CustomEvent('streaming-player-inline-reset-request', {
+          detail: { slug },
+        }),
+      );
     }
 
     function bindControls() {
@@ -499,11 +444,11 @@
       const closeBtn = getCloseBtn();
 
       if (toggleBtn) {
-        toggleBtn.onclick = () => toggleExpanded();
+        toggleBtn.onclick = () => dock.toggleExpanded();
       }
 
       if (closeBtn) {
-        closeBtn.onclick = () => close();
+        closeBtn.onclick = () => dock.close();
       }
     }
 
@@ -528,7 +473,11 @@
       toggleBtn.setAttribute('aria-expanded', 'false');
     }
 
-    function syncUi() {
+    function render(
+      state: StreamingPlayerDockState | null,
+      iframe: HTMLIFrameElement | null,
+      controller: { queueRefresh: () => void },
+    ) {
       bindControls();
 
       const root = getRoot();
@@ -542,23 +491,7 @@
         return;
       }
 
-      if (!state || !activeIframe) {
-        resetDockUi(root, titleEl, serviceEl, coverImg, toggleBtn);
-        return;
-      }
-
-      if (shouldAutoRestoreStreamingPlayer(state, state.slug) && getInlineAnchor(state.slug)) {
-        state.mode = 'inline';
-        state.expanded = false;
-      }
-
-      const anchor = state.mode === 'inline' ? getInlineAnchor(state.slug) : null;
-      if (state.mode === 'inline' && !anchor) {
-        if (activeIframe) {
-          activeIframe.remove();
-        }
-        activeIframe = null;
-        state = null;
+      if (!state || !iframe) {
         resetDockUi(root, titleEl, serviceEl, coverImg, toggleBtn);
         return;
       }
@@ -598,10 +531,10 @@
         delete root.dataset.hasStaticCover;
       }
 
-      if (activeIframe.parentElement !== host) {
-        host.appendChild(activeIframe);
+      if (iframe.parentElement !== host) {
+        host.appendChild(iframe);
       }
-      applyActiveIframeStyle(state);
+      applyIframeStyle(iframe, state);
 
       if (state.mode === 'inline') {
         root.classList.add('is-inline');
@@ -609,10 +542,11 @@
         toggleBtn.textContent = 'open';
         toggleBtn.setAttribute('aria-expanded', 'false');
 
-        if (!applyInlinePosition(anchor)) {
+        const anchor = getInlineAnchor(state.slug);
+        if (!anchor || !applyInlinePosition(anchor)) {
           root.hidden = true;
           clearInlinePosition();
-          queueRefresh();
+          controller.queueRefresh();
           return;
         }
 
@@ -626,243 +560,24 @@
       toggleBtn.setAttribute('aria-expanded', state.expanded ? 'true' : 'false');
     }
 
-    function refresh(emit = false) {
-      const before = snapshotState();
-      syncUi();
-      if (emit || snapshotState() !== before) {
-        emitChange();
-      }
-    }
-
-    function queueRefresh() {
-      if (refreshQueued) return;
-      refreshQueued = true;
-      requestAnimationFrame(() => {
-        refreshQueued = false;
-        refresh();
-      });
-    }
-
-    function getCurrentPagePlayerSlug() {
-      return (
-        document.querySelector<HTMLElement>('.streaming-player[data-player-slug]')?.dataset
-          .playerSlug || ''
-      );
-    }
-
-    function requestInlineReset(slug: string) {
-      window.dispatchEvent(
-        new CustomEvent('streaming-player-inline-reset-request', {
-          detail: { slug },
-        }),
-      );
-    }
-
-    function close() {
-      const targetSlug = getCurrentPagePlayerSlug();
-
-      if (activeIframe) {
-        activeIframe.remove();
-      }
-      activeIframe = null;
-      state = null;
-      refresh(true);
-
-      if (targetSlug) {
-        requestInlineReset(targetSlug);
-      }
-    }
-
-    function showInline(slug = state?.slug) {
-      if (!state || !activeIframe) return false;
-      if (slug && state.slug !== slug) return false;
-      if (!getInlineAnchor(state.slug)) return false;
-
-      state.mode = 'inline';
-      state.pinned = false;
-      state.expanded = false;
-      refresh(true);
-      return true;
-    }
-
-    function showFloating(
-      options: {
-        expand?: boolean;
-        pinned?: boolean;
-      } = {},
-    ) {
-      if (!state || !activeIframe) return false;
-
-      const wasInline = state.mode === 'inline';
-      state.mode = 'floating';
-      if (typeof options.pinned === 'boolean') {
-        state.pinned = options.pinned;
-      }
-      if (typeof options.expand === 'boolean') {
-        state.expanded = options.expand;
-      } else if (wasInline) {
-        state.expanded = true;
-      }
-
-      refresh(true);
-      return true;
-    }
-
-    function toggleExpanded(force?: boolean) {
-      if (!state || state.mode !== 'floating') return;
-      state.expanded = typeof force === 'boolean' ? force : !state.expanded;
-      refresh(true);
-    }
-
-    function resolveNextMode(nextMode: 'inline' | 'floating' | undefined, slug: string) {
-      if (nextMode) {
-        return nextMode;
-      }
-
-      if (state?.slug === slug) {
-        return state.mode;
-      }
-
-      return 'inline';
-    }
-
-    function resolveFloatingFlag(
-      nextMode: 'inline' | 'floating',
-      slug: string,
-      explicitValue: boolean | undefined,
-      currentValue: boolean,
-    ) {
-      if (nextMode !== 'floating') {
-        return false;
-      }
-
-      if (typeof explicitValue === 'boolean') {
-        return explicitValue;
-      }
-
-      if (state?.slug === slug) {
-        return currentValue;
-      }
-
-      return true;
-    }
-
-    function activate(payload: {
-      slug: string;
-      title: string;
-      service: string;
-      index: number;
-      embedUrl: string;
-      coverUrl?: string;
-      chromeStyle: string;
-      mode?: 'inline' | 'floating';
-      allowReplace?: boolean;
-      expand?: boolean;
-      pinned?: boolean;
-    }) {
-      const action = resolveStreamingPlayerActivation(
-        state,
-        { slug: payload.slug, index: payload.index },
-        { allowReplace: payload.allowReplace },
-      );
-
-      if (action === 'preserve') {
-        refresh(false);
-        return false;
-      }
-
-      const nextMode = resolveNextMode(payload.mode, payload.slug);
-      const nextPinned = resolveFloatingFlag(
-        nextMode,
-        payload.slug,
-        payload.pinned,
-        state?.pinned ?? false,
-      );
-      const nextExpanded = resolveFloatingFlag(
-        nextMode,
-        payload.slug,
-        payload.expand,
-        state?.expanded ?? false,
-      );
-
-      const nextState: StreamingPlayerDockState = {
-        slug: payload.slug,
-        title: payload.title,
-        service: payload.service,
-        index: payload.index,
-        mode: nextMode,
-        pinned: nextPinned,
-        expanded: nextExpanded,
-        embedUrl: payload.embedUrl,
-        coverUrl: payload.coverUrl,
-        chromeStyle: payload.chromeStyle,
-      };
-
-      ensureActiveIframe(nextState);
-      state = nextState;
-
-      refresh(true);
-      return true;
-    }
-
-    bindControls();
-
-    document.addEventListener('astro:after-swap', queueRefresh);
-    document.addEventListener('astro:page-load', queueRefresh);
-    window.addEventListener('resize', queueRefresh);
-    document.addEventListener('scroll', queueRefresh, true);
-    // The inline player is position:fixed with coordinates captured from the
-    // stage anchor. Late layout shifts on page open (cover image h-auto, fonts)
-    // move the stage without firing scroll/resize, leaving the player floating
-    // over the tab row. Watch the anchor for a short window after each load.
-    let inlineWatchUntil = 0;
-    function refreshInlinePosition() {
-      if (state?.mode !== 'inline') return;
-
-      const anchor = getInlineAnchor(state.slug);
-      const dockRoot = getRoot();
-      if (!anchor || !dockRoot) return;
-
-      const anchorRect = anchor.getBoundingClientRect();
-      const dockRect = dockRoot.getBoundingClientRect();
-      const moved =
-        Math.abs(anchorRect.top - dockRect.top) > 1 ||
-        Math.abs(anchorRect.left - dockRect.left) > 1;
-
-      if (moved) applyInlinePosition(anchor);
-    }
-
-    function startInlinePositionWatch() {
-      inlineWatchUntil = performance.now() + 3000;
-
-      function tick() {
-        refreshInlinePosition();
-        if (performance.now() < inlineWatchUntil) {
-          requestAnimationFrame(tick);
-        }
-      }
-
-      requestAnimationFrame(tick);
-    }
-
-    document.addEventListener('astro:page-load', startInlinePositionWatch);
-    window.addEventListener('load', () => {
-      // Images decoding late extend the watch window past the initial 3s.
-      inlineWatchUntil = Math.max(inlineWatchUntil, performance.now() + 2000);
+    const dock = createStreamingDock({
+      getInlineAnchor,
+      getRoot,
+      getCurrentPagePlayerSlug,
+      createIframe,
+      normalizeUrl,
+      applyInlinePosition,
+      clearInlinePosition,
+      render,
+      onChange: emitChange,
+      onInlineReset: requestInlineReset,
+      requestFrame: (callback) => requestAnimationFrame(callback),
+      now: () => performance.now(),
     });
-    startInlinePositionWatch();
 
-    win.__streamingPlayerDock = {
-      activate,
-      close,
-      showInline,
-      showFloating,
-      toggleExpanded,
-      refresh: () => refresh(true),
-      getState: () => (state ? { ...state } : null),
-    };
+    win.__streamingPlayerDock = dock;
 
     window.dispatchEvent(new CustomEvent('streaming-player-dock-ready'));
-    refresh(true);
+    dock.refresh();
   })();
 </script>

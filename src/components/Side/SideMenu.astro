@@ -150,6 +150,7 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 </style>
 
 <script>
+  import { escapeHtml } from '../../lib/escape-html.mjs';
   import { getCurrentSiteLang, getSiteCopy } from '../../lib/site-i18n.mjs';
 
   interface SidebarPost {
@@ -176,14 +177,6 @@ const defaultSidebarAboutCopy = getSiteCopy('sidebarAbout');
 
   function getBase(root: HTMLElement): string {
     return root.dataset.base || '/';
-  }
-
-  function escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   function renderPost(post: SidebarPost, baseUrl: string): string {
