@@ -31,7 +31,11 @@ for (const slug of slugs) {
 }
 
 for (const slug of Object.keys(albums)) {
+  const entry = albums[slug];
   if (!slugs.has(slug)) warnings.push(`${slug}: album entry has no blog post`);
+  if (entry.bandcampUrl && !entry.albumId) {
+    warnings.push(`${slug}: bandcampUrl without albumId — Bandcamp player will not render`);
+  }
 }
 
 for (const warning of warnings.slice(0, 20)) console.warn(`warning: ${warning}`);
