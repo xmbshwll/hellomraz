@@ -79,7 +79,8 @@ const albumName = albumEntry?.album || parsed?.album;
 const streamingLinks = getStreamingLinks(slug);
 const hasLongTitle = postTitle.length > 40;
 const hasStreamingLinks = streamingLinks.length > 0;
-const displayTags = albumTags ?? postTags;
+// An empty bcTags array must not hide the frontmatter tags.
+const displayTags = albumTags?.length ? albumTags : postTags;
 const contentClassList = ['post-page-content'];
 
 if (hasStreamingLinks) {
